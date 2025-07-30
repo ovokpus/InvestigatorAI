@@ -1,0 +1,18 @@
+TITLE: Additional Dataset: International Docs
+TYPE: Structured Data
+SOURCE: InvestigatorAI Additional Data Collection
+DATE: 2025-07-29 23:43:44
+
+DESCRIPTION: Specialized dataset: international_docs
+
+DATA CONTENT:
+interpol_fraud_assessment:
+  url: https://www.interpol.int/content/download/21096/file/24COM005563-01%20-%20CAS_Global%20Financial%20Fraud%20Assessment_Public%20version_2024-03_EN_v3.pdf
+  size_mb: 11.632670402526855
+  downloaded_at: 2025-07-29T23:42:58.849196
+  content_type: application/pdf
+open_banking_guidelines:
+  url: https://www.openbanking.org.uk/wp-content/uploads/Guidelines-for-Read-Write-Participants.pdf
+  size_mb: 0.3858499526977539
+  downloaded_at: 2025-07-29T23:43:02.143110
+  content_type: application/pdf

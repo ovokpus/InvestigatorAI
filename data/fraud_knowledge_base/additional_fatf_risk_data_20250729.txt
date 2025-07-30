@@ -1,0 +1,23 @@
+TITLE: Additional Dataset: Fatf Risk Data
+TYPE: Structured Data
+SOURCE: InvestigatorAI Additional Data Collection
+DATE: 2025-07-29 23:43:44
+
+DESCRIPTION: Specialized dataset: fatf_risk_data
+
+DATA CONTENT:
+risk_indicators:
+  trade_based_ml_indicators:
+    1. Unusual pricing patterns in trade transactions
+    2. Discrepancies between goods description and declared value
+    3. Multiple invoicing for same shipment
+    4. Over or under-invoicing of goods
+    5. Rapid succession of ownership changes
+    6. Use of shell companies in trade chains
+    7. Transactions inconsistent with business profile
+  jurisdictional_risk_factors:
+    1. Inadequate AML/CFT framework
+    2. Insufficient financial intelligence unit
+    3. Weak cross-border cooperation
+    4. Limited beneficial ownership transparency
+    5. Insufficient supervision of DNFBPs

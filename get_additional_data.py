@@ -34,6 +34,182 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # ============================================================================
+# TEXT CONVERSION UTILITIES FOR RAG KNOWLEDGE BASE
+# ============================================================================
+
+class TextConverter:
+    """Convert structured data to RAG-friendly text format"""
+    
+    @staticmethod
+    def convert_dataframe_to_text(df: pd.DataFrame, title: str, description: str = "") -> str:
+        """Convert DataFrame to structured text for RAG"""
+        text_lines = [
+            f"TITLE: {title}",
+            f"TYPE: Structured Dataset",
+            f"SOURCE: InvestigatorAI Additional Data Collection",
+            f"DATE: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+            ""
+        ]
+        
+        if description:
+            text_lines.extend([
+                f"DESCRIPTION: {description}",
+                ""
+            ])
+        
+        # Add dataset overview
+        text_lines.extend([
+            f"DATASET OVERVIEW:",
+            f"Total Records: {len(df)}",
+            f"Columns: {', '.join(df.columns.tolist())}",
+            ""
+        ])
+        
+        # Add column descriptions and sample data
+        text_lines.append("COLUMN ANALYSIS:")
+        for col in df.columns:
+            if df[col].dtype == 'object':
+                unique_count = df[col].nunique()
+                sample_values = df[col].dropna().head(3).tolist()
+                text_lines.append(f"- {col}: Text field, {unique_count} unique values, examples: {sample_values}")
+            else:
+                stats = df[col].describe()
+                text_lines.append(f"- {col}: Numeric field, mean: {stats['mean']:.2f}, range: {stats['min']:.2f} to {stats['max']:.2f}")
+        
+        text_lines.append("")
+        
+        # Add sample records (first 5 rows)
+        text_lines.append("SAMPLE RECORDS:")
+        for i, (_, row) in enumerate(df.head(5).iterrows()):
+            text_lines.append(f"Record {i+1}:")
+            for col in df.columns:
+                value = str(row[col])[:100]  # Truncate long values
+                text_lines.append(f"  {col}: {value}")
+            text_lines.append("")
+        
+        return "\n".join(text_lines)
+    
+    @staticmethod
+    def convert_json_to_text(data: Dict, title: str, description: str = "") -> str:
+        """Convert JSON data to structured text for RAG"""
+        text_lines = [
+            f"TITLE: {title}",
+            f"TYPE: Structured Data",
+            f"SOURCE: InvestigatorAI Additional Data Collection", 
+            f"DATE: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+            ""
+        ]
+        
+        if description:
+            text_lines.extend([
+                f"DESCRIPTION: {description}",
+                ""
+            ])
+        
+        # Convert JSON to readable text
+        text_lines.append("DATA CONTENT:")
+        text_lines.append(TextConverter._format_json_recursive(data, indent=0))
+        
+        return "\n".join(text_lines)
+    
+    @staticmethod
+    def convert_list_to_text(data: List, title: str, description: str = "") -> str:
+        """Convert list data to structured text for RAG"""
+        text_lines = [
+            f"TITLE: {title}",
+            f"TYPE: List Data",
+            f"SOURCE: InvestigatorAI Additional Data Collection",
+            f"DATE: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+            ""
+        ]
+        
+        if description:
+            text_lines.extend([
+                f"DESCRIPTION: {description}",
+                ""
+            ])
+        
+        text_lines.extend([
+            f"TOTAL ITEMS: {len(data)}",
+            "",
+            "CONTENT:"
+        ])
+        
+        for i, item in enumerate(data[:20]):  # Limit to first 20 items
+            text_lines.append(f"{i+1}. {str(item)}")
+        
+        if len(data) > 20:
+            text_lines.append(f"... and {len(data) - 20} more items")
+        
+        return "\n".join(text_lines)
+    
+    @staticmethod
+    def convert_text_to_knowledge(text: str, title: str, description: str = "") -> str:
+        """Convert raw text to knowledge base format"""
+        text_lines = [
+            f"TITLE: {title}",
+            f"TYPE: Text Document",
+            f"SOURCE: InvestigatorAI Additional Data Collection",
+            f"DATE: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+            ""
+        ]
+        
+        if description:
+            text_lines.extend([
+                f"DESCRIPTION: {description}",
+                ""
+            ])
+        
+        text_lines.extend([
+            "CONTENT:",
+            text.strip()
+        ])
+        
+        return "\n".join(text_lines)
+    
+    @staticmethod
+    def _format_json_recursive(obj, indent: int = 0) -> str:
+        """Recursively format JSON object to readable text"""
+        lines = []
+        prefix = "  " * indent
+        
+        if isinstance(obj, dict):
+            for key, value in obj.items():
+                if isinstance(value, (dict, list)):
+                    lines.append(f"{prefix}{key}:")
+                    lines.append(TextConverter._format_json_recursive(value, indent + 1))
+                else:
+                    # Truncate long values
+                    value_str = str(value)[:200]
+                    if len(str(value)) > 200:
+                        value_str += "..."
+                    lines.append(f"{prefix}{key}: {value_str}")
+        elif isinstance(obj, list):
+            for i, item in enumerate(obj[:10]):  # Limit to first 10 items
+                if isinstance(item, (dict, list)):
+                    lines.append(f"{prefix}Item {i+1}:")
+                    lines.append(TextConverter._format_json_recursive(item, indent + 1))
+                else:
+                    lines.append(f"{prefix}{i+1}. {str(item)[:100]}")
+            if len(obj) > 10:
+                lines.append(f"{prefix}... and {len(obj) - 10} more items")
+        
+        return "\n".join(lines)
+    
+    @staticmethod
+    def save_to_knowledge_base(text_content: str, filename: str):
+        """Save text content to fraud knowledge base"""
+        kb_dir = Path("data/fraud_knowledge_base")
+        kb_dir.mkdir(parents=True, exist_ok=True)
+        
+        filepath = kb_dir / f"{filename}.txt"
+        with open(filepath, 'w', encoding='utf-8') as f:
+            f.write(text_content)
+        
+        print(f"💾 Saved to knowledge base: {filepath}")
+        return filepath
+
+# ============================================================================
 # SECTION 1: STATISTICAL WORKBOOKS AND CSV DATA
 # ============================================================================
 
@@ -119,6 +295,14 @@ class FinancialStatisticsCollector:
                     filepath.parent.mkdir(parents=True, exist_ok=True)
                     trends_df.to_csv(filepath, index=False)
                     print(f"💾 Saved SAR trends data to {filepath}")
+                    
+                    # Also save to knowledge base as text
+                    text_content = TextConverter.convert_dataframe_to_text(
+                        trends_df,
+                        "FinCEN SAR Filing Statistics and Trends",
+                        "Historical data on Suspicious Activity Report (SAR) filings by financial institutions. Contains trends by industry, geographic patterns, filing volumes, and statistical analysis crucial for understanding reporting patterns and compliance benchmarks."
+                    )
+                    TextConverter.save_to_knowledge_base(text_content, f"statistics_fincen_sar_trends_{datetime.now().strftime('%Y%m%d')}")
                 
                 print(f"✅ Retrieved SAR trends: {len(trends_df)} records")
             else:
@@ -126,6 +310,16 @@ class FinancialStatisticsCollector:
                 
         except Exception as e:
             logger.error(f"❌ Error downloading SAR trends: {e}")
+        
+        # Save consolidated results to knowledge base if we have data
+        if save_to_file and results:
+            summary_text = f"FinCEN SAR Statistics Summary\nTotal Datasets: {len(results)}\nDatasets: {', '.join(results.keys())}"
+            text_content = TextConverter.convert_text_to_knowledge(
+                summary_text,
+                "FinCEN SAR Statistics Collection Summary",
+                "Summary of downloaded FinCEN SAR statistics including workbooks and trend data. Provides overview of available datasets for regulatory compliance analysis and SAR filing trend analysis."
+            )
+            TextConverter.save_to_knowledge_base(text_content, f"statistics_fincen_sar_summary_{datetime.now().strftime('%Y%m%d')}")
         
         return results
 
@@ -237,6 +431,14 @@ class StructuredDataCollector:
                             with open(filepath, 'w', encoding='utf-8') as f:
                                 f.write(file_content)
                             print(f"💾 Saved {filename} to {filepath}")
+                            
+                            # Also save to knowledge base as text
+                            text_content = TextConverter.convert_text_to_knowledge(
+                                file_content,
+                                f"GitHub Data: {repo_name}/{filename}",
+                                f"Structured data from GitHub repository {repo_name}. Contains synthetic data samples and code examples for AML pattern detection and SWIFT message processing."
+                            )
+                            TextConverter.save_to_knowledge_base(text_content, f"github_{repo_name}_{filename.replace('.', '_')}_{datetime.now().strftime('%Y%m%d')}")
                         
                         # Parse content based on file type
                         if filename.endswith('.json'):
@@ -356,6 +558,14 @@ class EnhancedSanctionsCollector:
                             filepath.parent.mkdir(parents=True, exist_ok=True)
                             df.to_csv(filepath, index=False)
                             print(f"💾 Saved {data_type} to {filepath}")
+                            
+                            # Also save to knowledge base as text
+                            text_content = TextConverter.convert_dataframe_to_text(
+                                df,
+                                f"Enhanced OFAC Data: {data_type.replace('_', ' ').title()}",
+                                f"Enhanced sanctions data from OFAC covering {data_type}. Contains detailed sanctions information for comprehensive compliance screening and risk assessment."
+                            )
+                            TextConverter.save_to_knowledge_base(text_content, f"enhanced_ofac_{data_type}_{datetime.now().strftime('%Y%m%d')}")
                         
                         print(f"✅ Retrieved {data_type}: {len(df)} records")
                     except Exception as e:
@@ -404,6 +614,14 @@ class EnhancedSanctionsCollector:
             with open(filepath, 'w') as f:
                 json.dump(sample_risk_indicators, f, indent=2)
             print(f"💾 Saved FATF risk indicators to {filepath}")
+            
+            # Also save to knowledge base as text
+            text_content = TextConverter.convert_json_to_text(
+                sample_risk_indicators,
+                "FATF Risk Indicators and Jurisdictional Factors",
+                "Financial Action Task Force (FATF) risk indicators for trade-based money laundering and jurisdictional risk assessment. Contains red flags and indicators for AML compliance and risk evaluation."
+            )
+            TextConverter.save_to_knowledge_base(text_content, f"fatf_risk_indicators_{datetime.now().strftime('%Y%m%d')}")
         
         results["risk_indicators"] = sample_risk_indicators
         print("✅ Retrieved FATF risk indicator data")
@@ -473,6 +691,76 @@ class AdditionalDataPipeline:
                 }
         
         return summary
+    
+    def convert_all_data_to_knowledge_base(self) -> Dict[str, Any]:
+        """Convert all additional data to text format and save to knowledge base"""
+        print("\n📚 CONVERTING ADDITIONAL DATA TO RAG KNOWLEDGE BASE")
+        print("="*60)
+        print("Converting specialized datasets to text format for RAG system")
+        print("")
+        
+        all_data = self.collect_all_additional_data(save_to_files=True)
+        converted_count = 0
+        
+        # Convert each data source to text format
+        for source_name, data in all_data.items():
+            try:
+                if isinstance(data, pd.DataFrame) and not data.empty:
+                    # Convert DataFrame to text
+                    description = self._get_data_description(source_name)
+                    text_content = TextConverter.convert_dataframe_to_text(
+                        data,
+                        f"Additional Dataset: {source_name.replace('_', ' ').title()}",
+                        description
+                    )
+                    TextConverter.save_to_knowledge_base(text_content, f"additional_{source_name}_{datetime.now().strftime('%Y%m%d')}")
+                    converted_count += 1
+                    
+                elif isinstance(data, dict) and data:
+                    # Convert dictionary to text
+                    description = self._get_data_description(source_name)
+                    text_content = TextConverter.convert_json_to_text(
+                        data,
+                        f"Additional Dataset: {source_name.replace('_', ' ').title()}",
+                        description
+                    )
+                    TextConverter.save_to_knowledge_base(text_content, f"additional_{source_name}_{datetime.now().strftime('%Y%m%d')}")
+                    converted_count += 1
+                    
+                elif isinstance(data, list) and data:
+                    # Convert list to text
+                    description = self._get_data_description(source_name)
+                    text_content = TextConverter.convert_list_to_text(
+                        data,
+                        f"Additional Dataset: {source_name.replace('_', ' ').title()}",
+                        description
+                    )
+                    TextConverter.save_to_knowledge_base(text_content, f"additional_{source_name}_{datetime.now().strftime('%Y%m%d')}")
+                    converted_count += 1
+                    
+            except Exception as e:
+                logger.warning(f"Could not convert {source_name} to knowledge base: {e}")
+        
+        print(f"\n✅ Converted {converted_count} additional datasets to knowledge base")
+        print("💾 Specialized data now available in text format for RAG system")
+        print("📍 Files saved to: data/fraud_knowledge_base/")
+        
+        return {"converted_files": converted_count, "knowledge_base_updated": True}
+    
+    def _get_data_description(self, source_name: str) -> str:
+        """Get description for data source"""
+        descriptions = {
+            "fincen_sar_stats": "FinCEN SAR filing statistics and trends by industry and geography",
+            "eba_risk_indicators": "European Banking Authority risk indicators and stress test data", 
+            "amlsim_data": "AMLSim synthetic anti-money laundering transaction patterns",
+            "swift_samples": "SWIFT message format samples for international wire transfers",
+            "interpol_data": "INTERPOL fraud assessment and international cooperation guidelines",
+            "fatf_guidance": "FATF guidance on money laundering and terrorist financing risks",
+            "open_banking": "Open Banking fraud prevention standards and guidelines",
+            "enhanced_ofac": "Enhanced OFAC sanctions data with detailed entity information",
+            "fatf_risk_indicators": "FATF risk indicators and assessment methodology"
+        }
+        return descriptions.get(source_name, f"Specialized dataset: {source_name}")
 
 # ============================================================================
 # SECTION 5: USAGE EXAMPLES
@@ -525,6 +813,10 @@ def download_additional_data_files():
     # Download and save all data
     saved_data = pipeline.collect_all_additional_data(save_to_files=True)
     
+    # Also convert to text format for knowledge base
+    print("\n📚 Converting to RAG knowledge base format...")
+    conversion_result = pipeline.convert_all_data_to_knowledge_base()
+    
     # Show summary of saved files
     print("\n📁 SAVED FILES SUMMARY:")
     data_dir = Path("data/additional_sources")
@@ -556,10 +848,11 @@ if __name__ == "__main__":
     print("Choose an option:")
     print("1. Download and save ALL additional data sources")
     print("2. Run demonstration (preview capabilities)")
-    print("3. Show what's covered vs existing scripts")
+    print("3. 📚 Convert all data to RAG knowledge base")
+    print("4. Show what's covered vs existing scripts")
     
     try:
-        choice = input("\nEnter your choice (1-3): ").strip()
+        choice = input("\nEnter your choice (1-4): ").strip()
         
         if choice == "1":
             # Download and save additional data sources
@@ -570,6 +863,11 @@ if __name__ == "__main__":
             demo_data, summary = demonstrate_additional_data_collection()
             
         elif choice == "3":
+            # Convert all data to knowledge base
+            pipeline = AdditionalDataPipeline()
+            result = pipeline.convert_all_data_to_knowledge_base()
+            
+        elif choice == "4":
             # Show coverage comparison
             print("\n📊 DATA SOURCE COVERAGE COMPARISON:")
             print("="*50)

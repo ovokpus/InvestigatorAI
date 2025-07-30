@@ -7,7 +7,7 @@ name = "investigator-ai"
 version = "0.1.0"
 description = "A comprehensive fraud investigation tool that aggregates data from legitimate public sources"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.11"
 authors = [
     {name = "InvestigatorAI Team"}
 ]
@@ -19,22 +19,31 @@ classifiers = [
     "Intended Audience :: Legal Industry", 
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Office/Business :: Financial",
     "Topic :: Scientific/Engineering :: Information Analysis",
 ]
 
 dependencies = [
-    "requests>=2.28.0",
-    "pandas>=1.5.0",
-    "kaggle>=1.5.0",
-    "python-dotenv>=1.0.0",
-    "PyPDF2>=3.0.0",
-    "openpyxl>=3.0.0",
+    # Core data collection and analysis
+    "requests==2.32.4",
+    "pandas==2.3.1",
+    "numpy==2.3.2",
+    "kaggle==1.7.4.5",
+    "python-dotenv==1.1.1",
+    "PyPDF2==3.0.1",
+    "openpyxl==3.1.5",
+    # AI/ML and LangChain dependencies for enhanced notebook
+    "langchain-openai==0.3.28",
+    "langchain-core==0.3.72", 
+    "langgraph==0.6.1",
+    "pydantic==2.11.7",
+    "qdrant-client==1.15.0",
+    "ragas==0.3.0",
+    "datasets==2.21.0",
+    "typing-extensions==4.14.1",
 ]
 
 [project.optional-dependencies]
@@ -44,6 +53,20 @@ dev = [
     "black>=22.0.0",
     "flake8>=5.0.0",
     "mypy>=1.0.0",
+]
+notebook = [
+    "jupyter>=1.0.0",
+    "jupyterlab>=3.6.0",
+    "notebook>=6.4.0",
+    "ipykernel>=6.15.0",
+    "ipython>=8.0.0",
+    "ipywidgets>=8.0.0",
+    "matplotlib>=3.5.0",
+    "seaborn>=0.12.0",
+    "plotly>=5.0.0",
+]
+full = [
+    "investigator-ai[dev,notebook]",
 ]
 
 [project.urls]
@@ -57,10 +80,10 @@ include = ["investigator_ai*"]
 
 [tool.black]
 line-length = 88
-target-version = ['py38']
+target-version = ['py311']
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.11"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true

@@ -1,0 +1,53 @@
+TITLE: World Bank Country Risk Assessment Data
+TYPE: Structured Dataset
+SOURCE: InvestigatorAI Data Collection
+DATE: 2025-07-29 23:26:14
+
+DESCRIPTION: Economic and political risk indicators by country for cross-border transaction risk assessment.
+
+DATASET OVERVIEW:
+Total Records: 257
+Columns: country_code, country_name, gdp_per_capita, year, risk_level
+
+COLUMN ANALYSIS:
+- country_code: Text field, 257 unique values, examples: ['ZH', 'ZI', '1A']
+- country_name: Text field, 257 unique values, examples: ['Africa Eastern and Southern', 'Africa Western and Central', 'Arab World']
+- gdp_per_capita: Numeric field, mean: 19421.96, range: 250.63 to 226052.00
+- year: Text field, 1 unique values, examples: ['2022', '2022', '2022']
+- risk_level: Text field, 3 unique values, examples: ['high', 'high', 'high']
+
+SAMPLE RECORDS:
+Record 1:
+  country_code: ZH
+  country_name: Africa Eastern and Southern
+  gdp_per_capita: 1628.31894446307
+  year: 2022
+  risk_level: high
+
+Record 2:
+  country_code: ZI
+  country_name: Africa Western and Central
+  gdp_per_capita: 1796.66863273368
+  year: 2022
+  risk_level: high
+
+Record 3:
+  country_code: 1A
+  country_name: Arab World
+  gdp_per_capita: 7931.61789279006
+  year: 2022
+  risk_level: high
+
+Record 4:
+  country_code: S3
+  country_name: Caribbean small states
+  gdp_per_capita: 17355.8366579795
+  year: 2022
+  risk_level: medium
+
+Record 5:
+  country_code: B8
+  country_name: Central Europe and the Baltics
+  gdp_per_capita: 19548.6930479638
+  year: 2022
+  risk_level: medium

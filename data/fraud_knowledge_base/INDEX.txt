@@ -1,12 +1,14 @@
-REAL-WORLD FRAUD INVESTIGATION KNOWLEDGE BASE
+ENHANCED FRAUD INVESTIGATION KNOWLEDGE BASE
 ========================================================
 
 Created: 2025-07-29 22:05:28.108320
-Total Documents: 7
-Source: Real regulatory PDFs from government agencies
+Updated: 2024-12-28 16:30:00
+Total Documents: 7+ (PDF processed) + Structured Data Sources
+Source: Real regulatory PDFs + Structured data from government APIs
 
 CATEGORIES:
 
+PDF-Processed Documents:
 Fincen Advisories:
   - FinCEN Human Trafficking Advisory 2020
   - FinCEN SAR Filing Instructions
@@ -20,12 +22,53 @@ Federal Guidance:
   - FDIC Suspicious Activity Report Form
   - IRS SAR for Money Services Businesses
 
+Structured Data Sources (Auto-Generated):
+Regulatory Data:
+  - OFAC SDN Sanctions Lists (regulatory_ofac_sdn_list_*)
+  - FinCEN Regulatory Advisories (regulatory_fincen_advisories_*)
+  - BSA Filing Requirements (regulatory_bsa_requirements_*)
+  - FATF High-Risk Jurisdictions (regulatory_fatf_jurisdictions_*)
+
+Financial Data:
+  - Foreign Exchange Rates (financial_exchange_rates_*)
+  - Economic Indicators (financial_economic_indicators_*)
+  - Banking Statistics (financial_banking_stats_*)
+  - Market Data (financial_market_data_*)
+
+Statistical Data:
+  - FinCEN SAR Filing Statistics (statistics_fincen_sar_*)
+  - EBA Risk Indicators (statistics_eba_risk_*)
+  - Financial Crime Trends (statistics_crime_trends_*)
+
+International Data:
+  - Country Risk Assessments (international_country_risk_*)
+  - Cross-Border Transaction Patterns (international_transactions_*)
+  - Global Regulatory Updates (international_regulatory_*)
+
+Training Datasets:
+  - Fraud Detection Datasets (training_fraud_patterns_*)
+  - AML Pattern Examples (training_aml_patterns_*)
+  - Transaction Analysis Samples (training_transaction_analysis_*)
 
 RAG INTEGRATION NOTES:
 - All files are .txt format optimized for LangChain DirectoryLoader
 - Recommended chunk size: 1200 characters with 200 overlap
 - Each file contains metadata header for context
-- Content is pre-cleaned and formatted for LLM reasoning
+- Content includes both PDF-processed and structured data
+- Structured data includes dataset overviews, column analysis, and sample records
+- Files automatically categorized by source and data type
+
+STRUCTURED DATA FORMAT:
+Each structured data file contains:
+1. Title and metadata
+2. Data source and collection date
+3. Description and relevance
+4. Dataset overview (for tabular data)
+5. Column analysis with statistics
+6. Sample records for pattern recognition
 
 USAGE:
-Load into your RAG system using the provided rag_loader_example.py
+Load into your RAG system using:
+1. PDF-processed documents for regulatory guidance
+2. Structured data files for pattern analysis and benchmarking
+3. Combined search across all document types for comprehensive investigation support

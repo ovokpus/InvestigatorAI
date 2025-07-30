@@ -30,6 +30,158 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # ============================================================================
+# TEXT CONVERSION UTILITIES FOR RAG KNOWLEDGE BASE
+# ============================================================================
+
+class TextConverter:
+    """Convert structured data to RAG-friendly text format"""
+    
+    @staticmethod
+    def convert_dataframe_to_text(df: pd.DataFrame, title: str, description: str = "") -> str:
+        """Convert DataFrame to structured text for RAG"""
+        text_lines = [
+            f"TITLE: {title}",
+            f"TYPE: Structured Dataset",
+            f"SOURCE: InvestigatorAI Data Collection",
+            f"DATE: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+            ""
+        ]
+        
+        if description:
+            text_lines.extend([
+                f"DESCRIPTION: {description}",
+                ""
+            ])
+        
+        # Add dataset overview
+        text_lines.extend([
+            f"DATASET OVERVIEW:",
+            f"Total Records: {len(df)}",
+            f"Columns: {', '.join(df.columns.tolist())}",
+            ""
+        ])
+        
+        # Add column descriptions and sample data
+        text_lines.append("COLUMN ANALYSIS:")
+        for col in df.columns:
+            if df[col].dtype == 'object':
+                unique_count = df[col].nunique()
+                sample_values = df[col].dropna().head(3).tolist()
+                text_lines.append(f"- {col}: Text field, {unique_count} unique values, examples: {sample_values}")
+            else:
+                stats = df[col].describe()
+                text_lines.append(f"- {col}: Numeric field, mean: {stats['mean']:.2f}, range: {stats['min']:.2f} to {stats['max']:.2f}")
+        
+        text_lines.append("")
+        
+        # Add sample records (first 5 rows)
+        text_lines.append("SAMPLE RECORDS:")
+        for i, (_, row) in enumerate(df.head(5).iterrows()):
+            text_lines.append(f"Record {i+1}:")
+            for col in df.columns:
+                value = str(row[col])[:100]  # Truncate long values
+                text_lines.append(f"  {col}: {value}")
+            text_lines.append("")
+        
+        return "\n".join(text_lines)
+    
+    @staticmethod
+    def convert_json_to_text(data: Dict, title: str, description: str = "") -> str:
+        """Convert JSON data to structured text for RAG"""
+        text_lines = [
+            f"TITLE: {title}",
+            f"TYPE: Structured Data",
+            f"SOURCE: InvestigatorAI Data Collection", 
+            f"DATE: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+            ""
+        ]
+        
+        if description:
+            text_lines.extend([
+                f"DESCRIPTION: {description}",
+                ""
+            ])
+        
+        # Convert JSON to readable text
+        text_lines.append("DATA CONTENT:")
+        text_lines.append(TextConverter._format_json_recursive(data, indent=0))
+        
+        return "\n".join(text_lines)
+    
+    @staticmethod
+    def convert_list_to_text(data: List, title: str, description: str = "") -> str:
+        """Convert list data to structured text for RAG"""
+        text_lines = [
+            f"TITLE: {title}",
+            f"TYPE: List Data",
+            f"SOURCE: InvestigatorAI Data Collection",
+            f"DATE: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+            ""
+        ]
+        
+        if description:
+            text_lines.extend([
+                f"DESCRIPTION: {description}",
+                ""
+            ])
+        
+        text_lines.extend([
+            f"TOTAL ITEMS: {len(data)}",
+            "",
+            "CONTENT:"
+        ])
+        
+        for i, item in enumerate(data[:20]):  # Limit to first 20 items
+            text_lines.append(f"{i+1}. {str(item)}")
+        
+        if len(data) > 20:
+            text_lines.append(f"... and {len(data) - 20} more items")
+        
+        return "\n".join(text_lines)
+    
+    @staticmethod
+    def _format_json_recursive(obj, indent: int = 0) -> str:
+        """Recursively format JSON object to readable text"""
+        lines = []
+        prefix = "  " * indent
+        
+        if isinstance(obj, dict):
+            for key, value in obj.items():
+                if isinstance(value, (dict, list)):
+                    lines.append(f"{prefix}{key}:")
+                    lines.append(TextConverter._format_json_recursive(value, indent + 1))
+                else:
+                    # Truncate long values
+                    value_str = str(value)[:200]
+                    if len(str(value)) > 200:
+                        value_str += "..."
+                    lines.append(f"{prefix}{key}: {value_str}")
+        elif isinstance(obj, list):
+            for i, item in enumerate(obj[:10]):  # Limit to first 10 items
+                if isinstance(item, (dict, list)):
+                    lines.append(f"{prefix}Item {i+1}:")
+                    lines.append(TextConverter._format_json_recursive(item, indent + 1))
+                else:
+                    lines.append(f"{prefix}{i+1}. {str(item)[:100]}")
+            if len(obj) > 10:
+                lines.append(f"{prefix}... and {len(obj) - 10} more items")
+        
+        return "\n".join(lines)
+    
+    @staticmethod
+    def save_to_knowledge_base(text_content: str, filename: str):
+        """Save text content to fraud knowledge base"""
+        kb_dir = Path("data/fraud_knowledge_base")
+        kb_dir.mkdir(parents=True, exist_ok=True)
+        
+        filepath = kb_dir / f"{filename}.txt"
+        with open(filepath, 'w', encoding='utf-8') as f:
+            f.write(text_content)
+        
+        print(f"💾 Saved to knowledge base: {filepath}")
+        return filepath
+
+# ============================================================================
 # API CONFIGURATION & CONNECTION MANAGEMENT
 # ============================================================================
 
@@ -575,6 +727,14 @@ class RegulatoryDataSources:
                     filename = f"data/ofac_sdn_list_{datetime.now().strftime('%Y%m%d')}.csv"
                     sdn_data.to_csv(filename, index=False)
                     print(f"💾 Saved OFAC SDN data to {filename}")
+                    
+                    # Also save to knowledge base as text
+                    text_content = TextConverter.convert_dataframe_to_text(
+                        sdn_data,
+                        "OFAC Specially Designated Nationals (SDN) List",
+                        "Complete list of individuals and entities blocked by OFAC. Used for sanctions screening and compliance. Contains names, aliases, addresses, and identification numbers of sanctioned parties."
+                    )
+                    TextConverter.save_to_knowledge_base(text_content, f"regulatory_ofac_sdn_list_{datetime.now().strftime('%Y%m%d')}")
                 
                 return sdn_data
             else:
@@ -832,14 +992,23 @@ class CommercialDataAPIs:
                 if save_to_file:
                     Path("data").mkdir(exist_ok=True)
                     filename = f"data/exchange_rates_{datetime.now().strftime('%Y%m%d_%H%M')}.json"
+                    rates_with_metadata = {
+                        'base': rates_data['base'],
+                        'date': rates_data['date'],
+                        'rates': rates,
+                        'retrieved_at': datetime.now().isoformat()
+                    }
                     with open(filename, 'w') as f:
-                        json.dump({
-                            'base': rates_data['base'],
-                            'date': rates_data['date'],
-                            'rates': rates,
-                            'retrieved_at': datetime.now().isoformat()
-                        }, f, indent=2)
+                        json.dump(rates_with_metadata, f, indent=2)
                     print(f"💾 Saved exchange rates to {filename}")
+                    
+                    # Also save to knowledge base as text
+                    text_content = TextConverter.convert_json_to_text(
+                        rates_with_metadata,
+                        "Foreign Exchange Rates",
+                        "Current foreign exchange rates for major currencies against USD. Used for currency conversion analysis, cross-border transaction monitoring, and detecting unusual currency exchange patterns in international fraud schemes."
+                    )
+                    TextConverter.save_to_knowledge_base(text_content, f"financial_exchange_rates_{datetime.now().strftime('%Y%m%d_%H%M')}")
                 
                 return rates
         except Exception as e:
@@ -1036,6 +1205,14 @@ class PublicDataScraper:
             with open(filename, 'w') as f:
                 json.dump(sample_advisories, f, indent=2)
             print(f"💾 Saved FinCEN advisories to {filename}")
+            
+            # Also save to knowledge base as text
+            text_content = TextConverter.convert_list_to_text(
+                sample_advisories,
+                "FinCEN Regulatory Advisories",
+                "Official advisories from FinCEN providing guidance on suspicious activity indicators, red flags, and regulatory requirements for financial institutions. Contains specific risk indicators for various fraud typologies including human trafficking, ransomware, and other financial crimes."
+            )
+            TextConverter.save_to_knowledge_base(text_content, f"regulatory_fincen_advisories_{datetime.now().strftime('%Y%m%d')}")
         
         return sample_advisories
 
@@ -1173,6 +1350,84 @@ class RealWorldDataPipeline:
         print("")
         
         return self.collect_all_data(save_to_files=True, include_paid_apis=True)
+    
+    def convert_all_data_to_knowledge_base(self) -> Dict[str, Any]:
+        """Convert all collected data to text format and save to knowledge base"""
+        print("\n📚 CONVERTING ALL DATA TO RAG KNOWLEDGE BASE")
+        print("="*60)
+        print("Converting structured data to text format for RAG system")
+        print("")
+        
+        all_data = self.collect_all_data(save_to_files=True, include_paid_apis=False)
+        converted_count = 0
+        
+        # Convert regulatory data
+        if "ofac_sdn" in all_data and not all_data["ofac_sdn"].empty:
+            text_content = TextConverter.convert_dataframe_to_text(
+                all_data["ofac_sdn"],
+                "OFAC Specially Designated Nationals (SDN) List",
+                "Complete list of individuals and entities blocked by OFAC. Used for sanctions screening and compliance."
+            )
+            TextConverter.save_to_knowledge_base(text_content, f"regulatory_ofac_sdn_current")
+            converted_count += 1
+        
+        # Convert exchange rates
+        if "exchange_rates" in all_data and all_data["exchange_rates"]:
+            text_content = TextConverter.convert_json_to_text(
+                all_data["exchange_rates"],
+                "Current Foreign Exchange Rates",
+                "Real-time currency exchange rates for fraud investigation and cross-border transaction analysis."
+            )
+            TextConverter.save_to_knowledge_base(text_content, f"financial_exchange_rates_current")
+            converted_count += 1
+        
+        # Convert country risk data
+        if "country_risk" in all_data and not all_data["country_risk"].empty:
+            text_content = TextConverter.convert_dataframe_to_text(
+                all_data["country_risk"],
+                "World Bank Country Risk Assessment Data",
+                "Economic and political risk indicators by country for cross-border transaction risk assessment."
+            )
+            TextConverter.save_to_knowledge_base(text_content, f"international_country_risk_current")
+            converted_count += 1
+        
+        # Convert FinCEN advisories
+        if "fincen_advisories" in all_data and all_data["fincen_advisories"]:
+            text_content = TextConverter.convert_list_to_text(
+                all_data["fincen_advisories"],
+                "FinCEN Regulatory Advisories",
+                "Official advisories from FinCEN with fraud detection guidance and red flag indicators."
+            )
+            TextConverter.save_to_knowledge_base(text_content, f"regulatory_fincen_advisories_current")
+            converted_count += 1
+        
+        # Convert FATF jurisdictions
+        if "fatf_jurisdictions" in all_data and all_data["fatf_jurisdictions"]:
+            text_content = TextConverter.convert_json_to_text(
+                all_data["fatf_jurisdictions"],
+                "FATF High-Risk Jurisdictions",
+                "Countries and territories identified by FATF as high-risk for money laundering and terrorist financing."
+            )
+            TextConverter.save_to_knowledge_base(text_content, f"regulatory_fatf_jurisdictions_current")
+            converted_count += 1
+        
+        # Convert fraud datasets if available
+        if "paysim_data" in all_data and not all_data["paysim_data"].empty:
+            # Sample the large dataset for knowledge base
+            sample_data = all_data["paysim_data"].sample(n=min(1000, len(all_data["paysim_data"])))
+            text_content = TextConverter.convert_dataframe_to_text(
+                sample_data,
+                "PaySim Fraud Detection Dataset (Sample)",
+                "Synthetic mobile money transaction dataset with fraud labels. Sample of key patterns for fraud detection model training."
+            )
+            TextConverter.save_to_knowledge_base(text_content, f"training_paysim_fraud_sample")
+            converted_count += 1
+        
+        print(f"\n✅ Converted {converted_count} datasets to knowledge base")
+        print("💾 All data now available in text format for RAG system")
+        print("📍 Files saved to: data/fraud_knowledge_base/")
+        
+        return {"converted_files": converted_count, "knowledge_base_updated": True}
 
     def check_api_status(self) -> Dict[str, bool]:
         """Check which APIs are properly configured"""
@@ -1360,12 +1615,13 @@ if __name__ == "__main__":
     print("Choose an option:")
     print("1. Download FREE data sources only")
     print("2. Download ALL available data sources (requires API keys)")
-    print("3. Check API configuration status") 
-    print("4. Run demonstration (preview data without saving)")
-    print("5. Show API cost estimates and setup guide")
+    print("3. 📚 Convert all data to RAG knowledge base")
+    print("4. Check API configuration status") 
+    print("5. Run demonstration (preview data without saving)")
+    print("6. Show API cost estimates and setup guide")
     
     try:
-        choice = input("\nEnter your choice (1-5): ").strip()
+        choice = input("\nEnter your choice (1-6): ").strip()
         
         if choice == "1":
             # Download and save free data sources
@@ -1377,22 +1633,28 @@ if __name__ == "__main__":
             saved_data = pipeline.download_all_available_data()
             
         elif choice == "3":
+            # Convert all data to knowledge base
+            pipeline = RealWorldDataPipeline()
+            result = pipeline.convert_all_data_to_knowledge_base()
+            
+        elif choice == "4":
             # Check API status
             pipeline = RealWorldDataPipeline()
             pipeline.check_api_status()
             
-        elif choice == "4":
+        elif choice == "5":
             # Run the demonstration
             real_data = demonstrate_real_data_integration()
             
-        elif choice == "5":
+        elif choice == "6":
             # Show cost estimates and setup
             print("\n📋 API SETUP GUIDE")
             print("="*50)
             print("1. Copy 'api_config_template.env' to '.env'")
             print("2. Fill in your API keys in the .env file")
-            print("3. Run option 3 to check your configuration")
+            print("3. Run option 4 to check your configuration")
             print("4. Use option 2 to download enhanced datasets")
+            print("5. Use option 3 to convert data to knowledge base")
             print("")
             estimate_api_costs()
             setup_data_refresh_schedule()

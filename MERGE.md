@@ -4,13 +4,24 @@
 
 This branch (`feature/update-pyproject-dependencies`) adds comprehensive data collection capabilities with API integrations:
 
-- **Core Dependencies**: 
-  - `requests>=2.28.0` - For HTTP API calls to government data sources
-  - `pandas>=1.5.0` - For data manipulation and analysis
-  - `kaggle>=1.5.0` - For downloading machine learning datasets
-  - `python-dotenv>=1.0.0` - For environment variable management
-  - `PyPDF2>=3.0.0` - For PDF processing and text extraction
-  - `openpyxl>=3.0.0` - For Excel workbook processing
+- **Core Dependencies** (pinned to tested versions):
+  - `requests==2.32.4` - For HTTP API calls to government data sources
+  - `pandas==2.3.1` - For data manipulation and analysis
+  - `numpy==2.3.2` - For numerical operations and analysis
+  - `kaggle==1.7.4.5` - For downloading machine learning datasets
+  - `python-dotenv==1.1.1` - For environment variable management
+  - `PyPDF2==3.0.1` - For PDF processing and text extraction
+  - `openpyxl==3.1.5` - For Excel workbook processing
+
+- **AI/ML Platform Dependencies** (pinned to tested versions):
+  - `langchain-openai==0.3.28` - For ChatOpenAI and OpenAI embeddings
+  - `langchain-core==0.3.72` - For LangChain core components (messages, prompts)
+  - `langgraph==0.6.1` - For multi-agent workflow orchestration
+  - `pydantic==2.11.7` - For data validation and serialization
+  - `qdrant-client==1.15.0` - For vector database operations
+  - `ragas==0.3.0` - For RAG evaluation metrics
+  - `datasets==2.21.0` - For dataset management and evaluation
+  - `typing-extensions==4.14.1` - For enhanced type annotations
 
 - **API Integration System**: 
   - Centralized APIConfig class for managing credentials
@@ -47,9 +58,10 @@ This branch (`feature/update-pyproject-dependencies`) adds comprehensive data co
 
 ## 🔧 What This Enables
 
-✅ **Proper dependency management** for the Python script imports  
+✅ **Proper dependency management** with pinned versions for reproducibility  
 ✅ **Professional package structure** ready for distribution  
 ✅ **Development workflow** with testing and linting tools  
+✅ **Python 3.11+ support** for latest AI/ML libraries  
 ✅ **Easy installation** with `pip install -e .`
 
 ---
@@ -128,9 +140,20 @@ git branch -d feature/update-pyproject-dependencies
 
 After merging, test the installation:
 
+**Prerequisites**: Python 3.11 or higher required
+
 ```bash
-# Install in development mode
+# Verify Python version
+python --version  # Should be 3.11+
+
+# Basic installation (core functionality)
 pip install -e .
+
+# With notebook support (includes Jupyter, visualization tools)
+pip install -e ".[notebook]"
+
+# Full development environment (includes testing, linting, notebook support)
+pip install -e ".[full]"
 
 # Test basic imports work
 python -c "
@@ -151,8 +174,16 @@ python get_text_data.py
 python get_additional_data.py
 # Downloads specialized Excel workbooks, GitHub data, and international documents
 
-# Test the comprehensive demo notebook (requires Jupyter)
+# Test the comprehensive demo notebook (install notebook dependencies first)
+pip install -e ".[notebook]"  # Installs Jupyter, ipykernel, and visualization dependencies
+
+# Install the kernel for Jupyter
+python -m ipykernel install --user --name investigator-ai
+
+# Start Jupyter and run the notebook
 jupyter notebook investigator_ai_enhanced_notebook.ipynb
+# OR use JupyterLab
+jupyter lab investigator_ai_enhanced_notebook.ipynb
 # Demonstrates complete multi-agent fraud investigation system
 
 # Optional: Set up API keys for enhanced features
@@ -172,6 +203,39 @@ To unlock the full potential of the data collection system:
    - OpenCorporates: [opencorporates.com/api_accounts/new](https://opencorporates.com/api_accounts/new)
 3. **Fill in your keys** in the `.env` file
 4. **Test configuration**: Run `python get_data.py` → option 3
+
+## 📓 Running the Enhanced Jupyter Notebook
+
+The demo notebook requires additional dependencies and setup:
+
+### Step 1: Install Notebook Dependencies
+```bash
+# Install with notebook support (includes Jupyter, ipykernel, visualization tools)
+pip install -e ".[notebook]"
+```
+
+### Step 2: Set Up Jupyter Kernel
+```bash
+# Register the project kernel with Jupyter
+python -m ipykernel install --user --name investigator-ai
+```
+
+### Step 3: Launch Jupyter
+```bash
+# Option 1: Classic Notebook
+jupyter notebook investigator_ai_enhanced_notebook.ipynb
+
+# Option 2: JupyterLab (recommended)
+jupyter lab investigator_ai_enhanced_notebook.ipynb
+```
+
+### Step 4: Select Kernel
+In Jupyter, make sure to select the **"investigator-ai"** kernel from the kernel menu.
+
+### Notes:
+- The notebook works in demo mode without API keys
+- For full capabilities, configure API keys in `.env` file
+- Requires Python 3.11+ for all dependencies
 
 ## 📋 Complete Data Coverage
 

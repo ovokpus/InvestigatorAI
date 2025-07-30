@@ -1,0 +1,12 @@
+TITLE: GitHub Data: amlsim/alertPatterns.csv
+TYPE: Text Document
+SOURCE: InvestigatorAI Additional Data Collection
+DATE: 2025-07-29 23:42:54
+
+DESCRIPTION: Structured data from GitHub repository amlsim. Contains synthetic data samples and code examples for AML pattern detection and SWIFT message processing.
+
+CONTENT:
+count,type,schedule_id,min_accounts,max_accounts,min_amount,max_amount,min_period,max_period,bank_id,is_sar
+3,fan_in,2,5,10,100.0,200.0,5,20,bank,True
+3,fan_out,2,5,10,100.0,200.0,5,20,bank,True
+4,cycle,2,5,10,100.0,200.0,5,20,bank,True

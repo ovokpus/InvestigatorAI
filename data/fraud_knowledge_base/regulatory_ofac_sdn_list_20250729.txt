@@ -1,0 +1,95 @@
+TITLE: OFAC Specially Designated Nationals (SDN) List
+TYPE: Structured Dataset
+SOURCE: InvestigatorAI Data Collection
+DATE: 2025-07-29 23:33:51
+
+DESCRIPTION: Complete list of individuals and entities blocked by OFAC. Used for sanctions screening and compliance. Contains names, aliases, addresses, and identification numbers of sanctioned parties.
+
+DATASET OVERVIEW:
+Total Records: 17570
+Columns: 36, AEROCARIBBEAN AIRLINES, -0- , CUBA, -0- .1, -0- .2, -0- .3, -0- .4, -0- .5, -0- .6, -0- .7, -0- .8
+
+COLUMN ANALYSIS:
+- 36: Text field, 17570 unique values, examples: ['173', '306', '424']
+- AEROCARIBBEAN AIRLINES: Text field, 17538 unique values, examples: ['ANGLO-CARIBBEAN CO., LTD.', 'BANCO NACIONAL DE CUBA', 'BOUTIQUE LA MAISON']
+- -0- : Text field, 4 unique values, examples: ['-0- ', '-0- ', '-0- ']
+- CUBA: Text field, 227 unique values, examples: ['CUBA', 'CUBA', 'CUBA']
+- -0- .1: Text field, 520 unique values, examples: ['-0- ', '-0- ', '-0- ']
+- -0- .2: Text field, 655 unique values, examples: ['-0- ', '-0- ', '-0- ']
+- -0- .3: Text field, 43 unique values, examples: ['-0- ', '-0- ', '-0- ']
+- -0- .4: Text field, 42 unique values, examples: ['-0- ', '-0- ', '-0- ']
+- -0- .5: Text field, 82 unique values, examples: ['-0- ', '-0- ', '-0- ']
+- -0- .6: Text field, 53 unique values, examples: ['-0- ', '-0- ', '-0- ']
+- -0- .7: Text field, 5 unique values, examples: ['-0- ', '-0- ', '-0- ']
+- -0- .8: Text field, 16476 unique values, examples: ['-0- ', "a.k.a. 'BNC'.", '-0- ']
+
+SAMPLE RECORDS:
+Record 1:
+  36: 173
+  AEROCARIBBEAN AIRLINES: ANGLO-CARIBBEAN CO., LTD.
+  -0- : -0- 
+  CUBA: CUBA
+  -0- .1: -0- 
+  -0- .2: -0- 
+  -0- .3: -0- 
+  -0- .4: -0- 
+  -0- .5: -0- 
+  -0- .6: -0- 
+  -0- .7: -0- 
+  -0- .8: -0- 
+
+Record 2:
+  36: 306
+  AEROCARIBBEAN AIRLINES: BANCO NACIONAL DE CUBA
+  -0- : -0- 
+  CUBA: CUBA
+  -0- .1: -0- 
+  -0- .2: -0- 
+  -0- .3: -0- 
+  -0- .4: -0- 
+  -0- .5: -0- 
+  -0- .6: -0- 
+  -0- .7: -0- 
+  -0- .8: a.k.a. 'BNC'.
+
+Record 3:
+  36: 424
+  AEROCARIBBEAN AIRLINES: BOUTIQUE LA MAISON
+  -0- : -0- 
+  CUBA: CUBA
+  -0- .1: -0- 
+  -0- .2: -0- 
+  -0- .3: -0- 
+  -0- .4: -0- 
+  -0- .5: -0- 
+  -0- .6: -0- 
+  -0- .7: -0- 
+  -0- .8: -0- 
+
+Record 4:
+  36: 475
+  AEROCARIBBEAN AIRLINES: CASA DE CUBA
+  -0- : -0- 
+  CUBA: CUBA
+  -0- .1: -0- 
+  -0- .2: -0- 
+  -0- .3: -0- 
+  -0- .4: -0- 
+  -0- .5: -0- 
+  -0- .6: -0- 
+  -0- .7: -0- 
+  -0- .8: -0- 
+
+Record 5:
+  36: 480
+  AEROCARIBBEAN AIRLINES: CECOEX, S.A.
+  -0- : -0- 
+  CUBA: CUBA
+  -0- .1: -0- 
+  -0- .2: -0- 
+  -0- .3: -0- 
+  -0- .4: -0- 
+  -0- .5: -0- 
+  -0- .6: -0- 
+  -0- .7: -0- 
+  -0- .8: -0- 
