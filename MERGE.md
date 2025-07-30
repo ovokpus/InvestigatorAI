@@ -1,12 +1,36 @@
-# 🔀 Merge Instructions: pyproject.toml Dependencies Update
+# 🔀 Merge Instructions: Enhanced Data Collection with API Integrations
 
 ## 📋 Summary of Changes
 
-This branch (`feature/update-pyproject-dependencies`) adds a comprehensive `pyproject.toml` file that includes:
+This branch (`feature/update-pyproject-dependencies`) adds comprehensive data collection capabilities with API integrations:
 
 - **Core Dependencies**: 
   - `requests>=2.28.0` - For HTTP API calls to government data sources
   - `pandas>=1.5.0` - For data manipulation and analysis
+  - `kaggle>=1.5.0` - For downloading machine learning datasets
+  - `python-dotenv>=1.0.0` - For environment variable management
+  - `PyPDF2>=3.0.0` - For PDF processing and text extraction
+  - `openpyxl>=3.0.0` - For Excel workbook processing
+
+- **API Integration System**: 
+  - Centralized APIConfig class for managing credentials
+  - Support for Kaggle, Alpha Vantage, OpenCorporates, SEC EDGAR APIs
+  - Automatic API availability detection and status reporting
+  - Environment variable configuration via .env files
+
+- **Enhanced Data Collection**: 
+  - Real dataset downloads from Kaggle (PaySim, Credit Card Fraud)
+  - Company data from multiple sources (OpenCorporates, Alpha Vantage)
+  - Government data (OFAC, SEC EDGAR, World Bank)
+  - FRED economic indicators and banking data
+  - File saving capabilities for all data sources
+
+- **Additional Specialized Data Sources**:
+  - FinCEN SAR statistics and trends (Excel workbooks)
+  - EBA risk indicators and stress test data
+  - GitHub structured data (AMLSim, SWIFT samples)
+  - International regulatory documents (INTERPOL, FATF, Open Banking)
+  - Enhanced OFAC sanctions data with comprehensive details
 
 - **Development Dependencies**: Testing and code quality tools
 - **Project Metadata**: Complete package information for InvestigatorAI
@@ -99,13 +123,79 @@ After merging, test the installation:
 # Install in development mode
 pip install -e .
 
-# Test imports work
+# Test basic imports work
 python -c "
 import requests
 import pandas as pd
-from get_data import RegulatoryDataSources
+from get_data import RegulatoryDataSources, APIConfig
 print('✅ All imports working correctly!')
 "
+
+# Test all data collection systems
+python get_data.py
+# Choose option 3 to check API status
+# Choose option 1 to download free data sources
+
+python get_text_data.py
+# Downloads regulatory PDFs and documents
+
+python get_additional_data.py
+# Downloads specialized Excel workbooks, GitHub data, and international documents
+
+# Optional: Set up API keys for enhanced features
+cp api_config_template.env .env
+# Edit .env file with your API keys
+# Then run: python get_data.py and choose option 2
+```
+
+## 🔑 API Configuration (Optional)
+
+To unlock the full potential of the data collection system:
+
+1. **Copy the template**: `cp api_config_template.env .env`
+2. **Get API keys** (all have free tiers):
+   - Kaggle: [kaggle.com/docs/api](https://www.kaggle.com/docs/api)
+   - Alpha Vantage: [alphavantage.co](https://www.alphavantage.co/support/#api-key)
+   - OpenCorporates: [opencorporates.com/api_accounts/new](https://opencorporates.com/api_accounts/new)
+3. **Fill in your keys** in the `.env` file
+4. **Test configuration**: Run `python get_data.py` → option 3
+
+## 📋 Complete Data Coverage
+
+The enhanced system now provides comprehensive coverage across all InvestigatorAI workflow stages:
+
+### **Transaction-Level Data**
+- ✅ PaySim synthetic financial transactions (6M records)
+- ✅ Credit Card fraud detection dataset (284K transactions)
+- ✅ AMLSim money laundering patterns (GitHub)
+
+### **Regulatory & Compliance Data**
+- ✅ OFAC SDN sanctions lists with enhanced details
+- ✅ FinCEN SAR statistics and filing trends (Excel)
+- ✅ BSA/AML examination manuals and requirements
+- ✅ FATF risk indicators and jurisdictional assessments
+
+### **Economic & Market Data**
+- ✅ FRED economic indicators and banking metrics
+- ✅ Alpha Vantage financial market data
+- ✅ World Bank country risk assessments
+- ✅ Exchange rates for multiple currencies
+
+### **Specialized Sources**
+- ✅ EBA bank stress test data and risk indicators
+- ✅ SWIFT payment message samples (XML)
+- ✅ INTERPOL global fraud assessments
+- ✅ Open Banking API guidelines and standards
+
+### **File Organization**
+```
+data/
+├── additional_sources/     # Specialized Excel, GitHub, international docs
+├── alpha_vantage/         # Financial market data
+├── fred/                  # Economic indicators
+├── kaggle/               # Fraud datasets
+├── ofac_enhanced/        # Enhanced sanctions data
+└── [regulatory PDFs]/    # Government documents
 ```
 
 ---
@@ -114,10 +204,12 @@ print('✅ All imports working correctly!')
 
 After merging, consider:
 
-1. **Update the main README.md** with installation instructions
-2. **Add a requirements.txt** file for backwards compatibility: `pip freeze > requirements.txt`
-3. **Set up CI/CD** with the testing tools now configured
-4. **Create actual package structure** with proper module organization
+1. **Update the main README.md** with comprehensive usage instructions
+2. **Set up CI/CD** with the testing tools now configured  
+3. **Create actual package structure** with proper module organization
+4. **Implement data pipeline orchestration** to run all three collection scripts
+5. **Add data validation and quality checks** for downloaded files
+6. **Create data catalog** to track all available datasets and their refresh schedules
 
 ---
 
