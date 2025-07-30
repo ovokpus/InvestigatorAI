@@ -1,0 +1,22 @@
+{
+  "ctr_threshold": 10000,
+  "sar_threshold": 5000,
+  "cmir_threshold": 10000,
+  "fbar_threshold": 10000,
+  "filing_deadlines": {
+    "sar": "30 days",
+    "ctr": "15 days",
+    "cmir": "15 days",
+    "fbar": "April 15"
+  },
+  "high_risk_jurisdictions": [
+    "Iran",
+    "North Korea",
+    "Syria",
+    "Cuba",
+    "Myanmar",
+    "Afghanistan",
+    "Belarus",
+    "Russia"
+  ]
+}

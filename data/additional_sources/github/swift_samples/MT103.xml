@@ -1,0 +1,74 @@
+<message>
+	<block1>
+		<applicationId>F</applicationId>
+		<serviceId>01</serviceId>
+		<logicalTerminal>MIDLGB22AXXX</logicalTerminal>
+		<sessionNumber>0548</sessionNumber>
+		<sequenceNumber>034693</sequenceNumber>
+	</block1>
+	<block2 type="input">
+		<messageType>103</messageType>
+		<receiverAddress>BKTRUS33XBRD</receiverAddress>
+		<messagePriority>N</messagePriority>
+		<deliveryMonitoring>3</deliveryMonitoring>
+	</block2>
+	<block3>
+		<tag>
+			<name>108</name>
+			<value>MT103</value>
+		</tag>
+	</block3>
+	<block4>
+		<tag>
+			<name>20</name>
+			<value>8861198-0706</value>
+		</tag>
+		<tag>
+			<name>23B</name>
+			<value>CRED</value>
+		</tag>
+		<tag>
+			<name>32A</name>
+			<value>000612USD5443,99</value>
+		</tag>
+		<tag>
+			<name>33B</name>
+			<value>USD5443,99</value>
+		</tag>
+		<tag>
+			<name>50K</name>
+			<value>GIAN ANGELO IMPORTS 
+NAPLES</value>
+		</tag>
+		<tag>
+			<name>52A</name>
+			<value>BCITITMM500</value>
+		</tag>
+		<tag>
+			<name>53A</name>
+			<value>BCITUS33</value>
+		</tag>
+		<tag>
+			<name>54A</name>
+			<value>IRVTUS3N</value>
+		</tag>
+		<tag>
+			<name>57A</name>
+			<value>BNPAFRPPGRE</value>
+		</tag>
+		<tag>
+			<name>59</name>
+			<value>/20041010050500001M02606 
+KILLY S.A. 
+GRENOBLE</value>
+		</tag>
+		<tag>
+			<name>70</name>
+			<value>/RFB/INVOICE 559661</value>
+		</tag>
+		<tag>
+			<name>71A</name>
+			<value>SHA</value>
+		</tag>
+	</block4>
+</message>

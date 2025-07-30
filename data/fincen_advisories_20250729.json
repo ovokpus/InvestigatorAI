@@ -1,0 +1,22 @@
+[
+  {
+    "title": "Advisory on Human Trafficking",
+    "date": "2022-06-01",
+    "risk_indicators": [
+      "Multiple cash deposits under reporting thresholds",
+      "Payments to escort services",
+      "Unusual geographic patterns"
+    ],
+    "url": "https://www.fincen.gov/sites/default/files/advisory/2022-06-01/FinCEN%20Advisory%20Human%20Trafficking%20508%20FINAL.pdf"
+  },
+  {
+    "title": "Advisory on Ransomware",
+    "date": "2021-10-15",
+    "risk_indicators": [
+      "Large cryptocurrency transactions",
+      "Payments to known ransomware wallets",
+      "Unusual business explanations"
+    ],
+    "url": "https://www.fincen.gov/sites/default/files/advisory/2021-10-15/FinCEN%20Advisory%20Ransomware%20FINAL%20508.pdf"
+  }
+]

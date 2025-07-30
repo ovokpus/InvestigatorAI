@@ -32,6 +32,15 @@ This branch (`feature/update-pyproject-dependencies`) adds comprehensive data co
   - International regulatory documents (INTERPOL, FATF, Open Banking)
   - Enhanced OFAC sanctions data with comprehensive details
 
+- **Demo-Ready Jupyter Notebook (`investigator_ai_enhanced_notebook.ipynb`)**:
+  - Complete multi-agent fraud investigation system for AIE7 certification
+  - Integration with real regulatory data from government sources  
+  - Enhanced RAG system powered by actual FinCEN and FFIEC documents
+  - LangGraph workflow orchestration with 5 specialized agents
+  - RAGAS evaluation with regulatory-specific metrics
+  - Performance demonstration showing 75% investigation time reduction
+  - Production-ready architecture for demo day presentation
+
 - **Development Dependencies**: Testing and code quality tools
 - **Project Metadata**: Complete package information for InvestigatorAI
 - **Tool Configuration**: Settings for black, mypy, and pytest
@@ -141,6 +150,10 @@ python get_text_data.py
 
 python get_additional_data.py
 # Downloads specialized Excel workbooks, GitHub data, and international documents
+
+# Test the comprehensive demo notebook (requires Jupyter)
+jupyter notebook investigator_ai_enhanced_notebook.ipynb
+# Demonstrates complete multi-agent fraud investigation system
 
 # Optional: Set up API keys for enhanced features
 cp api_config_template.env .env

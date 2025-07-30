@@ -1,0 +1,18 @@
+{
+  "trade_based_ml_indicators": [
+    "Unusual pricing patterns in trade transactions",
+    "Discrepancies between goods description and declared value",
+    "Multiple invoicing for same shipment",
+    "Over or under-invoicing of goods",
+    "Rapid succession of ownership changes",
+    "Use of shell companies in trade chains",
+    "Transactions inconsistent with business profile"
+  ],
+  "jurisdictional_risk_factors": [
+    "Inadequate AML/CFT framework",
+    "Insufficient financial intelligence unit",
+    "Weak cross-border cooperation",
+    "Limited beneficial ownership transparency",
+    "Insufficient supervision of DNFBPs"
+  ]
+}

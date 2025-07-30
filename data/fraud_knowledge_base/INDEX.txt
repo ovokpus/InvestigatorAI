@@ -1,0 +1,31 @@
+REAL-WORLD FRAUD INVESTIGATION KNOWLEDGE BASE
+========================================================
+
+Created: 2025-07-29 22:05:28.108320
+Total Documents: 7
+Source: Real regulatory PDFs from government agencies
+
+CATEGORIES:
+
+Fincen Advisories:
+  - FinCEN Human Trafficking Advisory 2020
+  - FinCEN SAR Filing Instructions
+  - FinCEN SAR Activity Review - Issue 22
+
+Ffiec Examination Manual:
+  - FFIEC BSA/AML Manual - Customer Due Diligence
+
+Federal Guidance:
+  - Federal Reserve SAR Requirements
+  - FDIC Suspicious Activity Report Form
+  - IRS SAR for Money Services Businesses
+
+
+RAG INTEGRATION NOTES:
+- All files are .txt format optimized for LangChain DirectoryLoader
+- Recommended chunk size: 1200 characters with 200 overlap
+- Each file contains metadata header for context
+- Content is pre-cleaned and formatted for LLM reasoning
+
+USAGE:
+Load into your RAG system using the provided rag_loader_example.py

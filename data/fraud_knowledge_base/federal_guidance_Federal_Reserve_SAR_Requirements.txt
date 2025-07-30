@@ -1,0 +1,859 @@
+DOCUMENT: Federal Reserve SAR Requirements
+DESCRIPTION: Federal Reserve guidance on SAR filing for depository institutions
+CATEGORY: regulatory_guidance
+SOURCE: https://www.federalreserve.gov/reportforms/formsreview/FR2230_20070112_f.pdf
+EXTRACTED: 2025-07-29 22:05:24.611376
+
+================================================================================
+CONTENT:
+================================================================================
+
+
+--- Page 1 ---
+1            Check this box only if amending or correcting a prior report.Suspicious Activity Report
+by Depository Institutions
+Part I Subject Information
+*3  Individual’s last name or entity’s legal name *4  First name  5  Middle initial
+*8  Address *9  City *10  State
+*11  ZIP Code *12  Country (If not US)
+      (enter 2-digit code)7  Occupation or type of business2    Check box   a         if multiple subjects                  b        if subject information is unavailable
+ Catalog No. 49342FRegulator Form No. OMB No.
+FDIC: 6710/06 3064-0077
+FinCEN: 111 1506-0001
+FRB: FR 2230 7100-0212
+NCUA: 2362 3133-0094
+OCC: 8010-1 1557-0180
+OCC: 8010-9 1557-0180
+OTS: 1601 1550-0003        Please type or print. Always complete entire report.
+See instructions for items marked with an asterisk ( * ).
+This report may be jointly filed (See instructions).June 30,  2007
+Previous editions
+will not be accepted
+after Dec. 31, 2007
+(Formerly Form TD F 90-22.47)
+ 26  Amount of recovery (if applicable)*24  Summary characterization of suspicious activity (check all that apply):Part II Suspicious Activity Information
+ 25  Loss amount prior to recovery (If applicable)   MM           DD              YYYY       MM           DD              YYYY
+(type of activity)      n False statement
+      o Misuse of position or self dealing      p Mortgage loan fraud      q Mysterious disappearance      r Wire transfer fraud      t Terrorist financing      u Identity theft*23  Total amount involved in suspicious activity         a         Amount unknown
+*22 Date or date range of suspicious activity
+  From   ____ / _____ / _______          To  ____ / _____ / _______*19  Is the relationship an insider relationship?     a          Yes     b           No*15  Forms of identification for subject:
+c          Still employed at institution    e          Terminated
+d          Suspended                           f           Resigned20  If “yes” to item 19, date of action
+      for d, e, or f. If Yes specify:
+     _____/_____/_________
+           MM          DD              YYYY6  Also known as (AKA - individual) or doing business as (DBA - entity)
+*13  SSN/ITIN or EIN *14  Date of birth
+     _____/_____/_________
+         MM         DD               YYYY
+16  Phone number - personal (include area code) 17  Phone number - work (include area code)
+21  Admission or
+      confession?
+  a        Yes   b        No
+      g Consumer loan fraud
+      h Counterfeit check      i Counterfeit credit/debit card      j Counterfeit instrument (other)      k Credit card fraud      l Debit card fraud      m Defalcation/embezzlementa          Driver’s license/state ID        b          Passport      c          Alien registration       z          Other _____ _______________________________
+e  Number                                                                                                                                        f  Issuing Authority _______________________
+(          )
+                                 .00 $, , ,
+,                                  .00$, ,                                  .00$, , ,1a Check this box if this is a recurring report (See instructions).
+   Note: A joint SAR cannot be filed if item 19 is checked “yes.”(          )
+Paperwork Reduction Act Notice:  The purpose of this form is to provide an effective and consistent means for financial institu tions to notify appropriate law enforcement agencies of known or suspected criminal conduct
+or suspicious activities that take place at or were perpetrated against financial institutions. This report is required by law,  pursuant to authority contained in the following statutes.  Board of Governors of the Federal Reserve
+System:  12 U.S.C. 324, 334, 611a, 1844(b) and (c), 3105(c) (2) and 3106(a).  Federal Deposit Insurance Corporation:  12 U.S.C.  93a, 1818, 1881-84, 3401-22.  Office of the Comptroller of the Currency:  12 U.S.C. 93a, 1818,
+1881-84, 3401-22.  Office of Thrift Supervision:  12 U.S.C. 1463 and 1464.  National Credit Union Administration:  12 U.S.C. 17 66(a), 1786(q).  Financial Crimes Enforcement Network:  31 U.S.C. 5318(g).  Information collected
+on this report is confidential (5 U.S.C. 552(b)(7) and 552a(k)(2), and 31 U.S.C. 5318(g)).  The Federal financial institutions’  regulatory agencies and the U.S. Departments of Justice and Treasury may use and share the information.
+Public reporting and recordkeeping burden for this information collection is estimated to average 60 minutes per response, and includes time to gather and maintain data in the required report, review the instructions, and
+complete the information collection.  Send comments regarding this burden estimate, including suggestions for reducing the burd en, to the Office of Management and Budget, Paperwork Reduction Project, Washington,
+DC 20503 and, depending on your primary Federal regulatory agency, to Secretary, Board of Governors of the Federal Reserve Syst em, Washington, DC 20551; or Assistant Executive Secretary, Federal Deposit Insurance
+Corporation, Washington, DC 20429; or Legislative and Regulatory Analysis Division, Office of the Comptroller of the Currency, Washington, DC 20219; or Office of Thrift Supervision, Enforcement Office, Washington,
+DC 20552; or National Credit Union Administration, 1775 Duke Street, Alexandria, VA 22314; or Office of the Director, Financial  Crimes Enforcement Network, Department of the Treasury, P .O. Box 39,  Vienna, VA 22183.
+The agencies may not conduct or sponsor, and an organization (or a person) is not required to respond to, a collection of infor mation unless it displays a currently valid OMB control number. 1b Check this box if this report is being filed jointly with another financial institution (See instructions for restrictions on
+joint filing. Also note instructions for listing joint filer information).
+      a Bank Secrecy Act/structuring/
+money laundering
+      b Bribery/gratuity      c Check fraud      d Check kiting      e Commercial loan fraud      f Computer intrusion
+      z Other
+___________________________________________18  E-mail address (If available)
+(Rev. 6/07)
+DRAFT
+--- Page 2 ---
+2
+Part IV Contact for Assistance
+66 Agency (if not filed by financial institution)Part III
+*33  Name of financial institution
+*35  Address of financial institution
+*37  City
+ 45  State  46  ZIP Code   44  City *43  Address of branch or office where activity occurred*38  State *39  ZIP Code
+  *40 Primary Federal Regulator
+   a   FRB     b          FDIC      c         NCUA      d          OCC        e          OTS f           IRS      g           SEC          h         CFTC      z           Other
+ 47  Country (If not US,
+        enter 2 digit code)
+50  State 51  ZIP Code 49  City 48  Address of branch or office where activity occurred (if required)
+52  Country (If not US,       enter 2 digit code)
+55  State 56  ZIP Code 54  City53  Address of branch or office where activity occurred (if required)
+57  Country (If not US,
+       enter 2 digit code)
+*65  Date filed (See instructions)Reporting Financial Institution Information (See instructions)
+       _____ / ____ /_______
+              MM            DD          YYYY36  Internal control/file number(If available)
+(          )60  State 61  ZIP Code 59  City58  Address of branch or office where activity occurred (if required)                                    Check if additional branch addresses are listed in Part V
+62  Country (If not US,       enter 2 digit code)
+* 63 Designated contact office*41  Account number(s) affected that are related to subject listed in Part I, if any. Check “Yes” if closed.  Enter name (items  3 - 5) or entity (item3)
+       from Part I.
+       Last name/Entity:    First name:                 Mi:
+*42  Relationship of the subject (Part I) to the above listed financial institution (check all that apply):
+a        Accountant    b        Agent             c        Appraiser      d        Attorney         e        Borrower      f        Broker            g        Customer
+h        Director          i         Employee        j        Officer           k        Shareholder   z        Other
+*64  Designated phone number (include area code)This is:   a          Filing institution  or     b           Joint filer
+Special note:
+If this report is being filed jointly, box 1b must be checked and Item 33 completed. A Part III and Part IV must be completed f or
+each institution. Reminder: A joint SAR cannot be filed if box 19 is checked “yes”.
+If mailing, send each completed SAR report to:
+Enterprise Computing Center - DetroitAttn: SAR-DIP .O. Box 33980
+Detroit, MI 48232-0980*34  EIN for institution listed in item 33  27  Name of holding company or lead financial institution (If filing institution)
+  29  Address of company listed in item 27 30  City 31  State 32  ZIP Code28  EIN for company listed in item 27
+a          Yes b Yes
+c          Yes d                 Yes
+A free secure e-filing system is available to file this report.
+Go to http://bsaefiling.fincen.treas.gov for moreinformation and to register.
+DRAFT
+--- Page 3 ---
+3 Part V *Suspicious Activity Information - Narrative
+ a.Describe  the conduct that raised suspicion, why it was suspicious and
+the date discovered. Did the activity have a material impact on or affect
+the financial institution’s soundness?
+ b.Explain whether the transaction(s) was completed or only attempted.
+ c.Describe supporting documentation ( e.g., transaction records, new
+account information, tape recordings, e-mail messages, correspon-
+dence, etc.). The filer (and joint filer if appropriate) must retain a
+copy of the SAR and its supporting documentation and retain such
+documentation on file for five years. .
+ d.Explain who benefited, financially or otherwise, from the transaction(s),
+how much and how (if known).
+ e.Describe and retain  any admission, or explanation of the
+transaction(s) provided by the subject(s), or other persons. Indicate to
+whom and when it was given.
+ f .Describe and retain  any evidence of cover-up or evidence of an
+attempt to deceive federal or state examiners, or others.
+ g.Indicate  where the possible violation of law(s) took place ( e.g., main
+office, branch, other). If the institution or branch has been closed,indicate date.
+ h.Recommend  any further investigation that might assist law
+enforcement authorities.
+ i.Indicate  whether any information has been excluded from this
+report; if so, state reasons.j.Indicate  whether the suspicious activity is an isolated incident or
+relates to another transaction. Note if this is an updated report and if
+so, provide the date of the original SAR regarding this activity.
+k.Indicate whether there is any related litigation. If so, specify the names
+of the parties involved and the court where the action is pending.
+l.Indicate whether U.S. or foreign currency and/or U.S. or foreign
+negotiable instrument(s) were involved.  If foreign, provide the
+amount, name of currency, and country of origin.
+   m. Describe any funds transfers, including in or out identifier numbers,
+parties involved, dates, amounts, and financial institutions involved.
+    n. Indicate for a foreign national any available information on subject’s
+passport(s), visa(s), and/or identification card(s). Include date, country,
+city of issue, issuing authority, and nationality.
+    o. Describe subject(s) position(s) if employed by the financial institution.
+    p. Indicate  the type of institution filing this report, if this is not clear.
+    q. Indicate if a law enforcement agency has been contacted, list the name
+of the agency and the name of any person contacted, their title, their
+  telephone number, and when they were contacted.
+    r .  
+If correcting  or amending a prior report, complete the form in its
+  entirety and note the changes here in P art V. See instructions.
+    s. SAR’s are confidential. Please refer to following references: OCC: 12
+  CFR 21.11, FRB: 12 CFR 208.62, OTS: 12 CFR 563.180, FDIC: 12
+  CFR 353, NCUA: 12 CFR 748, FinCEN: 31 CFR 103.18.Explanation/description of suspicious activity(ies).  This section of the report is critical .  The care with which it is completed may determine
+whether or not the described activity and its possible criminal nature are clearly understood by investigators. Pr ovide a clear, complete, and
+chronological narrative description of the activity. The narrative should address as much of the information listed below as po ssible which
+covers the who/what/when/where of the activity.
+Supporting documentation should not be filed with this report. Maintain the information for your files.
+Enter the explanation/description narrative in the space below. If necessary, continue the narrative on a duplicate of this pag e or a blank page.
+Tips on SAR form preparation and filing are available in the SAR Activity Reviews at  www.fincen.gov/pub_reports.html or the “SAR Narrative
+   Guidance Package” at www.fincen.gov/narrativeguidance_webintro.pdf Information already provided in earlier parts of this form need not be repeated if the meaning is clear.
+ The reporting financial institution should not include legal disclaimers in the narrative.
+DRAFT
+--- Page 4 ---
+(FinCEN Form 111A) Suspicious Activity Report Instructions (SAR-DI)
+Safe Harbor   Federal law (31 U.S.C. 5318(g)(3))
+provides complete protection from civil liability for
+all reports of suspicious transactions made to
+appropriate authorities, including supporting
+documentation, regardless of whether such reports
+are filed pursuant to this report’s instructions or are
+filed on a voluntary basis. Specifically, the lawprovides that a financial  institution, and its directors,
+officers, employees and agents, that make a
+disclosure of any possible violation of law orregulation, including in connection with the
+preparation of suspicious activity reports, “shall not
+be liable to any person under any law or regulationof the United States, any constitution, law, or
+regulation of any State or political subdivision of any
+State, or under any contract or other legallyenforceable agreement (including any arbitration
+agreement), for such disclosure or for any failure to
+provide notice of such disclosure to the person whois the subject of such disclosure or any other person
+identified in the disclosure”. This applies to the filer
+and joint filer(s).
+Notification Prohibited: Federal law (31 U.S.C.
+5318(g)(2)) requires that a financial institution and its
+directors, officers, employees and agents, who,
+voluntarily or by means of a suspicious activity report,
+report suspected or known criminal violations or
+suspicious activities, may not notify any person (subject)
+involved in the transaction that the transaction has beenreported. See narrative checklist item “s.”
+In situations involving violations requiring
+immediate attention, such as when a reportableviolation is ongoing, the financial institution shall
+immediately notify, by telephone, appropriate law
+enforcement and financial institution supervisoryauthorities in addition to filing a timely suspicious
+activity report. List any such contact in Part V.
+General Instructions
+Definition: Depository Institution.For the purposes of suspicious activity reporting
+in accordance with 31 CFR 103.18, and the useof this suspicious activity report form, the term
+Depository Institution includes those entities
+listed in 31 CFR 103.11(c) as well as bank holdingcompanies and nonbank subsidiaries of bank
+holding companies.
+A.  When to file
+General . Every Depository Institution shall file with
+the Treasury Department, to the extent and in the
+manner required by 31 CFR Part 103.18, a report
+of any suspicious transaction relevant to a possibleviolation of law or regulation. A Depository Institu-
+tion may also file with the Treasury Department by
+using the Suspicious Activity Report specified in 31CFR Part 103.18, a report of any suspicious transac-
+tion that it believes is relevant to the possible vio-
+lation of any law or regulation but whose reportingis not required by this section.
+1. All Depository Institutions operating in the
+United States, including insured banks, savingsassociations, savings association service
+corporations, credit unions, bank holdingcompanies, nonbank subsidiaries of bank holding
+companies, Edge and Agreement corporations, and
+U.S. branches and agencies of foreign banks, are
+required to make this report following the
+discovery of:
+a. Insider abuse involving any amount.
+Whenever the Depository Institution detects any
+known or suspected Federal criminal violation, or
+pattern of criminal violations, committed or
+attempted against the Depository Institution or
+involving a transaction or transactions conducted
+through the Depository Institution, where the
+Depository Institution believes that it was either
+an actual or potential victim of a criminal violation,or series of criminal violations, or that the
+Depository Institution was used to facilitate a
+criminal transaction, and the Depository Institution
+has a substantial basis for identifying one of itsdirectors, officers, employees, agents or other
+institution-affiliated parties as having committedor aided in the commission of a criminal act
+regardless of the amount involved in the violation.
+b. Violations aggregating $5,000 or more
+where a subject can be identified.  Whenever
+the Depository Institution detects any known or
+suspected Federal criminal violation, or pattern of
+criminal violations, committed or attempted against
+the financial institution or involving a transactionor transactions conducted through the Depository
+Institution and involving or aggregating $5,000 or
+more in funds or other assets, where the DepositoryInstitution believes that it was either an actual or
+potential victim of a criminal violation, or series of
+criminal violations, or that the DepositoryInstitution was used to facilitate a criminal
+transaction, and the Depository Institution has a
+substantial basis for identifying a possible subjector group of subjects. If it is determined prior to
+filing this report that the identified subject or group
+of subjects has used an “alias,” then informationregarding the true identity of the subject or group
+of subjects, as well as alias identifiers, such as
+drivers’ licenses or social security numbers,addresses and telephone numbers, must be
+reported.
+c. Violations aggregating $25,000 or more
+regardless of a potential subject. Whenever the
+Depository Institution detects any known or
+suspected Federal criminal violation, or pattern of
+criminal violations, committed or attempted against
+the Depository Institution or involving a transaction
+or transactions conducted through the financial
+institution and involving or aggregating $25,000
+or more in funds or other assets, where theDepository Institution believes that it was either
+an actual or potential victim of a criminal violation,
+or series of criminal violations, or that the
+Depository Institution was used to facilitate a
+criminal transaction, even though there is no
+substantial basis for identifying a possible subjector group of subjects.d. Transactions aggregating $5,000 or more
+that involve potential money laundering or
+violations of the Bank Secrecy Act.  Any transaction
+(which for purposes of this subsection means a
+deposit, withdrawal, transfer between accounts,
+exchange of currency, loan, extension of credit,
+purchase or sale of any stock, bond, certificate ofdeposit, or other monetary instrument or
+investment security, or any other payment, transfer,
+or delivery by, through, or to a DepositoryInstitution, by whatever means effected) conducted
+or attempted by, at or through the Depository
+Institution and involving or aggregating $5,000 ormore in funds or other assets, if the Depository
+Institution knows, suspects, or has reason to suspect
+that:
+i. The transaction involves funds derived from
+illegal activities or is intended or conducted inorder to hide or disguise funds or assets derivedfrom illegal activities (including, without limitation,
+the ownership, nature, source, location, or control
+of such funds or assets) as part of a plan to violateor evade any law or regulation or to avoid any
+transaction reporting requirement under Federal
+law;
+ii. The  transaction  is  designed  to  evade
+any regulations promulgated under the BankSecrecy Act; or
+iii. The transaction has no business or
+apparent lawful purpose or is not the sort in which
+the particular customer would normally be
+expected to engage, and the Depository Institutionknows of no reasonable explanation for the
+transaction after examining the available facts,
+including the background and possible purposeof the transaction.
+2. The Bank Secrecy Act requires  all institutions
+to file currency transaction reports (CTRs) in
+accordance with the Department of the Treasury’s
+implementing regulations (31 CFR Part 103). Theseregulations require a Depository Institution to file
+a CTR whenever a currency transaction exceeds
+$10,000.
+   3. If a currency transaction exceeds $10,000
+and is suspicious, the institution must file both a
+CTR (reporting the currency transaction) and a
+suspicious activity report (reporting the suspicious
+or criminal aspects of the transaction). If a currencytransaction equals or is below $10,000 and is
+suspicious, the institution should only file a
+suspicious activity report.
+4. A Depository Institution is required to file a
+suspicious activity report no later than 30 calendar
+days after the date of initial detection of facts that
+may constitute a basis for filing a suspicious activity
+report. If no subject was identified on the date ofdetection of the incident requiring the filing, a
+Depository Institution may delay filing a suspicious
+activity report for an additional 30 calendar daysto identify a subject. In no case shall reporting be
+delayed more than 60  calendar days after the
+date of initial detection of a reportable transaction.1
+ Catalog No. 49343Q  (Rev. 6/07)
+DRAFT
+--- Page 5 ---
+2
+   5.  This  suspicious  activity  report  does  not
+need to be filed for those robberies and burglaries
+that are reported to local authorities, or (except for
+savings associations and service corporations) for
+lost, missing, counterfeit, or stolen securities that
+are reported pursuant to the requirements of 17CFR 240.17f-1.
+B.   How to make a report:
+NOTE: If this report is jointly filed, both of the
+filing institutions must retain a copy of the SAR.
+Each institution must retain their supporting docu-
+mentation for a period of five years from the date
+the report was filed.
+1. This form should  be e-filed through the
+Bank Secrecy Act E-filing System. Go tohttp://bsaefiling.fincen.treas.gov to register.
+This form is also available for download on the
+Financial Crimes Enforcement Network’s Web siteat www.fincen.gov, or may be ordered by calling
+the IRS Forms Distribution Center at (800) 829-
+3676. This form is also available through your pri-mary federal regulator.
+2. If not filed electronically or through magnetic
+media, send each completed suspicious activity
+report to:
+Enterprise Computing Center - DetroitAttn: SAR-DI
+P .O. Box  33980Detroit, MI 48232-0980
+   3.  While all items should be completed fullyand accurately, items marked with an asterisk (*)
+must be completed according to the provisions of
+paragraph 4 below.
+   4. If the information for a item marked with a
+asterisk (*) is not known or not applicable, enterspecial response “XX” to complete the item. To
+indicate “Total amount” as unknown, check the
+box provided.  Non-asterisk fields should be left
+blank if the information is unknown or not
+applicable.
+5. Complete each suspicious activity report by
+providing as much information as possible on initial
+and corrected or amended reports.
+6. Do not include supporting documents with
+the filed suspicious activity report. Retain a copy of
+the report and all supporting documentation ( e.g.
+transaction records, new account information, taperecordings, correspondence, e-mail messages,  etc.)or business record equivalent  in your files for five
+(5) years from the  date of the suspicious activity
+report. All supporting documentation must be madeavailable to appropriate authorities upon request.
+7. Type or complete the report using block
+written letters.
+8. If more than one su bject is being reported,
+make a copy of page  1, complete only the subjectinformation in Part I, and attach the additional
+page(s) behind page 1. If more space is needed to
+complete any other item(s), identify that item in
+Part V by “item number,” and add the additionalinformation.
+9.  Enter all dates  in MM / DD / YYYY  format
+where MM = month, DD = day, and    YYYY =
+year. Precede single numbers with zero, i.e., 01,02,
+etc. If the month or day is unknown, enter “00” in
+place of the month or day.
+10. Record telephone  numbers   using the format
+(XXX) XXX-XXXX. List fax numbers and international
+telephone numbers in Part V .
+11. Always enter an individual’s name by
+entering the last name, first name, and middle initial
+in the appropriate items. If the last or first name isnot known, enter “XX” in the item. If the middle
+initial is unknown leave the item blank.
+   12.  Enter  all  identifying  numbers  (alien
+registration, driver’s license/state ID, Employer
+Identification Number (EIN), Individual TaxpayerIdentification Number (ITIN), Foreign National ID,
+passport, and Social Security Number (SSN), etc.)
+starting from left to right. Do not include spaces,dashes, or other punctuation.
+   13. Enter  all  Post  Office  ZIP Codes from left to
+right with at least the first five numbers or all nine
+numbers (ZIP + 4) if known.
+   14.  Enter  all  monetary  amounts  in  U.S. Dollars.
+Use  whole  dollar  amounts  rounded up. Enter the
+amount as a number string without punctuation. Ifforeign  currency is involved, state the name of
+currency and country of origin in Part V .
+   15.  Addresses.  Enter  the  permanent  street
+address, city, two-letter state/territory abbreviation
+used by the U.S. Postal Service and ZIP code (ZIP+4if known) of the  individual or entity. Do not use a
+post office box for an  individual, unless no other
+address is available. For an individual, enter any
+apartment  or suite number and road or route
+number. If a post  office box is used for an entity,
+enter the street name, suite number, and road or
+route number. If the individual is from Mexico or
+Canada, enter the appropriate state or territory
+code in the state item and MX or CA as appropriatein the country item. If the address is from another
+foreign country, enter “XX” in the state item and
+the appropriate two-digit country code in the
+country item.  Complete any part of the address
+that is known, even if the entire address is notknown. If the address is in the U.S., leave the countryfield blank. Lists of two-digit country and state
+codes are available on the FinCEN web site atwww.fincen.gov/reg_bsaforms.html, or by calling1-800-949-2732 and selecting  option 5 to
+request a list by mail.
+16. 
+If you have questions or require further
+assistance, go to www.fincen.gov, contact your
+primary regulator, or call the FinCEN Helpline at
+800-949-2732.C. Specific Suspicious Activity Report
+preparation instructions
+   Item 1-- Check the box if this report amends
+(adds missing data) or corrects errors in the prior
+report. (See Part V , item “r”).
+Item 1a--  Check this box if this is a recurring
+report filed on continuing activity.
+Item 1b -- Check this box if this is a jointly
+filed report with another financial institution.
+Part I Subject InformationNote: Enter information about the person(s) or
+entity involved that caused this report to be filed,
+not the victim of the activity.
+Item 2-- If there are multiple subjects involved,
+check box “2a” and complete a separate Part I for
+each subject and attach behine page one. Check
+box “2b” only if NO subject information is
+available. If ANY subject information is available,
+record that information in Part 1, leave box “2b”blank, and insert the appropriate special response
+“XX” in any critical item for which data is missing.
+Items *3, *4, and *5--Individual/entity names .
+See General Instruction B11 for information on
+completing name fields. If the subject is an entity,
+enter the entity’s full legal name in Item 3, and“XX” in Item 4. 
+Individual/entity names must be
+repeated in Item 41 to associate the account
+numbers with each Part I.
+Item 6 Also known as-- If an individual has
+another name under which he or she is commonly
+known, enter that name in Item 6. If the subject is
+an entity, record the trade name of the entity in
+Item 6 if the trade name is different from the legal
+name in Item 3.
+Item 7--Occupation or type of business . If
+known, identify the occupation, profession
+or business that best describes the individual or
+entity in Part I ( e.g., attorney, car dealer, carpenter,
+doctor, farmer, plumber, truck driver, etc.). Do not
+use nondescript terms such as businessman,
+merchant, store owner (unless store’s name isprovided), or self employed. If unemployed, or
+retired are used enter the regular or former
+occupation if known. If the individual’s  businessactivities  can be described more fully, provide the
+additional information in Part V .
+Items *8, *9, *10, *11, and *12-- Address .
+See General Instructions B13 and B15.  If any part
+of the address is not known, enter  or “XX” in thatitem.
+Item *13--SSN/ITIN (individual) or EIN
+(entity) . See General Instruction B12. If the subject
+named in Items 3 through 5 is a U.S. Citizen or an
+alien with a SSN, enter his or her SSN in Item 13. Ifthat individual is an alien who has an ITIN, enter
+that number. If the subject is an entity, enter the
+EIN. If the identification number is not known, enter“XX” in Item 13.
+DRAFT
+--- Page 6 ---
+3
+Item *14--Date of birth. See General Instruction
+B9. If the subject is an individual, enter the date of
+birth. Enter “XX” if the date of birth is not known.
+Enter “XX” if the subject is an entity.
+Item *15--Forms of identification for subject .
+See General Instruction B12. Check the box
+showing the type of document used to verify the
+subject’s identity. If you check box “z” Other,
+specify the type of document used. You must listthe ID number of the identifying document and
+the issuing authority in 15e and 15f. If no
+identification was available,  check box 15d andenter “XX” in “Other.”
+Items 16, 17 & 18--Telephone numbers, E-
+mail address.  See General Instruction B10. List
+any additional number(s) that may be available inPart V. List e-mail address if available.
+Item *19--Insider relationship? You must check
+box “a” or “b” showing whether or not there is aninsider relationship. If box “a” is checked, you must
+also check box “c”, “d”, “e”, or “f” to identify the
+current relationship, and complete Item 20.
+Note: A joint SAR cannot be filed if item 19
+is checked “yes.”
+Item 20--Date of Suspension, etc. Enter the
+date of any suspension, termination or resignationreflected in Item 18.
+Item  21--Admission or Confession. Check  the
+appropriate box to indicate whether the subject
+has admitted or confessed to the suspicious activity.
+If “Yes,” describe the admission or confession more
+fully in Part V .
+Part II Suspicious Activity Information
+Item *22--Date or date range of suspicious activity .
+See General Instruction B9. Enter the date of the reported
+activity in the “From” field. If more than one day is
+involved, indicate the duration of the activity by entering
+the first date in the “From” field and the last date in the
+“To” field. If the same individual or organization conducts
+multiple or related activities within the 30 calendar day
+period after the date of initial detection, the reportinginstitution may consider reporting the suspicious
+transactions on one form, but only if doing so will fully
+describe what has occurred. A new report must be filed
+for other related suspicious transactions committed after
+the initial detection period.
+Item *23--Total dollar amount . See General
+Instruction B14. Check  item 23a if the amount is
+unknown.  Enter the total dollar value of the funds or
+assets involved in the suspicious activity that is conductedby the same individual or organization within the 30
+calendar day period after the date of initial detection.For multiple or related suspicious transactions, show the
+breakdown of this aggregated total in Part V . For abuse
+by a person associated with the institution, the value ofthis Item can be zero (0). Do not use any words, such as
+“thousand”, “million”, etc. For foreign currency, convert
+all values to U.S. Dollars. 
+If box “1” is checked, leave
+this item blank unless the amount is different than originallyreported. If box “1a” is checked, enter the cumulative
+amount.
+Item *24--Type of suspicious activity. Check all
+that apply to identify the suspicious  activity.  Provide a
+brief explanation in Part V of why each box is checked.
+If none of the items apply, mark box “z” “Other,” enter a
+brief description on the following line, and provide in Part
+V an explanation of the type of suspicious activity.
+Items 25 and 26--Amount of loss and recovery (if
+applicable). Indicate in Item 25 the amount of the initial
+loss.  This amount cannot be larger than the amount in
+Item 23. In Item 26 indicate the amount of any recovery.
+This amount cannot be larger than the amount in Item 25.
+Both amounts must be in U.S. Dollars.
+Part III  Reporting Financial Institution Information
+If this report is being completed by a holding company
+or lead financial institution, complete items 27 through
+32. Items 33 through 62 must reflect the location of the
+financial institution where the reported activity occurred.
+Note: Item 27 should be left blank if the reported activity
+occurred at the holding company or lead financial
+institution. In such cases the institution should complete
+items 33 to 62 as the filing institution and check box 33a.
+Note:  If filed jointly, a Part III and Part IV must be
+completed for each institution. If reporting multiple
+subjects (box 2a checked) complete Part III, items 33
+through 42 for each subject reported by the institution.
+If this report is being filed jointly (box in item 1b
+checked), make a copy of page two and complete
+items 33 through 42 for the joint filer following the same
+instructions as the filer.  Complete branch information,items 43 through 62 if appropriate. If there are additional
+joint filers, make as many copies of page two as required
+to record the additional joint filer information. Attach anyadditional pages behind page two, and indicate the total
+number of joint filers in Part V .
+NOTE: Reports involving insider abuse may not be
+filed jointly.
+Item *33--Name of financial institution . Enter the
+full legal name of the institution, i.e. the name shown on
+the charter or other document creating the entity 
+where
+the reported activity occurred. Check box “a”, “Filing
+institution” when the listed institution is the institution
+preparing and filing the report. Check box ”b”, “Joint
+filer” for all other reporting institutions. See holding
+company note above.
+Item *34--EIN. See General Instruction B12. Enter the
+EIN of the financial institution listed in item 33.
+Items *35, *37, *38, and *39--Address . See General
+Instructions  B13 & B15. This address should be the
+address of the principal office or headquarters in theUnited States.
+Item 36--Internal control/file number (If available).
+Enter any internal file or report number assigned by the
+reporting institution to track this report.  This information
+will act as an identification aid if contact is required.Item 40--Primary Federal Regulator (This item
+must be completed for all reports). Depository
+Institutions filing this report must check box “a” through
+“e” (only one). For all other  institutions, check box “f”,“g”, or “h” as appropriate. For institutions not listed,
+check box “z” other
+Item *41--Account number(s).  Enter up to four
+account numbers for financial institution accounts
+involved in the activity.  Check the box “Yes” if anaccount is closed.  Enter additional account numbers in
+Part V .  Enter “XX” in Item 41(a) if no accounts are
+involved. 
+Enter name (Items 3-5) or entity (Item 3) from
+Part I,  in the space provided. Auto-filled if completing
+a fill-in form.
+Item 42--Relationship to financial institution .
+Check the appropriate box(es) to indicate whether or
+not the subject identified in Part I, items 3-5 is or wasassociated with the reporting  institution. Check all that
+apply.
+Items  *43- 62--Branch or office addresses . See
+General Instructions B13 & B15.  Provide the addresses
+of up to four branch locations where the most significantportion of the suspicious activity occurred. If there are
+more than four branches, check the box labeled “Check
+if additional branch ...” in the last branch address (item58) and list the additional locations in Part V . If there are
+no branch addresses involved, enter “XX” in Item 43.
+Part IV  Contact for Assistance
+Item *63-- Designated contact office. Enter the
+name of the office that the holding company or financial
+institution has designated to receive request for
+assistance with this report. This office must have an
+individual knowledgeable of this report available during
+regular business hours.
+Item *64--Phone number . See General Instruction
+B10. Enter the work telephone number of the contact
+office.
+Item *65--Date filed. See General Instruction B9.
+Enter the date this report was initially filed. If this is an
+amended or corrected report, enter the date of theamendment or correction.  For electronic filing, it is the
+date that the report was e-filed using BSA Direct. For
+magnetic media filing, it is the date the magnetic mediaSAR was created . For all other filers, it is the date the
+financial institution completed and mailed/submitted
+the report to ECC - Detroit
+Item 66--Agency. If this report is filed by an agency
+other than a financial institution such as a regulator or
+OFAC, enter  the name of the reporting agency in Item
+66.
+Part V--*Suspicious Activity Information
+-Narrative.
+This is the most important section, and should be
+completed in as much detail as possible. See page 3 of
+the form for specific instructions  for completing thenarrative. The filing/reporting financial institution
+should not include legal disclaimers in the narrative.
+DRAFT
+--- Page 7 ---
+1  Check box below only if correcting a prior report.
+Corrects Prior Report (see instruction #3 under “How to Make a Report”)
+d
+  31  Is the relationship an insider relationship?          a          Yes          b          No Closed?
+         Yes        No
+  Yes        Noa
+b1 Suspicious
+Activity Report
+July 2003
+Previous editions will not be accepted after December 31, 2003
+ALWAYS COMPLETE ENTIRE REPORT
+(see instructions)FRB: FR 2230 OMB No. 7100-0212
+FDIC: 6710/06 OMB No. 3064-0077
+OCC: 8010-9,8010-1 OMB No. 1557-0180
+OTS: 1601 OMB No. 1550-0003
+NCUA: 2362 OMB No. 3133-0094
+TREASURY: TD F 90-22.47 OMB No. 1506-0001
+Part I Reporting Financial Institution Information
+2  Name of Financial Institution
+4  Address of Financial Institution
+6  City
+11  State 12  Zip Code 10  City 9   Address of Branch Office(s) where activity occurred Multiple Branches (include information in narrative, Part V)
+14  Account number(s) affected, if any
+Part II Suspect Information
+15  Last Name or Name of Entity 16  First Name 17  Middle
+18   Address 19  SSN, EIN or TIN7  State 8  Zip Code
+20  City 21  State 22  Zip Code 23  Country
+27  Date of Birth
+      _______ / _______ / _________24  Phone Number - Residence (include area code)
+     (        )25  Phone Number - Work (include area code)
+     (        )
+26  Occupation/Type of Business
+29  Forms of Identification for Suspect:
+a         Driver’s License/State ID          b         Passport          c           Alien Registration          d         Othe r ______________
+           Number  __________________________              Issuing Authority  ______________________   MM            DD                  YYYY
+c       Still employed at financial institution   e        Terminated
+d       Suspended                                         f         Resigned32  Date of Suspension, Termination, Resignation
+      _______ / _______ / __________        
+  MM                DD                   YYYYc
+Suspect Information Unavailable Closed?
+         Yes        No
+  Yes        No   MM       DD            YYYY3  EIN
+5   Primary Federal Regulator
+   a Federal Reserve d OCC
+   b FDIC e OTS   c NCUA
+If Yes specify:13  If institution closed, date closed
+        ____ / ____ / _______
+28  Admission/Confession?
+      a     Yes       b          No
+30  Relationship to Financial Institution:
+       a Accountant d Attorney g Customer j Officer
+       b Agent e Borrower h Director k Shareholder
+       c Appraiser f Broker i Employee l Other  ________________________________
+Catalog No. 22285L
+--- Page 8 ---
+37  Dollar amount of recovery (if applicable)
+                                                                             .00      f Computer Intrusion
+      g Consumer Loan Fraud      h Counterfeit Check      i Counterfeit Credit/Debit Card      j Counterfeit Instrument (other)      k Credit Card Fraud
+    
+ (         )34  Total dollar amount involved in known or suspicious activity
+      $                                                          .00
+40  Has any law enforcement agency already been advised by telephone, written communication, or otherwise?
+a DEA d Postal Inspection g Other Federal
+b FBI e Secret Service h Statec IRS f U.S. Customs i Local
+ j Agency Name (for g, h or i)2
+35  Summary characterization of suspicious activity:
+      a Bank Secrecy Act/Structuring/
+Money Laundering
+      b Bribery/Gratuity      c Check Fraud      d Check Kiting      e Commercial Loan Fraud
+      s OtherPart III Suspicious Activity Information
+33  Date or date range of suspicious activity
+From   ____ / _____ / _______    To  ____ / _____ / _______
+36  Amount of loss prior to recovery
+                                                                      .0038  Has the suspicious activity had a
+      material impact on, or otherwise      affected, the financial soundness
+     of the institution?
+     a Yes b          No
+51   Agency (if not filed by financial institution)   MM       DD            YYYY    MM       DD            YYYY
+39  Has the institution’s bonding company been notified?
+     a Yes b          No
+Part IV Contact for Assistance
+45  Last Name 46  First Name
+50  Date Prepared
+      _______ / _______ /_________48  Title/Occupation
+   MM            DD                  YYYY49 Phone Number (include area code)
+      (          )47  Middle       (type of activity), , ,
+, ,$ (if applicable)
+, ,$
+41  Name of person(s) contacted at Law Enforcement Agency 42  Phone Number (include area code)
+44  Phone Number (include area code)
+      (         )43  Name of person(s) contacted at Law Enforcement Agency      l Debit Card Fraud
+      m Defalcation/Embezzlement      n False Statement      o Misuse of Position or Self Dealing      p Mortgage Loan Fraud      q Mysterious Disappearance      r Wire Transfer Fraud      t Terrorist Financing      u  Identity Theft
+--- Page 9 ---
+3 Part V Suspicious Activity Information Explanation/Description
+Explanation/description of known or suspected violation
+of law or suspicious activity .
+This section of the report is critical. The care with which it is
+written may make the difference in whether or not the described
+conduct and its possible criminal nature are clearly understood.Provide below a chronological and  complete  account of the
+possible violation of law, including what is unusual, irregular or
+suspicious about the transaction, using the following checklist asyou prepare your account. If necessary, continue the
+narrative on a dupli cate of this page.
+aDescribe  supporting documentation and retain for 5 years.
+bExplain who benefited, financially or otherwise, from the
+transaction, how much, and how.
+cRetain any confession, admission, or explanation of the
+transaction provided by the suspect and indicate towhom and when it was given.
+dRetain any confession, admission, or explanation of the
+transaction provided by any other person and indicateto whom and when it was given.
+eRetain any evidence of cover-up or evidence of an attempt
+to deceive federal or state examiners or others.fIndicate where the possible violation took place
+(e.g., main office, branch, other).
+gIndicate whether the possible violation is an isolated
+incident or relates to other transactions.
+hIndicate whether there is any related litigation; if so,
+specify.
+iRecommend  any further investigation that might assist law
+enforcement authorities.
+jIndicate whether any information has been excluded from
+this report; if so, why?
+k If you are correcting a previously filed report, describe the
+changes that are being made.
+For Bank Secrecy Act/Structuring/Money Laundering reports,include the following additional information:lIndicate whether currency and/or monetary instruments
+were involved. If so, provide the amount and/or description
+of the instrument (for example, bank draft, letter ofcredit, domestic or international money order, stocks,
+bonds, traveler’s checks, wire transfers sent or received,cash, etc.).
+mIndicate any account number that may be involved
+or affected.
+Paperwork Reduction Act Notice:  The purpose of this form is to provide an effective and consistent means for financial institu tions to notify appropriate law enforcement agencies of known
+or suspected criminal conduct or suspicious activities that take place at or were perpetrated against financial institutions. T his report is required by law, pursuant to authority contained in
+the following statutes.  Board of Governors of the Federal Reserve System:  12 U.S.C. 324, 334, 611a, 1844(b) and (c), 3105(c) (2) and 3106(a).  Federal Deposit Insurance Corporation:
+12 U.S.C. 93a, 1818, 1881-84, 3401-22.  Office of the Comptroller of the Currency:  12 U.S.C. 93a, 1818, 1881-84, 3401-22.  Off ice of Thrift Supervision:  12 U.S.C. 1463 and 1464.
+National Credit Union Administration:  12 U.S.C. 1766(a), 1786(q).  Financial Crimes Enforcement Network:  31 U.S.C. 5318(g).  Information collected on this report is confidential (5
+U.S.C. 552(b)(7) and 552a(k)(2), and 31 U.S.C. 5318(g)).  The Federal financial institutions’ regulatory agencies and the U.S. Departments of Justice and Treasury may use and share the information.
+Public reporting and recordkeeping burden for this information collection is estimated to average 30 minutes per response, and includes time to gather and maintain data in the required report, review
+the instructions, and complete the information collection.  Send comments regarding this burden estimate, including suggestions  for reducing the burden, to the Office of Management and Budget,
+Paperwork Reduction Project, Washington, DC 20503 and, depending on your primary Federal regulatory agency, to Secretary, Board  of Governors of the Federal Reserve System, Washington, DC 20551;
+or Assistant Executive Secretary, Federal Deposit Insurance Corporation, Washington, DC 20429; or Legislative and Regulatory An alysis Division, Office of the Comptroller of the Currency, Washington,
+DC 20219; or Office of Thrift Supervision, Enforcement Office, Washington, DC 20552; or National Credit Union Administration, 1 775 Duke Street, Alexandria, VA 22314; or Office of the Director, Financial
+Crimes Enforcement Network, Department of the Treasury, P.O. Box 39, Vienna, VA 22183.  The agencies may not conduct  or sponsor, and an organization (or a person) is not required
+to respond to, a collection of information unless it displays a currently valid OMB control number. Tips on SAR Form preparation and filing are available in the SAR Activity Review at www.fincen.gov/pub_reports.html
+--- Page 10 ---
+Suspicious Activity Report
+Instructions
+ Safe Harbor   Federal law (31 U.S.C. 5318(g)(3)) provides complete protection from civil liability for all reports of suspicious
+ transactions made to appropriate authorities, including supporting documentation, regardless of whether such reports are
+ filed pursuant to this report’s instructions or are filed on a voluntary basis. Specifically, the law provides that a financia l
+ institution, and its directors, officers, employees and agents, that make a disclosure of any possible violation of law or
+ regulation, including in connection with the preparation of suspicious activity reports, “shall not be liable to any person under any law or regulation of the United States, any constitution, law, or regulation of any State or political subdivision o f
+ any State, or under any contract or other legally  enforceable agreement (including any arbitration agreement), for such disclosure or for any failure to provide notice of such disclosure to the person who is the subject of such disclosure or any
+ other person identified in the disclosure”. Notification Prohibited Federal law (31 U.S.C. 5318(g)(2)) requires that a financial institution, and its directors, officers,
+ employees and agents who, voluntarily or by means of a suspicious activity report, report suspected or known criminal
+ violations or suspicious activities may not notify any person involved in the transaction that the transaction has been report ed.
+ In situations involving violations requiring immediate attention, such as when a reportable violation is ongoing, the
+ financial institution shall immediately notify, by telephone, appropriate law enforcement and financial institution
+ supervisory authorities in addition to filing a timely suspicious activity report.
+WHEN TO MAKE A REPORT:
+1. All financial institutions operating in the United States, including insured banks, savings associations, savings
+association service corporations, credit unions, bank holding companies, nonbank subsidiaries of bank holding
+companies, Edge and Agreement corporations, and U.S. branches and agencies of foreign banks, are re-
+quired to make this report following the discovery of:
+a. Insider abuse involving any amount.  Whenever the financial institution detects any known or suspected
+Federal criminal violation, or pattern of criminal violations, committed or attempted against the financialinstitution or involving a transaction or transactions conducted through the financial institution, where the
+financial institution believes that it was either an actual or potential victim of a criminal violation, or series of
+criminal violations, or that the financial institution was used to facilitate a criminal transaction, and thefinancial institution has a substantial basis for identifying one of its directors, officers, employees, agents or
+other institution-affiliated parties as having committed or aided in the commission of a criminal act regardless
+of the amount involved in the violation.
+b. Violations aggregating $5,000 or more where a suspect can be identified.  Whenever the financial
+institution detects any known or suspected Federal criminal violation, or pattern of criminal violations, com-
+mitted or attempted against the financial institution or involving a transaction or transactions conducted
+through the financial institution and involving or aggregating $5,000 or more in funds or other assets, where
+the financial institution believes that it was either an actual or potential victim of a criminal violation, or series
+of criminal violations, or that the financial institution was used to facilitate a criminal transaction, and the
+financial institution has a substantial basis for identifying a possible suspect or group of suspects. If it is
+determined prior to filing this report that the identified suspect or group of suspects has used an “alias,” then
+information regarding the true identity of the suspect or group of suspects, as well as alias identifiers, such
+as drivers’ licenses or social security numbers, addresses and telephone numbers, must be reported.
+c. Violations aggregating $25,000 or more regardless of a potential suspect. Whenever the financial
+institution detects any known or suspected Federal criminal violation, or pattern of criminal violations, com-mitted or attempted against the financial institution or involving a transaction or transactions conducted
+through the financial institution and involving or aggregating $25,000 or more in funds or other assets, where
+the financial institution believes that it was either an actual or potential victim of a criminal violation, or seriesof criminal violations, or that the financial institution was used to facilitate a criminal transaction, even though
+there is no substantial basis for identifying a possible suspect or group of suspects.
+d. Transactions aggregating $5,000 or more that involve potential money laundering or violations of the
+Bank Secrecy Act.  Any transaction (which for purposes of this subsection means a deposit, withdrawal,
+transfer between accounts, exchange of currency, loan, extension of credit, purchase or sale of any stock,
+bond, certificate of deposit, or other monetary instrument or investment security, or any other payment, transfer,or delivery by, through, or to a financial institution, by whatever means effected) conducted or attempted by, at
+--- Page 11 ---
+or through the financial institution and involving or aggregating $5,000 or more in funds or other assets, if the financial
+institution knows, suspects, or has reason to suspect that:
+          i.  The transaction involves funds derived from illegal activities or is intended or conducted in order to hide or
+               disguise funds or assets derived from illegal activities (including, without limitation, the ownership, nature,
+      source, location, or control of such funds or assets) as part of a plan to violate or evade any law or regulation or
+      to avoid any transaction reporting requirement under Federal law;
+ii.  The transaction is designed to evade any regulations promulgated under the Bank Secrecy Act; or
+iii. The transaction has no business or apparent lawful purpose or is not the sort in which the particular customer
+would normally be expected to engage, and the financial institution knows of no reasonable explanation for the
+transaction after examining the available facts, including the background and possible purpose of the transaction.
+      The Bank Secrecy Act requires all financial institutions to file currency transaction reports (CTRs) in accordance with
+   the Department of the Treasury’s implementing regulations (31 CFR Part 103). These regulations require a financial
+   institution to file a CTR whenever a currency transaction exceeds $10,000. If a currency transaction exceeds $10,000   and is suspicious, the institution must file both a CTR (reporting the currency transaction) and a suspicious activity
+   report (reporting the suspicious or criminal aspects of the transaction). If a currency transaction equals or is below
+   $10,000 and is suspicious, the institution should only file a suspicious activity report.
+  2. Computer Intrusion.   For purposes of this report, “computer intrusion” is defined as gaining access to a
+   computer system of a financial institution to:
+a. Remove, steal, procure, or otherwise affect funds of the institution or the institution’s customers;
+           b. Remove, steal, procure or otherwise affect critical information of the institution including customer account
+         information; or
+c. Damage, disable or otherwise affect critical systems of the institution.
+   For purposes of this reporting requirement, computer intrusion does not mean attempted intrusions of websites or
+   other non-critical information systems of the institution that provide no access to institution or customer financial or
+   other critical information.
+  3. A financial institution is required to file a suspicious activity report no later than 30 calendar days after the date of
+      initial detection of facts that may constitute a basis for filing a suspicious activity report. If no suspect was identif ied
+   on the date of detection of the incident requiring the filing, a financial institution may delay filing a suspicious activit y
+   report for an additional 30 calendar days to identify a suspect. In no case shall reporting be delayed more than 60   calendar days after the date of initial detection of a reportable transaction.
+  4. This suspicious activity report does not need to be filed for those robberies and burglaries that are reported to local
+   authorities, or (except for savings associations and service corporations) for lost, missing, counterfeit, or stolen
+   securities that are reported pursuant to the requirements of 17 CFR 240.17f-1.
+HOW TO MAKE A REPORT:
+  1. Send each completed suspicious activity report to:
+Detroit Computing Center, P.O. Box 33980, Detroit, Ml 48232-0980
+  2. For items that do not apply or for which information is not available, leave blank.
+  3. If you are correcting a previously filed report, check the box at the top of the report (line 1). Complete the report in i ts
+  entirety and include the corrected information in the applicable boxes. Then describe the changes that are being made
+  in Part V (Description of Suspicious Activity), line k.
+  4. Do not include any supporting documentation with the suspicious activity report.  Identify and retain a copy
+  of the suspi cious activity report and all original supporting documentation or business record equivalent for five (5)
+  years from the date of the suspicious activity report. All supporting documentation must be made available to
+  appropriate authorities upon request.
+  5. If more space is needed to report additional suspects, attach copies of page 1 to provide the add itional information. If
+  more space is needed to report additional branch addresses, include this information in the narrative, Part V.
+  6. Financial institutions are encouraged to provide copies of suspicious activity reports to state and local authorities,
+  where appropriate.

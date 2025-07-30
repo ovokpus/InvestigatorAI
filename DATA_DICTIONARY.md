@@ -59,6 +59,18 @@ This document provides a complete reference for all data sources, files, and dat
 
 ---
 
+## 📚 Processed Knowledge Base for RAG
+*Processed text files from `get_text_data.py`*
+
+| Data Source | Filename/Format | Description | Fraud Investigation Relevance |
+|-------------|-----------------|-------------|------------------------------|
+| **Knowledge Base Index** | `fraud_knowledge_base/INDEX.txt` | Catalog of all processed documents with metadata, categories, and RAG integration notes | **System Reference**: Document inventory and loading instructions for RAG systems |
+| **FinCEN Advisories (Processed)** | `fincen_advisories_[Topic]_[Year].txt` | Extracted and cleaned text from FinCEN PDF advisories, optimized for LLM processing | **RAG Content**: Ready-to-use regulatory guidance for LLM reasoning and pattern matching |
+| **FFIEC Manual (Processed)** | `ffiec_examination_manual_[Section].txt` | Processed examination manual sections with structured formatting for compliance queries | **Compliance RAG**: Authoritative examination procedures accessible via natural language queries |
+| **Federal Guidance (Processed)** | `federal_guidance_[Agency]_[Topic].txt` | Cleaned text from federal agency guidance documents (Federal Reserve, FDIC, IRS) | **Multi-Agency RAG**: Cross-agency regulatory requirements for comprehensive compliance checking |
+
+---
+
 ## 📊 Statistical Workbooks & Trend Data
 *Excel sources from `get_additional_data.py`*
 
@@ -119,6 +131,7 @@ This document provides a complete reference for all data sources, files, and dat
 | **Economic Indicators** | Weekly | FRED data updates weekly; economic context |
 | **SAR Statistics** | Monthly | FinCEN publishes monthly; trend analysis |
 | **Regulatory Documents** | Weekly | New advisories and guidance published regularly |
+| **RAG Knowledge Base** | Weekly | Reprocess when new PDFs are added to maintain current content |
 | **Training Datasets** | Annually | Kaggle datasets updated infrequently |
 | **International Documents** | Quarterly | Major assessments published quarterly |
 
@@ -135,6 +148,7 @@ This document provides a complete reference for all data sources, files, and dat
 | **Risk Assessment** | World Bank Risk, FRED Indicators, EBA Metrics | Economic context, systemic risk |
 | **Typology Matching** | FinCEN Advisories, AMLSim Patterns, SWIFT Samples | Scheme identification, red flag detection |
 | **Compliance Verification** | BSA Requirements, FFIEC Manual, Regulatory PDFs | Regulatory requirements, control validation |
+| **RAG-Powered Analysis** | Processed Knowledge Base (fraud_knowledge_base) | Natural language queries, regulatory reasoning |
 | **Documentation** | SAR Statistics, INTERPOL Assessment, Open Banking | Benchmarking, international best practices |
 
 ### **File Organization Structure**
@@ -147,15 +161,52 @@ data/
 │   ├── international/           # Global assessments and standards
 │   ├── ofac_enhanced/           # Comprehensive sanctions data
 │   └── fatf/                    # Risk indicators and methodology
+├── fraud_knowledge_base/        # Processed text files for RAG
+│   ├── INDEX.txt               # Document catalog and metadata
+│   ├── fincen_advisories_*.txt # Processed FinCEN guidance
+│   ├── ffiec_examination_*.txt # Processed FFIEC manuals
+│   └── federal_guidance_*.txt  # Processed federal agency docs
 ├── alpha_vantage/               # Financial market data
 ├── fred/                        # US economic indicators
 ├── kaggle/                      # Fraud detection datasets
-├── pdf_downloads/               # Regulatory PDF documents
-└── [date-stamped files]         # Core regulatory data
+├── pdf_downloads/               # Original regulatory PDF documents
+└── [date-stamped files]         # Core regulatory data (CSV/JSON)
 ```
+
+---
+
+## 📖 Acronym Glossary
+
+| Acronym | Full Name | Description |
+|---------|-----------|-------------|
+| **AML** | Anti-Money Laundering | Regulatory framework to prevent money laundering and terrorist financing |
+| **API** | Application Programming Interface | Software interface for accessing data from external services |
+| **BSA** | Bank Secrecy Act | US law requiring financial institutions to report suspicious activities |
+| **CSV** | Comma-Separated Values | Plain text file format for tabular data |
+| **EBA** | European Banking Authority | EU regulatory body for banking supervision |
+| **EDGAR** | Electronic Data Gathering, Analysis, and Retrieval | SEC's system for corporate filings |
+| **FATF** | Financial Action Task Force | International body setting AML/CFT standards |
+| **FFIEC** | Federal Financial Institutions Examination Council | US interagency body for uniform examination standards |
+| **FinCEN** | Financial Crimes Enforcement Network | US Treasury bureau for financial intelligence |
+| **FRED** | Federal Reserve Economic Data | Economic data platform by Federal Reserve Bank of St. Louis |
+| **FX** | Foreign Exchange | Currency exchange markets and rates |
+| **GTO** | Geographic Targeting Order | FinCEN requirement for enhanced due diligence in specific regions |
+| **INTERPOL** | International Criminal Police Organization | Global police cooperation organization |
+| **JSON** | JavaScript Object Notation | Lightweight data interchange format |
+| **LLM** | Large Language Model | AI models trained on large text datasets for natural language processing |
+| **MSB** | Money Services Business | Financial service providers like money transmitters and currency exchanges |
+| **OFAC** | Office of Foreign Assets Control | US Treasury office administering economic sanctions |
+| **PDF** | Portable Document Format | Document format that preserves formatting across platforms |
+| **RAG** | Retrieval-Augmented Generation | AI technique combining information retrieval with language generation |
+| **SAR** | Suspicious Activity Report | Mandatory filing for potentially suspicious financial transactions |
+| **SDN** | Specially Designated Nationals | OFAC list of blocked persons and entities |
+| **SEC** | Securities and Exchange Commission | US federal agency regulating securities markets |
+| **SWIFT** | Society for Worldwide Interbank Financial Telecommunication | Global financial messaging network |
+| **XML** | eXtensible Markup Language | Structured markup language for data exchange |
 
 ---
 
 **Generated**: `2024-12-28 15:30:00`  
 **Scripts**: `get_data.py`, `get_text_data.py`, `get_additional_data.py`  
-**Total Data Sources**: 40+ distinct datasets and document collections 
+**Total Data Sources**: 45+ distinct datasets and document collections  
+**RAG-Ready**: Processed knowledge base with 7+ regulatory documents optimized for LLM reasoning 
