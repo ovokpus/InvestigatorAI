@@ -175,7 +175,7 @@ class AlphaVantageAPI:
         self.available = config.is_api_available("alpha_vantage")
         self.base_url = config.endpoints["alpha_vantage"]
     
-    def get_company_overview(self, symbol: str) -> Optional[Dict]:
+    def get_company_overview(self, symbol: str, save_to_file: bool = False) -> Optional[Dict]:
         """Get company overview from Alpha Vantage"""
         if not self.available:
             logger.warning("❌ Alpha Vantage API key not available")
@@ -193,6 +193,14 @@ class AlphaVantageAPI:
                 data = response.json()
                 if "Symbol" in data:
                     logger.info(f"✅ Retrieved company overview for {symbol}")
+                    
+                    if save_to_file:
+                        Path("data/alpha_vantage").mkdir(parents=True, exist_ok=True)
+                        filename = f"data/alpha_vantage/company_overview_{symbol}_{datetime.now().strftime('%Y%m%d')}.json"
+                        with open(filename, 'w') as f:
+                            json.dump(data, f, indent=2)
+                        logger.info(f"💾 Saved company overview to {filename}")
+                    
                     return data
                 else:
                     logger.warning(f"⚠️ No data found for symbol {symbol}")
@@ -203,7 +211,7 @@ class AlphaVantageAPI:
         
         return None
     
-    def get_fx_rates(self, from_currency: str, to_currency: str) -> Optional[Dict]:
+    def get_fx_rates(self, from_currency: str, to_currency: str, save_to_file: bool = False) -> Optional[Dict]:
         """Get foreign exchange rates"""
         if not self.available:
             return None
@@ -218,11 +226,218 @@ class AlphaVantageAPI:
         try:
             response = requests.get(self.base_url, params=params, timeout=30)
             if response.status_code == 200:
-                return response.json()
+                data = response.json()
+                
+                if save_to_file and data:
+                    Path("data/alpha_vantage").mkdir(parents=True, exist_ok=True)
+                    filename = f"data/alpha_vantage/fx_rates_{from_currency}_{to_currency}_{datetime.now().strftime('%Y%m%d')}.json"
+                    with open(filename, 'w') as f:
+                        json.dump(data, f, indent=2)
+                    logger.info(f"💾 Saved FX rates to {filename}")
+                
+                return data
         except Exception as e:
             logger.error(f"❌ Error fetching FX rates: {e}")
         
         return None
+    
+    def get_daily_stock_data(self, symbol: str, save_to_file: bool = False) -> Optional[Dict]:
+        """Get daily stock price data"""
+        if not self.available:
+            logger.warning("❌ Alpha Vantage API key not available")
+            return None
+        
+        params = {
+            "function": "TIME_SERIES_DAILY",
+            "symbol": symbol,
+            "apikey": self.api_key
+        }
+        
+        try:
+            response = requests.get(self.base_url, params=params, timeout=30)
+            if response.status_code == 200:
+                data = response.json()
+                if "Time Series (Daily)" in data:
+                    logger.info(f"✅ Retrieved daily stock data for {symbol}")
+                    
+                    if save_to_file:
+                        Path("data/alpha_vantage").mkdir(parents=True, exist_ok=True)
+                        filename = f"data/alpha_vantage/stock_daily_{symbol}_{datetime.now().strftime('%Y%m%d')}.json"
+                        with open(filename, 'w') as f:
+                            json.dump(data, f, indent=2)
+                        logger.info(f"💾 Saved stock data to {filename}")
+                    
+                    return data
+                else:
+                    logger.warning(f"⚠️ No stock data found for symbol {symbol}")
+        except Exception as e:
+            logger.error(f"❌ Error fetching stock data: {e}")
+        
+        return None
+    
+    def get_economic_indicators(self, save_to_file: bool = False) -> Dict[str, Optional[Dict]]:
+        """Get key economic indicators"""
+        if not self.available:
+            logger.warning("❌ Alpha Vantage API key not available")
+            return {}
+        
+        indicators = {
+            "unemployment": "UNEMPLOYMENT",
+            "inflation": "CPI",
+            "real_gdp": "REAL_GDP"
+        }
+        
+        results = {}
+        
+        for indicator_name, function in indicators.items():
+            params = {
+                "function": function,
+                "interval": "annual",
+                "apikey": self.api_key
+            }
+            
+            try:
+                time.sleep(12)  # Respect rate limits (5 calls per minute)
+                response = requests.get(self.base_url, params=params, timeout=30)
+                if response.status_code == 200:
+                    data = response.json()
+                    results[indicator_name] = data
+                    logger.info(f"✅ Retrieved {indicator_name} data")
+                    
+                    if save_to_file and data:
+                        Path("data/alpha_vantage").mkdir(parents=True, exist_ok=True)
+                        filename = f"data/alpha_vantage/economic_{indicator_name}_{datetime.now().strftime('%Y%m%d')}.json"
+                        with open(filename, 'w') as f:
+                            json.dump(data, f, indent=2)
+                        logger.info(f"💾 Saved {indicator_name} data to {filename}")
+                        
+            except Exception as e:
+                logger.error(f"❌ Error fetching {indicator_name} data: {e}")
+                results[indicator_name] = None
+        
+        return results
+
+
+class FREDAPI:
+    """Federal Reserve Economic Data (FRED) API"""
+    
+    def __init__(self, config: APIConfig):
+        self.config = config
+        self.api_key = config.api_keys["fred"]
+        self.available = config.is_api_available("fred")
+        self.base_url = config.endpoints["fred"]
+    
+    def get_series_data(self, series_id: str, save_to_file: bool = False) -> Optional[pd.DataFrame]:
+        """Get economic time series data from FRED"""
+        if not self.available:
+            logger.warning("❌ FRED API key not available")
+            return None
+        
+        url = f"{self.base_url}/series/observations"
+        params = {
+            "series_id": series_id,
+            "api_key": self.api_key,
+            "file_type": "json"
+        }
+        
+        try:
+            response = requests.get(url, params=params, timeout=30)
+            if response.status_code == 200:
+                data = response.json()
+                if "observations" in data:
+                    # Convert to DataFrame
+                    observations = data["observations"]
+                    df = pd.DataFrame(observations)
+                    df['date'] = pd.to_datetime(df['date'])
+                    df['value'] = pd.to_numeric(df['value'], errors='coerce')
+                    
+                    logger.info(f"✅ Retrieved FRED series {series_id}: {len(df)} observations")
+                    
+                    if save_to_file:
+                        Path("data/fred").mkdir(parents=True, exist_ok=True)
+                        filename = f"data/fred/series_{series_id}_{datetime.now().strftime('%Y%m%d')}.csv"
+                        df.to_csv(filename, index=False)
+                        logger.info(f"💾 Saved FRED series to {filename}")
+                    
+                    return df
+                else:
+                    logger.warning(f"⚠️ No data found for FRED series {series_id}")
+        except Exception as e:
+            logger.error(f"❌ Error fetching FRED series {series_id}: {e}")
+        
+        return None
+    
+    def get_multiple_series(self, series_dict: Dict[str, str], save_to_file: bool = False) -> Dict[str, Optional[pd.DataFrame]]:
+        """Get multiple economic series from FRED"""
+        if not self.available:
+            logger.warning("❌ FRED API key not available")
+            return {}
+        
+        results = {}
+        
+        for name, series_id in series_dict.items():
+            logger.info(f"🔄 Fetching FRED series: {name} ({series_id})")
+            data = self.get_series_data(series_id, save_to_file=save_to_file)
+            results[name] = data
+            
+            # Be respectful with rate limits
+            time.sleep(0.5)
+        
+        return results
+    
+    def get_key_economic_indicators(self, save_to_file: bool = False) -> Dict[str, Optional[pd.DataFrame]]:
+        """Get key economic indicators for fraud investigation context"""
+        indicators = {
+            "gdp": "GDP",  # Gross Domestic Product
+            "unemployment_rate": "UNRATE",  # Unemployment Rate
+            "federal_funds_rate": "FEDFUNDS",  # Federal Funds Rate
+            "consumer_price_index": "CPIAUCSL",  # Consumer Price Index
+            "money_supply_m2": "M2SL",  # Money Supply M2
+            "bank_credit": "TOTBKCR",  # Total Bank Credit
+            "commercial_paper": "COMPAPER",  # Commercial Paper Outstanding
+            "exchange_rate_euro": "DEXUSEU",  # USD/EUR Exchange Rate
+            "treasury_10y": "GS10",  # 10-Year Treasury Constant Maturity Rate
+            "corporate_aaa_spread": "AAA",  # AAA Corporate Bond Yield
+        }
+        
+        logger.info("🔄 Fetching key economic indicators from FRED...")
+        results = self.get_multiple_series(indicators, save_to_file=save_to_file)
+        
+        if save_to_file and any(results.values()):
+            # Create a summary file
+            Path("data/fred").mkdir(parents=True, exist_ok=True)
+            summary_filename = f"data/fred/economic_indicators_summary_{datetime.now().strftime('%Y%m%d')}.json"
+            
+            summary = {}
+            for name, df in results.items():
+                if df is not None and not df.empty:
+                    latest_value = df['value'].dropna().iloc[-1] if not df['value'].dropna().empty else None
+                    latest_date = df['date'].iloc[-1].strftime('%Y-%m-%d') if not df.empty else None
+                    summary[name] = {
+                        "latest_value": latest_value,
+                        "latest_date": latest_date,
+                        "total_observations": len(df)
+                    }
+            
+            with open(summary_filename, 'w') as f:
+                json.dump(summary, f, indent=2)
+            logger.info(f"💾 Saved economic indicators summary to {summary_filename}")
+        
+        return results
+    
+    def get_banking_indicators(self, save_to_file: bool = False) -> Dict[str, Optional[pd.DataFrame]]:
+        """Get banking sector indicators relevant to fraud detection"""
+        banking_indicators = {
+            "bank_deposits": "DPSACBW027SBOG",  # Deposits at Commercial Banks
+            "bank_loans": "TOTLL",  # Total Loans and Leases at Commercial Banks  
+            "charge_offs": "CORCCACBN",  # Charge-Off Rate on Credit Cards
+            "delinquency_rate": "DRCCLACBS",  # Delinquency Rate on Credit Cards
+            "net_interest_margin": "USNIM",  # Net Interest Margin for all US Banks
+            "return_on_assets": "USROA",  # Return on Assets for all US Banks
+        }
+        
+        logger.info("🔄 Fetching banking indicators from FRED...")
+        return self.get_multiple_series(banking_indicators, save_to_file=save_to_file)
 
 
 class SECEdgarAPI:
@@ -544,6 +759,7 @@ class CommercialDataAPIs:
         
         # Initialize API clients
         self.alpha_vantage = AlphaVantageAPI(self.config)
+        self.fred = FREDAPI(self.config)
         self.kaggle = KaggleAPI(self.config)
         self.sec_edgar = SECEdgarAPI(self.config)
         self.opencorporates = OpenCorporatesAPI(self.config)
@@ -681,6 +897,95 @@ class CommercialDataAPIs:
         print(f"📊 Retrieved company data for {company_name} from {len(company_data['sources'])} sources")
         return company_data
 
+    def get_fred_economic_data(self, save_to_file: bool = False) -> Dict[str, Any]:
+        """Get comprehensive economic data from FRED"""
+        print("🔄 Fetching economic data from FRED...")
+        
+        if not self.fred.available:
+            print("⚠️ FRED API not available. Set FRED_API_KEY in environment variables.")
+            return {}
+        
+        results = {}
+        
+        # Get key economic indicators
+        results["economic_indicators"] = self.fred.get_key_economic_indicators(save_to_file=save_to_file)
+        
+        # Get banking indicators
+        results["banking_indicators"] = self.fred.get_banking_indicators(save_to_file=save_to_file)
+        
+        print(f"✅ Retrieved FRED economic data from {len(results)} categories")
+        return results
+
+    def get_alpha_vantage_financial_data(self, symbols: List[str] = None, save_to_file: bool = False) -> Dict[str, Any]:
+        """Get comprehensive financial market data from Alpha Vantage"""
+        print("🔄 Fetching financial data from Alpha Vantage...")
+        
+        if not self.alpha_vantage.available:
+            print("⚠️ Alpha Vantage API not available. Set ALPHA_VANTAGE_API_KEY in environment variables.")
+            return {}
+        
+        if symbols is None:
+            # Default symbols for fraud investigation context
+            symbols = ["SPY", "XLF", "BTC-USD", "GLD"]  # S&P 500, Financial Sector, Bitcoin, Gold
+        
+        results = {}
+        
+        # Get company overviews
+        results["company_overviews"] = {}
+        for symbol in symbols:
+            overview = self.alpha_vantage.get_company_overview(symbol, save_to_file=save_to_file)
+            if overview:
+                results["company_overviews"][symbol] = overview
+            time.sleep(12)  # Respect rate limits
+        
+        # Get economic indicators
+        results["economic_indicators"] = self.alpha_vantage.get_economic_indicators(save_to_file=save_to_file)
+        
+        # Get FX rates for common money laundering currencies
+        fx_pairs = [("USD", "EUR"), ("USD", "CNY"), ("USD", "RUB"), ("USD", "AED")]
+        results["fx_rates"] = {}
+        for from_curr, to_curr in fx_pairs:
+            fx_data = self.alpha_vantage.get_fx_rates(from_curr, to_curr, save_to_file=save_to_file)
+            if fx_data:
+                results["fx_rates"][f"{from_curr}_{to_curr}"] = fx_data
+            time.sleep(12)  # Respect rate limits
+        
+        print(f"✅ Retrieved Alpha Vantage data for {len(symbols)} symbols and {len(fx_pairs)} FX pairs")
+        return results
+
+    def get_kaggle_datasets(self, save_to_file: bool = False) -> Dict[str, Any]:
+        """Get fraud datasets from Kaggle"""
+        print("🔄 Fetching datasets from Kaggle...")
+        
+        if not self.kaggle.available:
+            print("⚠️ Kaggle API not available. Set KAGGLE_USERNAME and KAGGLE_KEY in environment variables.")
+            return {}
+        
+        results = {}
+        
+        # Get PaySim dataset
+        paysim_data = self.kaggle.get_paysim_dataset()
+        if paysim_data is not None:
+            results["paysim"] = paysim_data
+            if save_to_file:
+                Path("data/kaggle").mkdir(parents=True, exist_ok=True)
+                filename = f"data/kaggle/paysim_processed_{datetime.now().strftime('%Y%m%d')}.csv"
+                paysim_data.to_csv(filename, index=False)
+                print(f"💾 Saved processed PaySim data to {filename}")
+        
+        # Get Credit Card Fraud dataset
+        cc_fraud_data = self.kaggle.get_credit_card_fraud_dataset()
+        if cc_fraud_data is not None:
+            results["credit_card_fraud"] = cc_fraud_data
+            if save_to_file:
+                Path("data/kaggle").mkdir(parents=True, exist_ok=True)
+                filename = f"data/kaggle/credit_card_fraud_processed_{datetime.now().strftime('%Y%m%d')}.csv"
+                cc_fraud_data.to_csv(filename, index=False)
+                print(f"💾 Saved processed Credit Card Fraud data to {filename}")
+        
+        print(f"✅ Retrieved {len(results)} Kaggle datasets")
+        return results
+
 # ============================================================================
 # SECTION 4: WEB SCRAPING FOR PUBLIC INFORMATION
 # ============================================================================
@@ -811,6 +1116,15 @@ class RealWorldDataPipeline:
         if include_paid_apis:
             print("\n💰 Enhanced Commercial Data (Paid APIs):")
             
+            # FRED Economic Data
+            all_data["fred_data"] = self.commercial_apis.get_fred_economic_data(save_to_file=save_to_files)
+            
+            # Alpha Vantage Financial Data
+            all_data["alpha_vantage_data"] = self.commercial_apis.get_alpha_vantage_financial_data(save_to_file=save_to_files)
+            
+            # Enhanced Kaggle Datasets
+            all_data["kaggle_datasets"] = self.commercial_apis.get_kaggle_datasets(save_to_file=save_to_files)
+            
             # Company data examples
             test_companies = ["Apple Inc", "Microsoft Corporation", "Tesla Inc"]
             all_data["company_data"] = {}
@@ -840,6 +1154,12 @@ class RealWorldDataPipeline:
         print("   ✅ PaySim Dataset (Kaggle - if API available)")
         print("   ✅ Credit Card Fraud Dataset (Kaggle - if API available)")
         print("")
+        print("📋 Enhanced data available with API keys:")
+        print("   🔑 FRED Economic Indicators (Set FRED_API_KEY)")
+        print("   🔑 Alpha Vantage Financial Data (Set ALPHA_VANTAGE_API_KEY)")
+        print("   🔑 Enhanced Company Data (OpenCorporates, Alpha Vantage)")
+        print("   💡 Use option 2 to download ALL available data")
+        print("")
 
         return self.collect_all_data(save_to_files=True, include_paid_apis=False)
 
@@ -866,6 +1186,7 @@ class RealWorldDataPipeline:
         apis_to_check = [
             ("Kaggle", "kaggle"),
             ("Alpha Vantage", "alpha_vantage"),
+            ("FRED", "fred"),
             ("OpenCorporates", "opencorporates"),
             ("Companies House", "companies_house"),
             ("SEC EDGAR", "sec_edgar"),
@@ -881,7 +1202,7 @@ class RealWorldDataPipeline:
             
             if api_key == "kaggle" and not available:
                 note = " (Set KAGGLE_USERNAME and KAGGLE_KEY)"
-            elif api_key in ["alpha_vantage", "opencorporates", "companies_house"] and not available:
+            elif api_key in ["alpha_vantage", "fred", "opencorporates", "companies_house"] and not available:
                 note = f" (Set {api_key.upper()}_API_KEY)"
             elif api_key == "sec_edgar":
                 note = " (Set SEC_EDGAR_USER_AGENT)" if not available else " (Free)"
