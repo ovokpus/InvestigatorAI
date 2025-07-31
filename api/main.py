@@ -1,0 +1,272 @@
+"""FastAPI application for InvestigatorAI"""
+import logging
+from datetime import datetime
+from typing import Optional
+from fastapi import FastAPI, HTTPException, Depends
+from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
+
+from .core.config import get_settings, initialize_llm_components, Settings
+from .models.schemas import (
+    InvestigationRequest, InvestigationResponse, HealthResponse,
+    VectorSearchResult, AgentToolResponse
+)
+from .services.document_processor import DocumentProcessor
+from .services.vector_store import VectorStoreManager
+from .services.external_apis import ExternalAPIService
+from .agents.multi_agent_system import FraudInvestigationSystem
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Global application state
+app_state = {
+    "fraud_investigation_system": None,
+    "vector_store": None,
+    "external_api_service": None,
+    "settings": None
+}
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan manager"""
+    logger.info("🚀 Starting InvestigatorAI API...")
+    
+    try:
+        # Initialize settings
+        settings = get_settings()
+        app_state["settings"] = settings
+        logger.info("✅ Settings loaded")
+        
+        # Initialize LLM components
+        llm, embeddings = initialize_llm_components(settings)
+        logger.info("✅ LLM and embeddings initialized")
+        
+        # Initialize external API service
+        external_api_service = ExternalAPIService(settings)
+        app_state["external_api_service"] = external_api_service
+        logger.info("✅ External API service initialized")
+        
+        # Initialize document processor and vector store
+        document_processor = DocumentProcessor(embeddings, settings)
+        vector_store = VectorStoreManager.initialize(embeddings, settings, document_processor)
+        app_state["vector_store"] = vector_store
+        logger.info("✅ Vector store initialized")
+        
+        # Initialize fraud investigation system
+        fraud_investigation_system = FraudInvestigationSystem(llm, external_api_service)
+        app_state["fraud_investigation_system"] = fraud_investigation_system
+        logger.info("✅ Fraud investigation system initialized")
+        
+        logger.info("🎉 InvestigatorAI API ready!")
+        
+    except Exception as e:
+        logger.error(f"❌ Failed to initialize application: {e}")
+        raise
+    
+    yield
+    
+    # Cleanup
+    logger.info("🛑 Shutting down InvestigatorAI API...")
+
+# Create FastAPI app
+app = FastAPI(
+    title="InvestigatorAI",
+    description="Multi-Agent Fraud Investigation System API",
+    version="1.0.0",
+    lifespan=lifespan
+)
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Configure appropriately for production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Dependency functions
+def get_fraud_investigation_system() -> FraudInvestigationSystem:
+    """Get fraud investigation system dependency"""
+    system = app_state.get("fraud_investigation_system")
+    if not system:
+        raise HTTPException(status_code=503, detail="Fraud investigation system not available")
+    return system
+
+def get_vector_store():
+    """Get vector store dependency"""
+    vector_store = app_state.get("vector_store")
+    if not vector_store or not vector_store.is_initialized:
+        raise HTTPException(status_code=503, detail="Vector store not available")
+    return vector_store
+
+def get_external_api_service() -> ExternalAPIService:
+    """Get external API service dependency"""
+    service = app_state.get("external_api_service")
+    if not service:
+        raise HTTPException(status_code=503, detail="External API service not available")
+    return service
+
+def get_app_settings() -> Settings:
+    """Get application settings dependency"""
+    settings = app_state.get("settings")
+    if not settings:
+        raise HTTPException(status_code=503, detail="Application settings not available")
+    return settings
+
+# Health check endpoint
+@app.get("/health", response_model=HealthResponse)
+async def health_check(
+    settings: Settings = Depends(get_app_settings)
+) -> HealthResponse:
+    """Health check endpoint"""
+    vector_store = app_state.get("vector_store")
+    
+    return HealthResponse(
+        status="healthy",
+        timestamp=datetime.now(),
+        version="1.0.0",
+        api_keys_available=settings.api_keys_available,
+        vector_store_initialized=vector_store.is_initialized if vector_store else False
+    )
+
+# Main investigation endpoint
+@app.post("/investigate", response_model=InvestigationResponse)
+async def investigate_fraud(
+    request: InvestigationRequest,
+    fraud_system: FraudInvestigationSystem = Depends(get_fraud_investigation_system)
+) -> InvestigationResponse:
+    """Run a fraud investigation using the multi-agent system"""
+    
+    try:
+        # Convert request to transaction details
+        transaction_details = {
+            "amount": request.amount,
+            "currency": request.currency,
+            "description": request.description,
+            "customer_name": request.customer_name,
+            "account_type": request.account_type,
+            "customer_risk_rating": request.risk_rating,
+            "country_to": request.country_to,
+            "timestamp": datetime.now().isoformat()
+        }
+        
+        # Run investigation
+        result = fraud_system.investigate_fraud(transaction_details)
+        
+        # Return response
+        return InvestigationResponse(
+            investigation_id=result.get("investigation_id", "Unknown"),
+            status=result.get("status", "Unknown"),
+            final_decision=result.get("final_decision", "Pending"),
+            agents_completed=result.get("agents_completed", 0),
+            total_messages=result.get("total_messages", 0),
+            transaction_details=result.get("transaction_details", {}),
+            all_agents_finished=result.get("all_agents_finished", False),
+            error=result.get("error"),
+            full_results=result.get("full_results")
+        )
+        
+    except Exception as e:
+        logger.error(f"Investigation failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Investigation failed: {str(e)}")
+
+# Vector search endpoint
+@app.get("/search", response_model=list[VectorSearchResult])
+async def search_documents(
+    query: str,
+    max_results: int = 5,
+    vector_store = Depends(get_vector_store)
+) -> list[VectorSearchResult]:
+    """Search regulatory documents"""
+    
+    try:
+        results = vector_store.search(query, k=max_results)
+        return results
+        
+    except Exception as e:
+        logger.error(f"Search failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}")
+
+# Exchange rate endpoint
+@app.get("/exchange-rate", response_model=AgentToolResponse)
+async def get_exchange_rate(
+    from_currency: str,
+    to_currency: str = "USD",
+    external_api: ExternalAPIService = Depends(get_external_api_service)
+) -> AgentToolResponse:
+    """Get exchange rate between currencies"""
+    
+    try:
+        result = external_api.get_exchange_rate(from_currency, to_currency)
+        
+        return AgentToolResponse(
+            result=result,
+            source="ExchangeRates-API",
+            timestamp=datetime.now()
+        )
+        
+    except Exception as e:
+        logger.error(f"Exchange rate lookup failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Exchange rate lookup failed: {str(e)}")
+
+# Web search endpoint
+@app.get("/web-search", response_model=AgentToolResponse)
+async def search_web(
+    query: str,
+    max_results: int = 3,
+    external_api: ExternalAPIService = Depends(get_external_api_service)
+) -> AgentToolResponse:
+    """Search the web using Tavily"""
+    
+    try:
+        result = external_api.search_web(query, max_results)
+        
+        return AgentToolResponse(
+            result=result,
+            source="Tavily",
+            timestamp=datetime.now()
+        )
+        
+    except Exception as e:
+        logger.error(f"Web search failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Web search failed: {str(e)}")
+
+# ArXiv search endpoint
+@app.get("/arxiv-search", response_model=AgentToolResponse)
+async def search_arxiv(
+    query: str,
+    max_results: int = 2,
+    external_api: ExternalAPIService = Depends(get_external_api_service)
+) -> AgentToolResponse:
+    """Search ArXiv for research papers"""
+    
+    try:
+        result = external_api.search_arxiv(query, max_results)
+        
+        return AgentToolResponse(
+            result=result,
+            source="ArXiv",
+            timestamp=datetime.now()
+        )
+        
+    except Exception as e:
+        logger.error(f"ArXiv search failed: {e}")
+        raise HTTPException(status_code=500, detail=f"ArXiv search failed: {str(e)}")
+
+# Root endpoint
+@app.get("/")
+async def root():
+    """Root endpoint"""
+    return {
+        "message": "InvestigatorAI Multi-Agent Fraud Investigation System",
+        "version": "1.0.0",
+        "docs": "/docs",
+        "health": "/health"
+    }
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("api.main:app", host="0.0.0.0", port=8000, reload=True)

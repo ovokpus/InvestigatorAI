@@ -44,7 +44,7 @@ The target users - fraud analysts, AML compliance officers, and investigation su
 *Provides sophisticated multi-agent workflow management with state persistence, enabling complex investigation logic with proper error handling and audit trails required in financial environments.*
 
 #### 4. **Vector Database: Qdrant**
-*Offers production-grade vector search with metadata filtering capabilities essential for searching historical cases by transaction type, amount ranges, and geographic constraints.*
+*Offers production-grade vector search with metadata filtering capabilities essential for searching regulatory documents and research papers by content type, jurisdiction, and regulatory topic.*
 
 #### 5. **Monitoring: LangSmith**
 *Enables comprehensive agent performance tracking and investigation audit trails necessary for regulatory compliance and system optimization.*
@@ -62,7 +62,7 @@ The target users - fraud analysts, AML compliance officers, and investigation su
 
 **Multi-Agent Investigation Workflow**: The system employs five specialized agents coordinated through LangGraph state management:
 
-1. **Historical Case Researcher Agent** - Uses RAG to find similar fraud patterns from 10,000+ historical cases
+1. **Regulatory Research Agent** - Uses RAG to find relevant guidance from government regulatory documents and academic research papers
 2. **Evidence Collection Agent** - Aggregates transaction data, behavioral patterns, and risk indicators  
 3. **Regulatory Compliance Agent** - Ensures AML/BSA/SAR requirements are met with automated compliance checking
 4. **Investigation Report Agent** - Generates comprehensive documentation with regulatory citations
@@ -78,20 +78,24 @@ The target users - fraud analysts, AML compliance officers, and investigation su
 
 #### Primary RAG Data Sources
 
-1. **Fraud Knowledge Base (Local)**: 
+1. **Government Regulatory Documents (Local)**:
    - **Purpose**: Power RAG system with real regulatory guidance and fraud investigation procedures
-   - **Contents**: 50+ government documents including FinCEN advisories, FFIEC BSA/AML examination procedures, IRS SAR requirements
-   - **Format**: Text files extracted from official PDF sources for optimal embedding and retrieval
+   - **Contents**: 9 official government PDF documents including:
+     - FinCEN Human Trafficking Advisory (2020)
+     - FinCEN SAR Filing Instructions
+     - FFIEC BSA/AML Manual - Customer Due Diligence
+     - Federal Reserve SAR Requirements
+     - FDIC Suspicious Activity Report Form
+     - IRS SAR for Money Services Businesses
+     - Open Banking Guidelines
+     - Interpol Fraud Assessment
+   - **Format**: Text extracted from official PDF sources for optimal embedding and retrieval
 
-2. **Historical Case Database (Synthetic)**:
-   - **Purpose**: Provide similar case matching and pattern recognition capabilities  
-   - **Contents**: 1,000+ synthetic fraud investigation cases with transaction patterns, investigation steps, and outcomes
-   - **Structure**: Structured JSON with transaction metadata, evidence chains, and regulatory outcomes
-
-3. **Regulatory Reference Data**:
-   - **OFAC SDN List**: Sanctions screening for beneficiary checking
-   - **FATF High-Risk Jurisdictions**: Geographic risk assessment
-   - **BSA Filing Requirements**: Compliance threshold and procedure guidance
+2. **ArXiv Research Papers**:
+   - **Purpose**: Access latest academic research on fraud detection, AML techniques, and financial crime patterns
+   - **Contents**: Peer-reviewed papers on machine learning fraud detection, behavioral analysis, and regulatory compliance
+   - **Usage**: Supplement regulatory guidance with cutting-edge research methodologies and case studies
+   - **API**: ArXiv API for real-time access to fraud detection research
 
 #### External APIs for Real-Time Data
 
@@ -101,37 +105,58 @@ The target users - fraud analysts, AML compliance officers, and investigation su
 
 2. **Tavily Search API**:
    - **Purpose**: Real-time web search for emerging fraud patterns and regulatory updates
-   - **Usage**: Supplement static knowledge base with current fraud alerts and regulatory guidance
+   - **Usage**: Supplement static knowledge base with current fraud alerts, regulatory changes, and emerging threats
 
-3. **Open Banking Transaction APIs (Simulated)**:
-   - **Purpose**: Retrieve detailed transaction data and account history
-   - **Usage**: Gather evidence for behavioral analysis and velocity checking
+### Typical User Questions
+
+Fraud analysts typically ask these specific questions during investigations:
+
+1. **Regulatory Compliance**:
+   - "What is the SAR filing threshold for this type of transaction?"
+   - "What documentation is required for CTR reporting?"
+   - "Are there specific red flags for this transaction pattern?"
+
+2. **Risk Assessment**:
+   - "What are the money laundering indicators for wire transfers to this country?"
+   - "How do I identify structuring patterns in cash deposits?"
+   - "What behavioral patterns suggest account takeover fraud?"
+
+3. **Investigation Procedures**:
+   - "What additional KYC verification is needed for this customer?"
+   - "How should I document this suspicious activity for compliance?"
+   - "What evidence should I collect for a potential SAR filing?"
+
+4. **Historical Analysis**:
+   - "Have we seen similar transaction patterns before?"
+   - "What was the outcome of investigations involving this merchant?"
+   - "Are there trends in fraud involving this geographic region?"
 
 ### Chunking Strategy
 
 #### Hierarchical Chunking by Content Type
 
-**Regulatory Documents (FinCEN, FFIEC, etc.)**:
+**Government Regulatory Documents (FinCEN, FFIEC, etc.)**:
 - **Chunk Size**: 1,000 tokens with 200-token overlap
 - **Strategy**: Section-based chunking preserving regulatory structure (requirements, procedures, examples)
 - **Justification**: Regulatory content has clear hierarchical structure where context must be preserved for accurate compliance guidance
 
-**Historical Case Data**:
-- **Chunk Size**: Complete case records (typically 500-800 tokens)
-- **Strategy**: Case-level chunking maintaining integrity of investigation narrative
-- **Justification**: Investigation cases must be retrieved as complete units to provide meaningful similar case analysis
+**ArXiv Research Papers**:
+- **Chunk Size**: 800 tokens with 150-token overlap
+- **Strategy**: Abstract and section-based chunking maintaining research methodology coherence
+- **Justification**: Academic papers require preservation of research context, methodology, and findings for accurate retrieval of fraud detection techniques
 
-**Transaction Pattern Library**:
-- **Chunk Size**: 300-500 tokens per fraud typology
-- **Strategy**: Pattern-based chunking organizing by fraud type (money laundering, identity theft, etc.)
-- **Justification**: Fraud patterns need contextual coherence to be useful for pattern matching and risk assessment
+**Mixed Content Optimization**:
+- **Preprocessing**: Extract and clean text from PDFs, removing headers/footers and formatting artifacts
+- **Content Classification**: Automatically categorize chunks by content type (procedures, definitions, case studies, research findings)
+- **Context Preservation**: Maintain document provenance and section hierarchy for accurate attribution
 
 #### Metadata Enhancement Strategy
 All chunks include structured metadata for advanced filtering:
-- Document type (regulatory, case, pattern)
-- Jurisdiction (US, international, state-specific)  
-- Transaction types (wire, ACH, card, etc.)
-- Amount ranges and risk levels
+- Document type (regulatory, research, guidance)
+- Source agency (FinCEN, FFIEC, FDIC, ArXiv)
+- Content category (procedures, definitions, red flags, research findings)
+- Jurisdiction and applicability (US federal, international, specific regulations)
+- Last updated date for regulatory currency
 
 ---
 
