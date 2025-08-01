@@ -770,7 +770,7 @@ class FraudInvestigationSystem:
                     amount = transaction_details.get('amount', 0)
                     query = f"suspicious activity report requirements {country} ${amount:,}"
                     results = vector_store.search(query, k=2)
-                    return "\n".join([f"• {r.content[:150]}..." for r in results])
+                    return "\n".join([f"• {r.content}" for r in results])  # Show full document content
                 return "Vector database not available for document search"
             
             # Execute parallel tasks

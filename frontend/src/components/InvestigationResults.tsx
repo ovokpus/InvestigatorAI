@@ -6,233 +6,261 @@ interface MarkdownRendererProps {
 }
 
 function MarkdownRenderer({ content }: MarkdownRendererProps) {
-  const renderMarkdown = (text: string) => {
+  // Parse the content into structured sections
+  const parseContent = (text: string) => {
     const lines = text.split('\n');
-    const processedLines: JSX.Element[] = [];
-    let seenTransactionDetails = false;
-    let skipUntilNextAgent = false;
     
-    lines.forEach((line, index) => {
-      // Skip redundant transaction details sections after the first one
-      if (line.includes('Transaction Details:') && seenTransactionDetails) {
-        skipUntilNextAgent = true;
-        return;
-      }
-      
-      // Stop skipping when we hit a new agent or important section
-      if (skipUntilNextAgent && (
-        line.includes('**Regulatory Research**') ||
-        line.includes('**Evidence Collection**') ||
-        line.includes('**Compliance Check**') ||
-        line.includes('**Report Generation**') ||
-        line.includes('**Supervisor**') ||
-        line.includes('Regulatory Compliance Assessment') ||
-        line.includes('Risk Assessment') ||
-        line.includes('Filing Requirements') ||
-        line.includes('## Investigation Report') ||
-        line.includes('## ') ||
-        line.includes('### ')
-      )) {
-        skipUntilNextAgent = false;
-      }
-      
-      // Continue skipping if we're in a redundant section
-      if (skipUntilNextAgent) {
-        return;
-      }
-      
-      // Mark that we've seen transaction details
-      if (line.includes('Transaction Details:')) {
-        seenTransactionDetails = true;
-      }
-      
-      // Handle bold text **text** and inline bullet points
-      let processedLine = line
-        .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-blue-800 dark:text-blue-200">$1</strong>')
-        .replace(/(\s+)•(\s+)/g, '<br/>• ') // Convert inline bullets to line breaks with proper bullet formatting
-        .replace(/Document analysis:\s*•/g, 'Document analysis:<br/><br/>• ') // Handle specific case with extra spacing
-        .replace(/Web intelligence:\s*•/g, 'Web intelligence:<br/><br/>• ')
-        .replace(/Academic research:\s*•/g, 'Academic research:<br/><br/>• ')
-        .replace(/(\d+)\.\s*([A-Z])/g, '<br/><br/>$1. $2') // Add spacing before numbered items
-        .replace(/Summary:\s*/g, '<br/><strong>Summary:</strong> '); // Format summary sections
-      
-      // Handle bullet points (• character or - at start of line)
-      if (line.trim().startsWith('•') || line.trim().startsWith('- ')) {
-        const bulletContent = line.replace(/^[\s]*[•\-]\s*/, '').trim();
-        processedLines.push(
-          <div key={index} className="flex items-start space-x-3 mb-2 ml-4">
-            <span className="text-slate-600 dark:text-slate-400 mt-1">•</span>
-            <div 
-              className="text-slate-700 dark:text-slate-300 break-words overflow-wrap-anywhere flex-1"
-              dangerouslySetInnerHTML={{ __html: bulletContent.replace(/\*\*(.*?)\*\*/g, '<strong class="font-medium text-slate-800 dark:text-slate-200">$1</strong>') }}
-            />
-          </div>
-        );
-        return;
-      }
-      
-      // Handle numbered lists (1. 2. etc.) with enhanced formatting
-      if (/^\s*\d+\.\s/.test(line)) {
-        const numberMatch = line.match(/^(\s*)(\d+)\.\s(.*)$/);
-        if (numberMatch) {
-          const [, indent, number, content] = numberMatch;
-          
-          // Format content with professional styling
-          let formattedContent = content
-            .replace(/\*\*(.*?)\*\*/g, '<strong class="font-medium text-slate-800 dark:text-slate-200">$1</strong>')
-            .replace(/Summary:\s*/g, '<br/><div class="mt-2 mb-1 font-medium text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/60 px-2 py-1 rounded inline-block">📋 Summary:</div> ')
-            .replace(/(\w{3}\s+\d{1,2},\s+\d{4})/g, '<span class="inline-block bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded text-sm font-medium text-slate-700 dark:text-slate-300 ml-1">📅 $1</span>'); // Format dates in numbered lists too
-          
-          processedLines.push(
-            <div key={index} className="flex items-start space-x-3 mb-4 ml-4 p-3 bg-slate-50 dark:bg-slate-800/40 rounded-md border-l-2 border-slate-300 dark:border-slate-600">
-              <span className="text-slate-700 dark:text-slate-300 mt-1 font-semibold text-lg bg-slate-200 dark:bg-slate-700 rounded-full w-8 h-8 flex items-center justify-center">{number}</span>
-              <div 
-                className="text-slate-700 dark:text-slate-300 break-words overflow-wrap-anywhere flex-1 leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: formattedContent }}
-              />
-            </div>
-          );
-          return;
-        }
-      }
-      
-      // Handle headers starting with **
-      if (line.startsWith('**') && line.endsWith('**')) {
-        const headerText = line.replace(/\*\*/g, '');
-        processedLines.push(
-          <div key={index} className="text-lg font-bold text-blue-800 dark:text-blue-200 mt-4 mb-2">
-            {headerText}
-          </div>
-        );
-        return;
-      }
-      
-      // Handle markdown headers (## and ###)
-      if (line.startsWith('### ')) {
-        const headerText = line.replace('### ', '');
-        processedLines.push(
-          <div key={index} className="text-base font-bold text-gray-800 dark:text-gray-200 mt-3 mb-2">
-            {headerText}
-          </div>
-        );
-        return;
-      }
-      
-      if (line.startsWith('## ')) {
-        const headerText = line.replace('## ', '');
-        processedLines.push(
-          <div key={index} className="text-lg font-bold text-gray-800 dark:text-gray-200 mt-4 mb-2">
-            {headerText}
-          </div>
-        );
-        return;
-      }
-      
-      // Handle main investigation headers
+    const sections = {
+      header: '',
+      keyFindings: '',
+      status: ''
+    };
+    
+    let currentSection = 'header';
+    let keyFindingsStarted = false;
+    
+    for (const line of lines) {
       if (line.includes('FRAUD INVESTIGATION COMPLETE')) {
-        processedLines.push(
-          <div key={index} className="text-2xl font-bold text-slate-800 dark:text-slate-200 mt-6 mb-4 text-center py-4 bg-slate-100 dark:bg-slate-800/60 rounded-lg border border-slate-300 dark:border-slate-600">
-            🔍 FRAUD INVESTIGATION COMPLETE
-          </div>
-        );
-        return;
+        sections.header = line;
+      } else if (line.includes('KEY FINDINGS')) {
+        currentSection = 'keyFindings';
+        keyFindingsStarted = true;
+        continue;
+      } else if (line.includes('INVESTIGATION STATUS')) {
+        currentSection = 'status';
+        sections.status = line;
+        continue;
       }
       
-      // Handle KEY FINDINGS header
-      if (line.includes('KEY FINDINGS')) {
-        processedLines.push(
-          <div key={index} className="text-xl font-semibold text-slate-800 dark:text-slate-200 mt-6 mb-4 py-3 px-4 bg-slate-50 dark:bg-slate-800/40 rounded-md border-l-4 border-slate-400 dark:border-slate-500">
-            📊 KEY FINDINGS:
-          </div>
-        );
-        return;
+      if (currentSection === 'keyFindings' && keyFindingsStarted) {
+        sections.keyFindings += line + '\n';
       }
-      
-      // Handle INVESTIGATION STATUS header
-      if (line.includes('INVESTIGATION STATUS')) {
-        processedLines.push(
-          <div key={index} className="text-lg font-medium text-slate-700 dark:text-slate-300 mt-6 mb-3 py-2 bg-slate-100 dark:bg-slate-800/50 rounded px-3">
-            ✅ {line.trim()}
-          </div>
-        );
-        return;
-      }
-      
-      // Handle agent findings (lines starting with **)
-      if (processedLine.includes('<strong')) {
-        // Determine agent type for color coding
-        let bgColor = 'bg-blue-50 dark:bg-blue-950/30';
-        let borderColor = 'border-blue-500';
-        
-        if (line.includes('Regulatory Research')) {
-          bgColor = 'bg-slate-50 dark:bg-slate-800/40';
-          borderColor = 'border-slate-300 dark:border-slate-600';
-        } else if (line.includes('Evidence Collection')) {
-          bgColor = 'bg-blue-50 dark:bg-blue-800/40';
-          borderColor = 'border-blue-300 dark:border-blue-600';
-        } else if (line.includes('Compliance Check')) {
-          bgColor = 'bg-emerald-50 dark:bg-emerald-800/40';
-          borderColor = 'border-emerald-300 dark:border-emerald-600';
-        } else if (line.includes('Report Generation')) {
-          bgColor = 'bg-amber-50 dark:bg-amber-800/40';
-          borderColor = 'border-amber-300 dark:border-amber-600';
-        } else if (line.includes('Supervisor')) {
-          bgColor = 'bg-gray-50 dark:bg-gray-800/40';
-          borderColor = 'border-gray-300 dark:border-gray-600';
-        }
-        
-        // Format agent content with professional, subtle styling
-        let formattedContent = processedLine
-          .replace(/(REGULATORY ANALYSIS|EVIDENCE COLLECTION|COMPLIANCE CHECK|FINAL REPORT):/g, '<div class="text-lg font-semibold mb-3 pb-2 text-slate-800 dark:text-slate-200 border-b border-slate-200 dark:border-slate-700">$1:</div>')
-          .replace(/Document analysis:/g, '<div class="mt-4 mb-2 font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800/60 px-3 py-2 rounded-md">📄 Document Analysis:</div>')
-          .replace(/Web intelligence:/g, '<div class="mt-4 mb-2 font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800/60 px-3 py-2 rounded-md">🌐 Web Intelligence:</div>')
-          .replace(/Academic research:/g, '<div class="mt-4 mb-2 font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800/60 px-3 py-2 rounded-md">🎓 Academic Research:</div>')
-          .replace(/Risk assessment:/g, '<div class="mt-3 mb-2 font-medium text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/40 px-2 py-1 rounded">⚠️ Risk Assessment:</div>')
-          .replace(/Regulatory compliance:/g, '<div class="mt-3 mb-2 font-medium text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/40 px-2 py-1 rounded">📋 Regulatory Compliance:</div>')
-          .replace(/(\w{3}\s+\d{1,2},\s+\d{4})/g, '<span class="inline-block bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded text-sm font-medium text-slate-700 dark:text-slate-300">📅 $1</span>') // Format dates
-          .replace(/Summary:/g, '<div class="mt-3 mb-2 font-medium text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/60 px-3 py-1 rounded">📋 Summary:</div>');
-        
-        processedLines.push(
-          <div 
-            key={index} 
-            className={`mb-4 p-5 ${bgColor} rounded-lg border-l-4 ${borderColor} shadow-sm break-words overflow-wrap-anywhere`}
-            dangerouslySetInnerHTML={{ __html: formattedContent }}
-            style={{ lineHeight: '1.7' }}
-          />
-        );
-        return;
-      }
-      
-      // Handle regular content with indentation
-      if (line.trim() && !line.startsWith('**')) {
-        processedLines.push(
-          <div key={index} className="text-gray-700 dark:text-gray-300 mb-2 ml-4 break-words overflow-wrap-anywhere">
-            {line.trim()}
-          </div>
-        );
-        return;
-      }
-      
-      // Empty lines for spacing
-      if (!line.trim()) {
-        processedLines.push(<div key={index} className="h-2"></div>);
-        return;
-      }
-      
-      processedLines.push(
-        <div 
-          key={index} 
-          className="text-gray-800 dark:text-gray-200 mb-1 break-words overflow-wrap-anywhere"
-          dangerouslySetInnerHTML={{ __html: processedLine }}
-          style={{ lineHeight: '1.6' }}
-        />
-      );
-    });
+    }
     
-    return processedLines;
+    return sections;
   };
 
-  return <div>{renderMarkdown(content)}</div>;
+  const renderAgentSection = (title: string, content: string) => {
+    // FIRST: Remove the duplicate header patterns like "****: REGULATORY ANALYSIS:"
+    let processedContent = content
+      .replace(/^\*{4}:\s*(REGULATORY ANALYSIS|EVIDENCE COLLECTION|COMPLIANCE CHECK|FINAL REPORT):\s*/i, '')
+      .trim();
+    
+    // AGGRESSIVE text breaking - split on multiple patterns simultaneously
+    processedContent = processedContent
+      // Break before risk/compliance patterns
+      .replace(/Risk assessment:/gi, '|||BREAK|||**Risk assessment:**')
+      .replace(/Regulatory compliance:/gi, '|||BREAK|||**Regulatory compliance:**')
+      .replace(/Document analysis:/gi, '|||BREAK|||**Document analysis:**')
+      .replace(/Web intelligence:/gi, '|||BREAK|||**Web intelligence:**')
+      .replace(/Academic research:/gi, '|||BREAK|||**Academic research:**')
+      .replace(/Suspicious indicators:/gi, '|||BREAK|||**Suspicious indicators:**')
+      .replace(/Risk classification:/gi, '|||BREAK|||**Risk classification:**')
+      .replace(/Summary:/gi, '|||BREAK|||**Summary:**')
+      .replace(/Filing requirements:/gi, '|||BREAK|||**Filing requirements:**')
+      .replace(/Key findings:/gi, '|||BREAK|||**Key findings:**')
+      .replace(/Status:/gi, '|||BREAK|||**Status:**')
+      
+      // Break before numbered items
+      .replace(/(\s)(\d+)\.\s+([A-Z])/g, '$1|||BREAK|||$2. $3')
+      
+      // Break before bullet points
+      .replace(/(\s)•\s*/g, '$1|||BREAK|||• ')
+      
+      // Break before CFR regulations
+      .replace(/(\s)(31\s+CFR|32\s+CFR)/gi, '$1|||BREAK|||$2')
+      
+      // Break before dates
+      .replace(/(\s)(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d+,\s+\d{4}/gi, '$1|||BREAK|||$2')
+      .replace(/(\s)(\d+\s+days?\s+ago)/gi, '$1|||BREAK|||$2')
+      
+      // Break before regulatory phrases
+      .replace(/(\s)(Sets forth|Includes|Appendix)/gi, '$1|||BREAK|||$2')
+      
+      // Break at sentence boundaries (period followed by capital letter)
+      .replace(/(\.\s+)([A-Z][a-z]{4,})/g, '$1|||BREAK|||$2')
+      
+      // Break before quotes
+      .replace(/(\s)("[\w\s]+)/g, '$1|||BREAK|||$2');
+    
+    // Split on our break markers and clean up
+    const segments = processedContent
+      .split('|||BREAK|||')
+      .map(segment => segment.trim())
+      .filter(segment => segment.length > 0);
+    
+    return (
+      <div className="mb-4 bg-white border border-gray-200 rounded-lg shadow-sm overflow-visible">
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-2 border-b border-gray-200">
+          <h3 className="text-base font-semibold text-gray-900 flex items-center">
+            <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+            {title}
+          </h3>
+        </div>
+        <div className="px-4 py-3 space-y-2">
+          {segments.map((segment, index) => {
+            const trimmed = segment.trim();
+            
+            // Handle bold headers (our marked sections)
+            if (trimmed.startsWith('**') && trimmed.includes(':**')) {
+              return (
+                <div key={index} className="font-bold text-blue-800 mt-3 mb-1 text-sm border-b border-blue-200 pb-1">
+                  {trimmed.replace(/\*\*/g, '')}
+                </div>
+              );
+            }
+            
+            // Handle bullet points
+            if (trimmed.startsWith('•')) {
+              return (
+                <div key={index} className="flex items-start space-x-2 ml-3 my-1 p-1 bg-gray-50 rounded">
+                  <span className="text-blue-500 mt-0.5 font-bold text-sm">•</span>
+                  <span className="text-gray-700 leading-tight flex-1 text-sm">{trimmed.substring(1).trim()}</span>
+                </div>
+              );
+            }
+            
+            // Handle numbered lists
+            if (/^\d+\.\s/.test(trimmed)) {
+              const match = trimmed.match(/^(\d+)\.\s(.+)$/);
+              if (match) {
+                return (
+                  <div key={index} className="flex items-start space-x-2 ml-3 my-1 p-2 bg-blue-50 rounded border-l-2 border-blue-300">
+                    <span className="font-bold text-blue-700 min-w-[1.5rem] bg-white px-1 py-0.5 rounded text-xs text-center">{match[1]}</span>
+                    <span className="text-gray-700 leading-tight flex-1 text-sm">{match[2]}</span>
+                  </div>
+                );
+              }
+            }
+            
+            // Handle CFR regulations
+            if (/^\d+\s+CFR/i.test(trimmed)) {
+              return (
+                <div key={index} className="bg-yellow-50 border-l-2 border-yellow-400 pl-3 py-1 my-1 rounded-r">
+                  <span className="text-gray-800 font-medium text-sm">{trimmed}</span>
+                </div>
+              );
+            }
+            
+            // Handle dates
+            if (/^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|\d+\s+days?\s+ago)/i.test(trimmed)) {
+              return (
+                <div key={index} className="text-gray-600 italic bg-gray-100 px-2 py-1 rounded inline-block my-1 text-xs">
+                  📅 {trimmed}
+                </div>
+              );
+            }
+            
+            // Regular content - but break up if still too long
+            const content = trimmed;
+            if (content.length > 250) {
+              // Try to break at periods or semicolons
+              const sentences = content.split(/[.;]\s+/).filter(s => s.trim());
+              if (sentences.length > 1) {
+                return (
+                  <div key={index} className="space-y-1 p-2 bg-gray-50 rounded border-l border-gray-300">
+                    {sentences.map((sentence, sentIndex) => (
+                      <div key={sentIndex} className="text-gray-700 leading-tight text-sm">
+                        {sentence.trim()}{sentIndex < sentences.length - 1 && !sentence.match(/[.;]$/) ? '.' : ''}
+                      </div>
+                    ))}
+                  </div>
+                );
+              }
+            }
+            
+            return (
+              <div key={index} className="text-gray-700 leading-tight text-sm p-1 rounded">
+                {content}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  // Simplified - no complex formatting functions needed
+
+  const sections = parseContent(content);
+  
+  return (
+    <div className="max-w-5xl mx-auto space-y-3 font-mono text-sm leading-tight">
+      {/* Header */}
+      {sections.header && (
+        <div className="text-center py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg shadow-lg">
+          <div className="flex items-center justify-center space-x-3">
+            <span className="text-xl">🔍</span>
+            <h1 className="text-lg font-bold">FRAUD INVESTIGATION COMPLETE</h1>
+          </div>
+        </div>
+      )}
+      
+      {/* Key Findings Header */}
+      <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-lg p-3">
+        <div className="flex items-center space-x-3">
+          <span className="text-lg">📊</span>
+          <h2 className="text-base font-semibold text-gray-900">KEY FINDINGS</h2>
+        </div>
+      </div>
+      
+      {/* Key Findings Content */}
+      {sections.keyFindings && (
+        <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-4">
+          <div className="prose max-w-none">
+            {renderKeyFindingsAsDocument(sections.keyFindings)}
+          </div>
+        </div>
+      )}
+      
+      {/* Status */}
+      {sections.status && (
+        <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-3">
+          <div className="flex items-center space-x-3">
+            <span className="text-lg">✅</span>
+            <p className="text-base font-bold text-gray-900">
+              {sections.status.replace(/\*\*/g, '')}
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  function renderKeyFindingsAsDocument(content: string): React.ReactNode {
+    const agents = ['Regulatory Research', 'Evidence Collection', 'Compliance Check', 'Report Generation'];
+    const agentSections: { [key: string]: string } = {};
+    
+    let currentAgent = '';
+    const lines = content.split('\n');
+    
+    for (const line of lines) {
+      const agentMatch = agents.find(agent => line.includes(agent + ':') || line.includes(agent));
+      if (agentMatch) {
+        currentAgent = agentMatch;
+        agentSections[currentAgent] = line.replace(agentMatch + ':', '').replace(agentMatch, '').trim();
+      } else if (currentAgent && line.trim()) {
+        agentSections[currentAgent] += '\n' + line;
+      }
+    }
+    
+    // If no agent sections found, show raw content as fallback
+    if (Object.keys(agentSections).length === 0) {
+      return (
+        <div className="whitespace-pre-wrap font-mono text-sm">
+          {content}
+        </div>
+      );
+    }
+    
+    return (
+      <div className="space-y-1">
+        {Object.entries(agentSections).map(([agent, content]) => 
+          renderAgentSection(agent, content)
+        )}
+      </div>
+    );
+  }
 }
 
 interface TransactionDetails {
@@ -310,7 +338,7 @@ function DetailedResultsViewer({ results }: DetailedResultsViewerProps) {
   }
   
   // Ensure each message has the correct structure
-  const parsedMessages = messages.map((msg: any, index: number) => {
+  const parsedMessages = messages.map((msg: unknown, index: number) => {
     console.log(`🔍 Message ${index}:`, msg, typeof msg);
     
     // If the message is a string that looks like an object, parse it
@@ -342,10 +370,11 @@ function DetailedResultsViewer({ results }: DetailedResultsViewerProps) {
     
     // If it's already an object, use it directly
     if (typeof msg === 'object' && msg !== null) {
+      const objMsg = msg as { content?: string; name?: string; type?: string };
       return {
-        content: msg.content || '',
-        name: msg.name || 'unknown',
-        type: msg.type || 'unknown'
+        content: objMsg.content || '',
+        name: objMsg.name || 'unknown',
+        type: objMsg.type || 'unknown'
       };
     }
     

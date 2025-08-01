@@ -99,7 +99,7 @@ class VectorStoreService:
         for i, result in enumerate(test_results, 1):
             filename = result.metadata.get('filename', 'Unknown')
             category = result.metadata.get('content_category', 'unknown')
-            preview = result.page_content[:100] + "..." if len(result.page_content) > 100 else result.page_content
+            preview = result.page_content  # Show full document content
             print(f"   {i}. {filename} ({category})")
             print(f"      {preview}")
     

@@ -62,7 +62,7 @@ class ExternalAPIService:
                     formatted_results = []
                     for i, result in enumerate(results, 1):
                         title = result.get('title', 'No title')
-                        content = result.get('content', 'No content')[:200] + "..."
+                        content = result.get('content', 'No content')  # Show full content
                         formatted_results.append(f"{i}. {title}\n   {content}")
                     
                     return "\n\n".join(formatted_results)
@@ -94,7 +94,7 @@ class ExternalAPIService:
                     formatted_results = []
                     for i, entry in enumerate(entries, 1):
                         title = entry.find('{http://www.w3.org/2005/Atom}title').text.strip()
-                        summary = entry.find('{http://www.w3.org/2005/Atom}summary').text.strip()[:200] + "..."
+                        summary = entry.find('{http://www.w3.org/2005/Atom}summary').text.strip()  # Show full summary
                         
                         formatted_results.append(f"{i}. {title}\n   Summary: {summary}")
                     
