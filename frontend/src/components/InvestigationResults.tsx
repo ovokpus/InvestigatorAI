@@ -77,10 +77,11 @@ function MarkdownRenderer({ content }: MarkdownRendererProps) {
         if (numberMatch) {
           const [, indent, number, content] = numberMatch;
           
-          // Format content with better styling
+          // Format content with enhanced styling
           let formattedContent = content
             .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-blue-800 dark:text-blue-200">$1</strong>')
-            .replace(/Summary:\s*/g, '<br/><span class="font-medium text-gray-600 dark:text-gray-400">Summary:</span> ');
+            .replace(/Summary:\s*/g, '<br/><div class="mt-2 mb-1 font-medium text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded inline-block">📋 Summary:</div> ')
+            .replace(/(\w{3}\s+\d{1,2},\s+\d{4})/g, '<span class="inline-block bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-sm font-medium ml-1">📅 $1</span>'); // Format dates in numbered lists too
           
           processedLines.push(
             <div key={index} className="flex items-start space-x-3 mb-4 ml-4 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-md border-l-2 border-blue-300 dark:border-blue-600">
@@ -180,14 +181,16 @@ function MarkdownRenderer({ content }: MarkdownRendererProps) {
           borderColor = 'border-gray-500';
         }
         
-        // Format agent content with better spacing
+        // Format agent content with enhanced styling and spacing
         let formattedContent = processedLine
-          .replace(/(REGULATORY ANALYSIS|EVIDENCE COLLECTION|COMPLIANCE CHECK|FINAL REPORT):/g, '<div class="text-lg font-bold mb-3 text-indigo-800 dark:text-indigo-200">$1:</div>')
-          .replace(/Document analysis:/g, '<div class="mt-4 mb-2 font-semibold text-gray-800 dark:text-gray-200">📄 Document Analysis:</div>')
-          .replace(/Web intelligence:/g, '<div class="mt-4 mb-2 font-semibold text-gray-800 dark:text-gray-200">🌐 Web Intelligence:</div>')
-          .replace(/Academic research:/g, '<div class="mt-4 mb-2 font-semibold text-gray-800 dark:text-gray-200">🎓 Academic Research:</div>')
-          .replace(/Risk assessment:/g, '<div class="mt-2 mb-1 font-medium text-gray-700 dark:text-gray-300">⚠️ Risk Assessment:</div>')
-          .replace(/Regulatory compliance:/g, '<div class="mt-2 mb-1 font-medium text-gray-700 dark:text-gray-300">📋 Regulatory Compliance:</div>');
+          .replace(/(REGULATORY ANALYSIS|EVIDENCE COLLECTION|COMPLIANCE CHECK|FINAL REPORT):/g, '<div class="text-lg font-bold mb-4 pb-2 text-indigo-800 dark:text-indigo-200 border-b border-indigo-200 dark:border-indigo-700">$1:</div>')
+          .replace(/Document analysis:/g, '<div class="mt-5 mb-3 font-semibold text-gray-800 dark:text-gray-200 bg-blue-50 dark:bg-blue-900/20 p-2 rounded">📄 Document Analysis:</div>')
+          .replace(/Web intelligence:/g, '<div class="mt-5 mb-3 font-semibold text-gray-800 dark:text-gray-200 bg-green-50 dark:bg-green-900/20 p-2 rounded">🌐 Web Intelligence:</div>')
+          .replace(/Academic research:/g, '<div class="mt-5 mb-3 font-semibold text-gray-800 dark:text-gray-200 bg-purple-50 dark:bg-purple-900/20 p-2 rounded">🎓 Academic Research:</div>')
+          .replace(/Risk assessment:/g, '<div class="mt-3 mb-2 font-medium text-gray-700 dark:text-gray-300 bg-yellow-50 dark:bg-yellow-900/20 px-2 py-1 rounded">⚠️ Risk Assessment:</div>')
+          .replace(/Regulatory compliance:/g, '<div class="mt-3 mb-2 font-medium text-gray-700 dark:text-gray-300 bg-orange-50 dark:bg-orange-900/20 px-2 py-1 rounded">📋 Regulatory Compliance:</div>')
+          .replace(/(\w{3}\s+\d{1,2},\s+\d{4})/g, '<span class="inline-block bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-sm font-medium">📅 $1</span>') // Format dates
+          .replace(/Summary:/g, '<div class="mt-3 mb-2 font-medium text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30 px-3 py-1 rounded">📋 Summary:</div>');
         
         processedLines.push(
           <div 
