@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import InvestigationForm from '../components/InvestigationForm';
-import InvestigationResults from '../components/InvestigationResults';
-import Header from '../components/Header';
-import HealthStatus from '../components/HealthStatus';
+import InvestigationForm from '@/components/InvestigationForm';
+import InvestigationResults from '@/components/InvestigationResults';
+import Header from '@/components/Header';
+import HealthStatus from '@/components/HealthStatus';
 
 interface FormData {
   amount: number;
@@ -99,11 +99,25 @@ export default function Home() {
       }
 
       let buffer = '';
+      let lastEventTime = Date.now();
+      const TIMEOUT_MS = 60000; // 60 seconds timeout
       
       while (true) {
         const { done, value } = await reader.read();
         
-        if (done) break;
+        if (done) {
+          console.log('📡 Stream ended normally');
+          break;
+        }
+        
+        // Check for timeout
+        if (Date.now() - lastEventTime > TIMEOUT_MS) {
+          console.log('⏰ Investigation timeout - auto-completing');
+          setIsLoading(false);
+          break;
+        }
+        
+        lastEventTime = Date.now();
         
         buffer += decoder.decode(value, { stream: true });
         const lines = buffer.split('\n');
@@ -120,6 +134,8 @@ export default function Home() {
               setProgressUpdates(prev => [...prev, data]);
               setCurrentProgress(data.progress);
               
+              console.log('📨 Received event:', data.type, 'Progress:', data.progress);
+              
               // Handle completion
               if (data.type === 'complete' && data.result) {
                 console.log('✅ Completion event received:', data);
@@ -127,6 +143,16 @@ export default function Home() {
                 setIsLoading(false);
                 console.log('✅ Investigation completed, loading set to false');
                 return; // Exit successfully
+              }
+              
+              // Fallback: Auto-complete when all agents finish and progress is 100%
+              if (data.progress === 100 && data.step === 'agent_complete' && data.completed_agents === 4) {
+                console.log('🔄 Auto-completing investigation - all agents finished');
+                // Small delay to ensure we have all data, then complete
+                setTimeout(() => {
+                  setIsLoading(false);
+                  console.log('🔄 Auto-completion: loading set to false');
+                }, 1000);
               }
               
               // Handle errors
@@ -139,6 +165,12 @@ export default function Home() {
             }
           }
         }
+      }
+      
+      // Final fallback: if we reach here and still loading, force completion
+      if (isLoading) {
+        console.log('🔄 Stream ended but still loading - forcing completion');
+        setIsLoading(false);
       }
       
     } catch (error: unknown) {
