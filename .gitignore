@@ -205,8 +205,9 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
-data/
 *.env
 
 # Project-specific files
 investigator_ai_deprecated.ipynb
+
+api_config_template.env

@@ -33,7 +33,7 @@ def search_regulatory_documents(query: str, max_results: int = 5) -> str:
         for i, result in enumerate(results, 1):
             filename = result.metadata.filename
             category = result.metadata.content_category
-            content_preview = result.content[:200] + "..." if len(result.content) > 200 else result.content
+            content_preview = result.content  # Show full content for comprehensive analysis
             
             formatted_results.append(
                 f"{i}. {filename} ({category})\n   {content_preview}"

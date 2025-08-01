@@ -4,21 +4,58 @@ from datetime import datetime
 from typing import Optional
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
+import asyncio
+import json
 from contextlib import asynccontextmanager
+import openai
+from openai import OpenAI
 
-from .core.config import get_settings, initialize_llm_components, Settings
-from .models.schemas import (
+from api.core.config import get_settings, initialize_llm_components, Settings
+from api.models.schemas import (
     InvestigationRequest, InvestigationResponse, HealthResponse,
     VectorSearchResult, AgentToolResponse
 )
-from .services.document_processor import DocumentProcessor
-from .services.vector_store import VectorStoreManager
-from .services.external_apis import ExternalAPIService
-from .agents.multi_agent_system import FraudInvestigationSystem
+from api.services.document_processor import DocumentProcessor
+from api.services.vector_store import VectorStoreManager
+from api.services.external_apis import ExternalAPIService
+from api.services.cache_service import get_cache_service
+from api.agents.multi_agent_system import FraudInvestigationSystem
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+def handle_openai_error(e: Exception) -> tuple[int, str]:
+    """Handle OpenAI API errors gracefully"""
+    if hasattr(e, 'response') and hasattr(e.response, 'status_code'):
+        status_code = e.response.status_code
+        
+        if status_code == 400:
+            error_message = str(e)
+            if "max_tokens" in error_message.lower():
+                return 413, "Investigation response too long. The AI generated more content than the current token limit allows. Please try a simpler investigation or contact support."
+            elif "rate limit" in error_message.lower():
+                return 429, "API rate limit exceeded. Please wait a moment and try again."
+            else:
+                return 400, f"Invalid request to AI service: {error_message}"
+        elif status_code == 401:
+            return 401, "AI service authentication failed. Please check API key configuration."
+        elif status_code == 429:
+            return 429, "AI service rate limit exceeded. Please wait a moment and try again."
+        elif status_code >= 500:
+            return 503, "AI service temporarily unavailable. Please try again in a few moments."
+    
+    # Handle generic OpenAI errors
+    error_str = str(e).lower()
+    if "max_tokens" in error_str or "token limit" in error_str:
+        return 413, "Investigation response too long. The AI analysis exceeded the maximum allowed length. Please try with a simpler transaction description."
+    elif "rate limit" in error_str:
+        return 429, "Too many requests. Please wait a moment before trying again."
+    elif "api key" in error_str or "authentication" in error_str:
+        return 401, "AI service authentication error. Please contact support."
+    
+    return 500, f"AI service error: {str(e)}"
 
 # Global application state
 app_state = {
@@ -132,6 +169,155 @@ async def health_check(
         vector_store_initialized=vector_store.is_initialized if vector_store else False
     )
 
+# Cache statistics endpoint
+@app.get("/cache/stats")
+async def get_cache_stats():
+    """Get cache statistics and performance metrics"""
+    try:
+        cache_service = get_cache_service()
+        stats = cache_service.get_cache_stats()
+        return {
+            "cache": stats,
+            "timestamp": datetime.now(),
+            "endpoints": {
+                "clear_cache": "/cache/clear",
+                "clear_investigations": "/cache/clear/investigations",
+                "clear_external_apis": "/cache/clear/external"
+            }
+        }
+    except Exception as e:
+        logger.error(f"Cache stats failed: {e}")
+        return {"error": f"Cache stats unavailable: {str(e)}"}
+
+# Cache management endpoints
+@app.delete("/cache/clear")
+async def clear_all_cache():
+    """Clear all cache entries"""
+    try:
+        cache_service = get_cache_service()
+        cleared = cache_service.clear_expired_keys()
+        return {
+            "message": "Cache cleared successfully",
+            "keys_cleared": cleared,
+            "timestamp": datetime.now()
+        }
+    except Exception as e:
+        logger.error(f"Cache clear failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Cache clear failed: {str(e)}")
+
+@app.delete("/cache/clear/investigations")
+async def clear_investigation_cache():
+    """Clear investigation-related cache entries"""
+    try:
+        cache_service = get_cache_service()
+        patterns = ["risk_analysis:*", "investigation:*"]
+        total_cleared = 0
+        for pattern in patterns:
+            total_cleared += cache_service.clear_pattern(pattern)
+        
+        return {
+            "message": "Investigation cache cleared successfully",
+            "keys_cleared": total_cleared,
+            "timestamp": datetime.now()
+        }
+    except Exception as e:
+        logger.error(f"Investigation cache clear failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Cache clear failed: {str(e)}")
+
+@app.delete("/cache/clear/external")
+async def clear_external_api_cache():
+    """Clear external API cache entries"""
+    try:
+        cache_service = get_cache_service()
+        patterns = ["web_intel:*", "arxiv:*", "doc_search:*"]
+        total_cleared = 0
+        for pattern in patterns:
+            total_cleared += cache_service.clear_pattern(pattern)
+        
+        return {
+            "message": "External API cache cleared successfully",
+            "keys_cleared": total_cleared,
+            "timestamp": datetime.now()
+        }
+    except Exception as e:
+        logger.error(f"External API cache clear failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Cache clear failed: {str(e)}")
+
+# Progress streaming endpoint
+@app.post("/investigate/stream")
+async def investigate_fraud_stream(
+    request: InvestigationRequest,
+    fraud_system: FraudInvestigationSystem = Depends(get_fraud_investigation_system)
+):
+    """Stream real-time progress of fraud investigation"""
+    
+    async def generate_progress_stream():
+        """Generate Server-Sent Events for investigation progress"""
+        
+        # Initial progress event
+        yield f"data: {json.dumps({'type': 'progress', 'step': 'starting', 'agent': 'system', 'message': 'Initializing fraud investigation...', 'progress': 0})}\n\n"
+        
+        try:
+            # Convert request to transaction details
+            transaction_details = {
+                "amount": request.amount,
+                "currency": request.currency,
+                "description": request.description,
+                "customer_name": request.customer_name,
+                "account_type": request.account_type,
+                "customer_risk_rating": request.risk_rating,
+                "country_to": request.country_to,
+                "timestamp": datetime.now().isoformat()
+            }
+            
+            # Stream investigation progress
+            async for progress_event in fraud_system.investigate_fraud_stream(transaction_details):
+                yield f"data: {json.dumps(progress_event)}\n\n"
+                
+                # Don't delay after completion event
+                if progress_event.get('type') == 'complete':
+                    break
+                    
+                await asyncio.sleep(0.1)  # Small delay for better UX
+            
+        except openai.OpenAIError as e:
+            logger.error(f"OpenAI API error during streaming investigation: {e}")
+            status_code, error_message = handle_openai_error(e)
+            error_event = {
+                'type': 'error',
+                'step': 'error',
+                'agent': 'system',
+                'message': error_message,
+                'progress': 100,
+                'error': True
+            }
+            yield f"data: {json.dumps(error_event)}\n\n"
+            
+        except Exception as e:
+            logger.error(f"Investigation streaming failed: {e}")
+            error_message = str(e)
+            if "openai" in error_message.lower() or "max_tokens" in error_message.lower():
+                status_code, error_message = handle_openai_error(e)
+            error_event = {
+                'type': 'error',
+                'step': 'error',
+                'agent': 'system',
+                'message': f"Investigation failed: {error_message}",
+                'progress': 100,
+                'error': True
+            }
+            yield f"data: {json.dumps(error_event)}\n\n"
+    
+    return StreamingResponse(
+        generate_progress_stream(),
+        media_type="text/plain",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "Content-Type": "text/event-stream",
+        }
+    )
+
 # Main investigation endpoint
 @app.post("/investigate", response_model=InvestigationResponse)
 async def investigate_fraud(
@@ -156,6 +342,12 @@ async def investigate_fraud(
         # Run investigation
         result = fraud_system.investigate_fraud(transaction_details)
         
+        # Debug logging
+        logger.info(f"Investigation result keys: {list(result.keys())}")
+        logger.info(f"Full results available: {result.get('full_results') is not None}")
+        if result.get("full_results"):
+            logger.info(f"Full results keys: {list(result.get('full_results', {}).keys())}")
+        
         # Return response
         return InvestigationResponse(
             investigation_id=result.get("investigation_id", "Unknown"),
@@ -169,8 +361,17 @@ async def investigate_fraud(
             full_results=result.get("full_results")
         )
         
+    except openai.OpenAIError as e:
+        logger.error(f"OpenAI API error during investigation: {e}")
+        status_code, error_message = handle_openai_error(e)
+        raise HTTPException(status_code=status_code, detail=error_message)
+        
     except Exception as e:
         logger.error(f"Investigation failed: {e}")
+        # Check if it's an OpenAI error wrapped in another exception
+        if "openai" in str(e).lower() or "max_tokens" in str(e).lower():
+            status_code, error_message = handle_openai_error(e)
+            raise HTTPException(status_code=status_code, detail=error_message)
         raise HTTPException(status_code=500, detail=f"Investigation failed: {str(e)}")
 
 # Vector search endpoint

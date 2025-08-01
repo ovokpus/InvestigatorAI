@@ -42,6 +42,7 @@ dependencies = [
     "langchain-qdrant>=0.2.0",
     "pydantic==2.11.7",
     "qdrant-client==1.15.0",
+    "redis==5.2.0",
     "ragas==0.3.0",
     "datasets==2.21.0",
     "typing-extensions==4.14.1",
