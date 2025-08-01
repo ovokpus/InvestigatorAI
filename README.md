@@ -171,31 +171,38 @@ flowchart TD
 ### **Core Multi-Agent Framework**
 
 ```python
-class InvestigatorAI:
-    """Unified fraud investigation system combining detection + investigation"""
+class FraudInvestigationSystem:
+    """Multi-agent fraud investigation system using LangGraph"""
     
-    def __init__(self):
-        # Detection Layer (GuardianAI concepts)
-        self.transaction_monitor = RealTimeMonitorAgent()
-        self.risk_classifier = BehavioralAnalysisAgent()
+    def __init__(self, llm: ChatOpenAI, external_api_service: ExternalAPIService):
+        self.llm = llm
+        self.external_api_service = external_api_service
         
-        # Investigation Layer (FraudSight + Investigation workflow)
-        self.case_researcher = HistoricalCaseAgent()      # RAG for similar cases
-        self.evidence_collector = TransactionAnalysisAgent()  # Pattern detection
-        self.regulatory_advisor = ComplianceAgent()       # AML/BSA/SAR guidance
-        self.report_generator = InvestigationReportAgent() # Final documentation
+        # Initialize tools with dependencies
+        initialize_tools(external_api_service)
         
-        # Orchestration Layer
-        self.investigation_coordinator = LangGraphOrchestrator()
+        # Create specialist agents
+        self.agents = {
+            'regulatory_research': self._create_agent(llm, REGULATORY_TOOLS, regulatory_prompt),
+            'evidence_collection': self._create_agent(llm, EVIDENCE_TOOLS, evidence_prompt),
+            'compliance_check': self._create_agent(llm, COMPLIANCE_TOOLS, compliance_prompt),
+            'report_generation': self._create_agent(llm, REPORT_TOOLS, report_prompt)
+        }
+        
+        # Build LangGraph workflow with supervisor coordination
+        self.investigation_graph = self._build_workflow()
 ```
 
 ### **Workflow Integration**
 
-1. **Real-time Detection** (GuardianAI): Flag suspicious transactions <100ms
-2. **Investigation Triage** (FraudSight): Prioritize cases by risk score
-3. **Multi-agent Investigation** (New): Comprehensive case analysis
-4. **Compliance Verification** (Enhanced): Automated regulatory checking
-5. **Report Generation** (New): Investigation documentation
+1. **Transaction Input**: API receives investigation request via `/investigate` endpoint
+2. **State Initialization**: Create FraudInvestigationState with transaction details
+3. **Supervisor Coordination**: LangGraph supervisor routes to first agent (regulatory_research)
+4. **Sequential Agent Execution**: 
+   - Regulatory Research → Evidence Collection → Compliance Check → Report Generation
+5. **Tool Integration**: Each agent uses specialized tools for analysis
+6. **State Management**: LangGraph tracks completion and routes to next agent
+7. **Final Compilation**: Generate comprehensive investigation report with decisions
 
 ---
 
@@ -327,91 +334,174 @@ graph TB
 | Agent | Primary Tools | Purpose |
 |-------|---------------|---------|
 | **Regulatory Research** | `search_regulatory_documents`<br/>`search_fraud_research`<br/>`search_web_intelligence` | AML/BSA compliance analysis, sanctions screening, pattern recognition |
-| **Evidence Collection** | `calculate_transaction_risk`<br/>`get_exchange_rate_data`<br/>`search_web_intelligence` | Quantitative risk scoring, financial intelligence, market analysis |
-| **Compliance Check** | `check_compliance_requirements`<br/>`search_regulatory_documents` | SAR/CTR/FBAR determination, filing deadlines, EDD requirements |
-| **Report Generation** | `search_regulatory_documents`<br/>`check_compliance_requirements` | Professional documentation, executive summaries, audit trails |
+| **Evidence Collection** | `calculate_transaction_risk`<br/>`get_exchange_rate_data`<br/>`search_web_intelligence` | Quantitative risk scoring, currency verification, entity intelligence |
+| **Compliance Check** | `check_compliance_requirements`<br/>`search_regulatory_documents` | BSA filing obligations, regulatory compliance verification |
+| **Report Generation** | `search_regulatory_documents`<br/>`check_compliance_requirements` | Comprehensive investigation reports, executive summaries |
 
 ---
 
-### **Agent 1: Real-Time Monitor** (GuardianAI-inspired)
+### **Agent 1: Regulatory Research Agent**
 
 ```python
-class RealTimeMonitorAgent:
-    """Continuous transaction monitoring with sub-100ms response"""
+# Tools: search_regulatory_documents, search_fraud_research, search_web_intelligence
+regulatory_research_agent = self._create_agent(
+    llm=self.llm,
+    tools=REGULATORY_TOOLS,
+    system_prompt="""You are a Senior Regulatory Research Specialist with expertise in 
+    AML/BSA compliance, international sanctions, and financial crime detection.
     
-    def monitor_transaction(self, transaction):
-        risk_indicators = self.analyze_patterns(transaction)
-        if risk_indicators.score > 0.7:
-            return self.trigger_investigation(transaction, risk_indicators)
-        return "continue_monitoring"
+    PRIMARY RESPONSIBILITIES:
+    1. Regulatory Framework Analysis using search_regulatory_documents
+    2. Jurisdiction Risk Assessment via search_web_intelligence  
+    3. Pattern Recognition through search_fraud_research
+    4. Documentation Research for compliance requirements
     
-    def analyze_patterns(self, transaction):
-        # Behavioral analysis from GuardianAI concept
-        # Velocity checks, geographic anomalies, amount patterns
-        pass
+    OUTPUT: Regulatory analysis with jurisdiction assessment, compliance requirements,
+    risk indicators, and regulatory sources with specific CFR citations."""
+)
 ```
 
-### **Agent 2: Historical Case Researcher** (RAG-powered)
+### **Agent 2: Evidence Collection Agent**
 
 ```python
-class HistoricalCaseAgent:
-    """Find similar fraud cases using advanced retrieval"""
+# Tools: calculate_transaction_risk, get_exchange_rate_data, search_web_intelligence
+evidence_collection_agent = self._create_agent(
+    llm=self.llm,
+    tools=EVIDENCE_TOOLS,
+    system_prompt="""You are a Senior Financial Crimes Analyst specialized in 
+    quantitative risk assessment, transaction pattern analysis, and evidence collection.
     
-    def find_similar_cases(self, transaction_profile):
-        # Vector search through historical investigations
-        # Metadata filtering by transaction type, amount range, geography
-        # Return top 5 most similar cases with investigation outcomes
-        similar_cases = self.vector_search(transaction_profile)
-        return self.rank_by_relevance(similar_cases)
+    PRIMARY RESPONSIBILITIES:
+    1. Quantitative Risk Analysis using calculate_transaction_risk (MANDATORY)
+    2. Financial Intelligence via get_exchange_rate_data for currency verification
+    3. Pattern Analysis through search_web_intelligence for entity background
+    4. Market Context Assessment with current intelligence
+    
+    OUTPUT: Evidence collection report with calculated risk score, financial intelligence,
+    transaction anomalies, and supporting evidence with statistical confidence."""
+)
 ```
 
-### **Agent 3: Evidence Collection Analyst** (FraudSight analytics)
+### **Agent 3: Compliance Check Agent**
 
 ```python
-class TransactionAnalysisAgent:
-    """Deep transaction pattern analysis using FraudSight techniques"""
+# Tools: check_compliance_requirements, search_regulatory_documents
+compliance_check_agent = self._create_agent(
+    llm=self.llm,
+    tools=COMPLIANCE_TOOLS,
+    system_prompt="""You are a Senior Compliance Officer with expertise in BSA/AML 
+    compliance, regulatory filing requirements, and enforcement actions.
     
-    def collect_evidence(self, transaction, context):
-        evidence = {
-            'velocity_analysis': self.check_transaction_velocity(transaction),
-            'network_analysis': self.analyze_beneficiary_patterns(transaction),
-            'behavioral_score': self.calculate_deviation_score(transaction),
-            'geographic_flags': self.check_location_anomalies(transaction)
-        }
-        return self.compile_evidence_summary(evidence)
+    PRIMARY RESPONSIBILITIES:
+    1. Filing Requirement Determination via check_compliance_requirements (MANDATORY)
+    2. Compliance Gap Analysis using search_regulatory_documents
+    3. Regulatory Timeline Management with specific deadlines
+    4. Enhanced Due Diligence Assessment for high-risk transactions
+    
+    OUTPUT: Compliance assessment with filing obligations (CTR/SAR/FBAR), 
+    regulatory compliance status, risk mitigation measures, and regulatory justification."""
+)
 ```
 
-### **Agent 4: Regulatory Compliance Advisor**
+### **Agent 4: Report Generation Agent**
 
 ```python
-class ComplianceAgent:
-    """Ensure investigation meets AML/BSA/SAR requirements"""
+# Tools: search_regulatory_documents, check_compliance_requirements  
+report_generation_agent = self._create_agent(
+    llm=self.llm,
+    tools=REPORT_TOOLS,
+    system_prompt="""You are a Senior Investigation Report Specialist with expertise 
+    in financial crimes documentation, regulatory reporting, and forensic case preparation.
     
-    def check_compliance_requirements(self, case_evidence):
-        requirements = {
-            'sar_filing': self.evaluate_sar_threshold(case_evidence),
-            'kyc_verification': self.check_customer_documentation(case_evidence),
-            'aml_screening': self.run_sanctions_check(case_evidence),
-            'documentation': self.verify_evidence_chain(case_evidence)
-        }
-        return self.generate_compliance_checklist(requirements)
+    PRIMARY RESPONSIBILITIES:
+    1. Comprehensive Report Synthesis from all agent findings
+    2. Executive Summary Preparation for senior management
+    3. Compliance Documentation via search_regulatory_documents
+    4. Investigation Recommendations using check_compliance_requirements
+    
+    OUTPUT: Professional investigation report with executive summary, detailed findings,
+    supporting evidence, compliance assessment, and actionable recommendations."""
+)
 ```
 
-### **Agent 5: Investigation Report Generator**
+### **LangGraph Workflow Coordination**
 
 ```python
-class InvestigationReportAgent:
-    """Compile comprehensive investigation reports"""
+def _build_workflow(self) -> StateGraph:
+    """Build the LangGraph workflow with supervisor coordination"""
+    workflow = StateGraph(FraudInvestigationState)
     
-    def generate_report(self, case_data, evidence, compliance_check):
-        report = InvestigationReport(
-            executive_summary=self.create_summary(case_data),
-            evidence_analysis=self.document_findings(evidence),
-            similar_cases=self.reference_historical_patterns(case_data),
-            compliance_status=self.document_regulatory_compliance(compliance_check),
-            recommendations=self.provide_action_items(case_data, evidence)
-        )
-        return report
+    # Add nodes for each agent + supervisor
+    workflow.add_node("supervisor", self.supervisor_node)
+    workflow.add_node("regulatory_research", lambda state: self.agent_node(state, "regulatory_research"))
+    workflow.add_node("evidence_collection", lambda state: self.agent_node(state, "evidence_collection"))
+    workflow.add_node("compliance_check", lambda state: self.agent_node(state, "compliance_check"))
+    workflow.add_node("report_generation", lambda state: self.agent_node(state, "report_generation"))
+    
+    # Set up routing: agents -> supervisor -> next agent
+    workflow.add_edge("regulatory_research", "supervisor")
+    workflow.add_edge("evidence_collection", "supervisor")
+    workflow.add_edge("compliance_check", "supervisor")
+    workflow.add_edge("report_generation", "supervisor")
+    
+    # Conditional routing from supervisor to next agent or END
+    workflow.add_conditional_edges("supervisor", route_to_agent, {
+        "regulatory_research": "regulatory_research",
+        "evidence_collection": "evidence_collection", 
+        "compliance_check": "compliance_check",
+        "report_generation": "report_generation",
+        END: END
+    })
+    
+    workflow.set_entry_point("supervisor")
+    return workflow.compile()
+```
+
+### **Real Tool Implementations**
+
+```python
+# From api/agents/tools.py - Actual production tools
+
+@tool
+def search_regulatory_documents(query: str, max_results: int = 5) -> str:
+    """Search regulatory documents for fraud investigation guidance."""
+    vector_store = VectorStoreManager.get_instance()
+    results = vector_store.search(query, k=max_results)
+    return formatted_regulatory_content
+
+@tool
+def calculate_transaction_risk(amount: float, country_to: str = "", 
+                             customer_risk_rating: str = "Medium", 
+                             account_type: str = "Personal") -> str:
+    """Calculate risk score for a transaction based on multiple factors."""
+    return RiskCalculator.calculate_transaction_risk(amount, country_to, 
+                                                   customer_risk_rating, account_type)
+
+@tool
+def get_exchange_rate_data(from_currency: str, to_currency: str = "USD") -> str:
+    """Retrieve currency exchange rates for verification."""
+    return _external_api_service.get_exchange_rate(from_currency, to_currency)
+
+@tool
+def check_compliance_requirements(amount: float, risk_score: float, country_to: str = "") -> str:
+    """Check SAR/CTR and other compliance obligations."""
+    return ComplianceChecker.check_compliance_requirements(amount, risk_score, country_to)
+
+@tool
+def search_web_intelligence(query: str, max_results: int = 2) -> str:
+    """Search the web using Tavily for current fraud intelligence."""
+    return _external_api_service.search_web(query, max_results)
+
+@tool
+def search_fraud_research(query: str, max_results: int = 2) -> str:
+    """Search ArXiv for research papers on fraud detection."""
+    return _external_api_service.search_arxiv(query, max_results)
+
+# Tool groups assigned to agents
+REGULATORY_TOOLS = [search_regulatory_documents, search_fraud_research, search_web_intelligence]
+EVIDENCE_TOOLS = [calculate_transaction_risk, get_exchange_rate_data, search_web_intelligence]
+COMPLIANCE_TOOLS = [check_compliance_requirements, search_regulatory_documents]
+REPORT_TOOLS = [search_regulatory_documents, check_compliance_requirements]
 ```
 
 ---
@@ -566,6 +656,66 @@ class InvestigationReportAgent:
 - **Self-Healing Agents**: Automatic error recovery and workflow adaptation
 - **Hybrid Retrieval**: Combines multiple search strategies for optimal results
 - **Adaptive Learning**: System improves with each investigation
+
+---
+
+## **🚀 Quick Start & API Usage**
+
+### **Setup Instructions**
+```bash
+# 1. Start infrastructure containers
+docker-compose up -d
+
+# 2. Install dependencies
+pip install -e .
+
+# 3. Configure environment
+cp config.env.template config.env
+# Edit config.env with your API keys
+
+# 4. Run API server
+uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
+
+# 5. Run frontend (in separate terminal)
+cd frontend && npm install && npm run dev
+```
+
+### **API Endpoints**
+```bash
+# Health check
+curl http://localhost:8000/health
+
+# Start multi-agent investigation (returns comprehensive analysis)
+curl -X POST http://localhost:8000/investigate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 75000,
+    "currency": "USD",
+    "description": "International wire transfer",
+    "customer_name": "John Doe",
+    "account_type": "Personal",
+    "risk_rating": "High",
+    "country_to": "Romania"
+  }'
+
+# Expected response includes:
+# - investigation_id: "INV_20250131_XXXXXX_XXXX" 
+# - final_decision: "requires_review" | "suspicious_activity" | "proceed_with_caution"
+# - agents_completed: 4 (regulatory_research, evidence_collection, compliance_check, report_generation)
+# - full_results: {comprehensive investigation data from all agents}
+
+# Vector search regulatory documents
+curl "http://localhost:8000/search?query=AML%20compliance&max_results=5"
+
+# Get exchange rates
+curl "http://localhost:8000/exchange-rate?from_currency=USD&to_currency=EUR"
+
+# Web intelligence search
+curl "http://localhost:8000/web-search?query=Romania%20financial%20regulations&max_results=3"
+
+# Cache statistics
+curl http://localhost:8000/cache/stats
+```
 
 ---
 
