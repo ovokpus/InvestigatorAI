@@ -622,13 +622,11 @@ class FraudInvestigationSystem:
                     name = message.get('name', '')
                     content = message.get('content', '')
                     if name and content:
-                        # Keep full content for comprehensive analysis (increased from 800 to 2000 chars)
-                        truncated_content = content[:2000] if len(content) > 2000 else content
-                        agent_findings.append(f"**{name.replace('_', ' ').title()}**: {truncated_content}")
+                        # Keep full content for comprehensive analysis (no truncation)
+                        agent_findings.append(f"**{name.replace('_', ' ').title()}**: {content}")
                 # Handle BaseMessage format (original format)
                 elif hasattr(message, 'name') and message.name:
-                    content = message.content[:2000] if len(message.content) > 2000 else message.content
-                    agent_findings.append(f"**{message.name.replace('_', ' ').title()}**: {content}")
+                    agent_findings.append(f"**{message.name.replace('_', ' ').title()}**: {message.content}")
             
             if not agent_findings:
                 return "Investigation completed but no detailed findings available."
@@ -769,8 +767,19 @@ class FraudInvestigationSystem:
                     country = transaction_details.get('country_to', '')
                     amount = transaction_details.get('amount', 0)
                     query = f"suspicious activity report requirements {country} ${amount:,}"
-                    results = vector_store.search(query, k=2)
-                    return "\n".join([f"• {r.content}" for r in results])  # Show full document content
+                    results = vector_store.search(query, k=3)
+                    # Deduplicate and format results properly
+                    unique_results = []
+                    seen_content = set()
+                    for r in results:
+                        # Take first 200 chars for deduplication check
+                        content_key = r.content[:200].strip()
+                        if content_key not in seen_content:
+                            seen_content.add(content_key)
+                            # Format with proper structure - show full content for comprehensive analysis
+                            unique_results.append(f"• {r.content}")
+                    
+                    return "\n\n".join(unique_results) if unique_results else "No relevant regulatory documents found"
                 return "Vector database not available for document search"
             
             # Execute parallel tasks

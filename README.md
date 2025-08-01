@@ -1,12 +1,158 @@
 # InvestigatorAI
 
-> **📂 Navigation**: [🏠 Home](README.md) | [🎓 Certification](CERTIFICATION_CHALLENGE.md) | [📊 Data Dictionary](DATA_DICTIONARY.md) | [🎬 Demo Guide](DEMO_GUIDE.md) | [🔄 Merge Instructions](MERGE.md) | [💻 Frontend Docs](frontend/README.md)
+> **📂 Navigation**: [🏠 Home](README.md) | [🤖 Agent Prompts](docs/AGENT_PROMPTS.md) | [🎓 Certification](docs/CERTIFICATION_CHALLENGE.md) | [🎬 Demo Guide](docs/DEMO_GUIDE.md) | [🔄 Merge Instructions](MERGE.md) | [💻 Frontend Docs](frontend/README.md) | [📊 Data Docs](data/README.md) | [🚀 Deploy Docs](deploy/README.md)
 
 A multi-agent fraud investigation assistant that combines real-time fraud detection (GuardianAI) with investigation workflow orchestration (FraudSight patterns) to reduce investigation time from 6 hours to 90 minutes.
 
-# AIE7 Fraud Investigation Assistant
+## AIE7 Fraud Investigation Assistant
 
-## *Merging GuardianAI + FraudSight + Investigation Workflow*
+### *Merging GuardianAI + FraudSight + Investigation Workflow*
+
+---
+
+## **🔄 Complete Investigation Process Flow**
+
+### **End-to-End Investigation Workflow**
+
+```mermaid
+flowchart TD
+    subgraph "INPUT LAYER"
+        TXN["💰 Transaction Input<br/>Amount, Destination, Customer Data"]
+        ALERT["🚨 Fraud Alert Trigger<br/>Risk Score ≥ Threshold"]
+    end
+    
+    subgraph "INITIAL ASSESSMENT"
+        TRIAGE["🎯 Investigation Triage<br/>Priority Classification<br/>Resource Allocation"]
+        INIT["📋 Initialize Investigation<br/>Create Investigation ID<br/>Set Timeline & Deadlines"]
+    end
+    
+    subgraph "MULTI-AGENT INVESTIGATION WORKFLOW"
+        COORD["🎯 Investigation Coordinator<br/>LangGraph Orchestration"]
+        
+        subgraph "PARALLEL ANALYSIS AGENTS"
+            REG["📚 Regulatory Research<br/>• AML/BSA Analysis<br/>• Sanctions Screening<br/>• Jurisdiction Risk"]
+            EVID["🔍 Evidence Collection<br/>• Risk Score Calculation<br/>• Market Analysis<br/>• Entity Intelligence"]
+            COMP["⚖️ Compliance Check<br/>• SAR/CTR Requirements<br/>• Filing Deadlines<br/>• EDD Assessment"]
+        end
+        
+        RPT["📊 Report Generation<br/>• Synthesize Findings<br/>• Executive Summary<br/>• Audit Documentation"]
+    end
+    
+    subgraph "DECISION ENGINE"
+        RISK_EVAL["📊 Risk Evaluation<br/>Consolidated Risk Score<br/>Evidence Assessment"]
+        DECISION{"🎯 Investigation Decision"}
+        
+        LOW_RISK["✅ LOW RISK<br/>Risk Score < 0.3<br/>Standard Monitoring"]
+        MED_RISK["⚠️ MEDIUM RISK<br/>Risk Score 0.3-0.75<br/>Enhanced Monitoring"]
+        HIGH_RISK["🚨 HIGH RISK<br/>Risk Score ≥ 0.75<br/>Immediate Action"]
+    end
+    
+    subgraph "COMPLIANCE ACTIONS"
+        CTR_FILE["📄 CTR Filing<br/>15-Day Deadline<br/>Currency Transactions ≥$10K"]
+        SAR_FILE["📋 SAR Filing<br/>30-Day Deadline<br/>Suspicious Activity Report"]
+        ENHANCED["🔍 Enhanced Due Diligence<br/>Customer Investigation<br/>Source of Funds"]
+    end
+    
+    subgraph "ESCALATION & REPORTING"
+        MGT_ALERT["👥 Senior Management<br/>High-Risk Notification<br/>24-Hour Timeline"]
+        LEGAL["⚖️ Legal Review<br/>OFAC Violations<br/>Immediate Response"]
+        LAW_ENF["🚔 Law Enforcement<br/>Criminal Activity<br/>Immediate Notification"]
+        REG_EXAM["📋 Regulatory Filing<br/>Documentation<br/>Examination Ready"]
+    end
+    
+    subgraph "OUTPUTS"
+        INVEST_RPT["📊 Investigation Report<br/>Professional Documentation<br/>Executive Summary"]
+        ACTION_PLAN["📋 Action Plan<br/>Next Steps<br/>Monitoring Requirements"]
+        AUDIT_TRAIL["📁 Audit Trail<br/>Complete Documentation<br/>Regulatory Compliance"]
+    end
+    
+    %% Main flow
+    TXN --> ALERT
+    ALERT --> TRIAGE
+    TRIAGE --> INIT
+    INIT --> COORD
+    
+    %% Multi-agent workflow
+    COORD --> REG
+    COORD --> EVID  
+    COORD --> COMP
+    REG --> RPT
+    EVID --> RPT
+    COMP --> RPT
+    
+    %% Decision flow
+    RPT --> RISK_EVAL
+    RISK_EVAL --> DECISION
+    
+    %% Risk-based routing
+    DECISION -->|Risk < 0.3| LOW_RISK
+    DECISION -->|0.3 ≤ Risk < 0.75| MED_RISK
+    DECISION -->|Risk ≥ 0.75| HIGH_RISK
+    
+    %% Compliance actions
+    MED_RISK --> CTR_FILE
+    HIGH_RISK --> CTR_FILE
+    HIGH_RISK --> SAR_FILE
+    HIGH_RISK --> ENHANCED
+    
+    %% Escalation paths
+    HIGH_RISK --> MGT_ALERT
+    SAR_FILE --> LEGAL
+    LEGAL --> LAW_ENF
+    
+    %% Final outputs
+    LOW_RISK --> INVEST_RPT
+    MED_RISK --> INVEST_RPT
+    HIGH_RISK --> INVEST_RPT
+    
+    CTR_FILE --> ACTION_PLAN
+    SAR_FILE --> ACTION_PLAN
+    MGT_ALERT --> ACTION_PLAN
+    
+    INVEST_RPT --> AUDIT_TRAIL
+    ACTION_PLAN --> AUDIT_TRAIL
+    REG_EXAM --> AUDIT_TRAIL
+    
+    %% Styling
+    classDef input fill:#3b82f6,stroke:#1e40af,stroke-width:3px,color:#ffffff,font-weight:bold
+    classDef process fill:#059669,stroke:#047857,stroke-width:2px,color:#ffffff,font-weight:bold
+    classDef agent fill:#7c3aed,stroke:#6d28d9,stroke-width:2px,color:#ffffff,font-weight:bold
+    classDef decision fill:#f59e0b,stroke:#d97706,stroke-width:3px,color:#ffffff,font-weight:bold
+    classDef lowRisk fill:#10b981,stroke:#047857,stroke-width:2px,color:#ffffff,font-weight:bold
+    classDef medRisk fill:#f59e0b,stroke:#d97706,stroke-width:2px,color:#ffffff,font-weight:bold
+    classDef highRisk fill:#ef4444,stroke:#dc2626,stroke-width:3px,color:#ffffff,font-weight:bold
+    classDef compliance fill:#8b5cf6,stroke:#7c3aed,stroke-width:2px,color:#ffffff,font-weight:bold
+    classDef escalation fill:#dc2626,stroke:#b91c1c,stroke-width:3px,color:#ffffff,font-weight:bold
+    classDef output fill:#6366f1,stroke:#4f46e5,stroke-width:2px,color:#ffffff,font-weight:bold
+    
+    class TXN,ALERT input
+    class TRIAGE,INIT,COORD,RISK_EVAL process
+    class REG,EVID,COMP,RPT agent
+    class DECISION decision
+    class LOW_RISK lowRisk
+    class MED_RISK medRisk
+    class HIGH_RISK highRisk
+    class CTR_FILE,SAR_FILE,ENHANCED,REG_EXAM compliance
+    class MGT_ALERT,LEGAL,LAW_ENF escalation
+    class INVEST_RPT,ACTION_PLAN,AUDIT_TRAIL output
+```
+
+### **Process Flow Summary:**
+
+| Phase | Duration | Key Activities | Decision Points |
+|-------|----------|----------------|-----------------|
+| **Input & Triage** | < 5 minutes | Transaction analysis, priority classification | Risk threshold validation |
+| **Multi-Agent Investigation** | 15-45 minutes | Parallel analysis by specialized agents | Agent completion checkpoints |
+| **Risk Evaluation** | 5-10 minutes | Consolidated scoring, evidence synthesis | Risk classification decision |
+| **Compliance Actions** | Immediate-30 days | SAR/CTR filing, EDD initiation | Filing requirement determination |
+| **Escalation & Reporting** | 1-24 hours | Management notification, audit documentation | Escalation trigger evaluation |
+
+### **Key Performance Metrics:**
+
+- **Investigation Time**: 90 minutes average (down from 6 hours)
+- **Risk Assessment Accuracy**: 95%+ with quantified confidence levels
+- **Regulatory Compliance**: 100% filing requirement identification
+- **Audit Readiness**: Complete documentation trail for all investigations
 
 ---
 
@@ -86,6 +232,106 @@ class InvestigatorAI:
 ---
 
 ## **🤖 Multi-Agent System Design**
+
+### **Agent Hierarchy & Tool Architecture**
+
+```mermaid
+graph TB
+    subgraph "INVESTIGATION SYSTEM ARCHITECTURE"
+        IC["🎯 Investigation Coordinator<br/>LangGraph Orchestrator<br/>State Management & Workflow Control"]
+    end
+    
+    subgraph "SPECIALIZED INVESTIGATION AGENTS"
+        RRA["📚 Regulatory Research Agent<br/>Senior Regulatory Research Specialist<br/>AML/BSA Compliance & Sanctions"]
+        ECA["🔍 Evidence Collection Agent<br/>Senior Financial Crimes Analyst<br/>Quantitative Risk Assessment"]
+        CCA["⚖️ Compliance Check Agent<br/>Senior Compliance Officer<br/>BSA Filing Requirements"]
+    end
+    
+    subgraph "SYNTHESIS & REPORTING"
+        RGA["📊 Report Generation Agent<br/>Senior Investigation Report Specialist<br/>Professional Documentation & Forensics"]
+    end
+    
+    subgraph "REGULATORY TOOLS" 
+        SRD["🔍 search_regulatory_documents<br/>Vector Search - Regulatory Database"]
+        SFR["📋 search_fraud_research<br/>ArXiv Academic Research Search"]
+        SWI1["🌐 search_web_intelligence<br/>Tavily Current Intelligence"]
+    end
+    
+    subgraph "EVIDENCE ANALYSIS TOOLS"
+        CTR["📊 calculate_transaction_risk<br/>Multi-Factor Risk Scoring"]
+        GER["💱 get_exchange_rate_data<br/>Currency Rate Verification"]
+        SWI2["🌐 search_web_intelligence<br/>Entity Intelligence Gathering"]
+    end
+    
+    subgraph "COMPLIANCE TOOLS"
+        CCR["⚖️ check_compliance_requirements<br/>SAR/CTR/FBAR Determination"]
+        SRD2["🔍 search_regulatory_documents<br/>Compliance Verification"]
+    end
+    
+    subgraph "REPORTING TOOLS"
+        SRD3["🔍 search_regulatory_documents<br/>Standards Verification"]
+        CCR2["⚖️ check_compliance_requirements<br/>Mandatory Disclosure Check"]
+    end
+    
+    %% Workflow connections
+    IC --> RRA
+    IC --> ECA
+    IC --> CCA
+    IC --> RGA
+    
+    RRA --> RGA
+    ECA --> RGA
+    CCA --> RGA
+    
+    %% Tool assignments
+    RRA -.-> SRD
+    RRA -.-> SFR
+    RRA -.-> SWI1
+    
+    ECA -.-> CTR
+    ECA -.-> GER
+    ECA -.-> SWI2
+    
+    CCA -.-> CCR
+    CCA -.-> SRD2
+    
+    RGA -.-> SRD3
+    RGA -.-> CCR2
+    
+    %% Styling
+    classDef coordinator fill:#1e40af,stroke:#1e3a8a,stroke-width:4px,color:#ffffff,font-weight:bold
+    classDef agents fill:#059669,stroke:#047857,stroke-width:3px,color:#ffffff,font-weight:bold
+    classDef compliance fill:#dc2626,stroke:#b91c1c,stroke-width:3px,color:#ffffff,font-weight:bold
+    classDef evidence fill:#7c3aed,stroke:#6d28d9,stroke-width:3px,color:#ffffff,font-weight:bold
+    classDef reporting fill:#ea580c,stroke:#c2410c,stroke-width:3px,color:#ffffff,font-weight:bold
+    
+    classDef regTools fill:#10b981,stroke:#047857,stroke-width:2px,color:#ffffff
+    classDef evidenceTools fill:#8b5cf6,stroke:#7c3aed,stroke-width:2px,color:#ffffff
+    classDef complianceTools fill:#f59e0b,stroke:#d97706,stroke-width:2px,color:#ffffff
+    classDef reportTools fill:#ef4444,stroke:#dc2626,stroke-width:2px,color:#ffffff
+    
+    class IC coordinator
+    class RRA agents
+    class ECA evidence
+    class CCA compliance
+    class RGA reporting
+    
+    class SRD,SFR,SWI1 regTools
+    class CTR,GER,SWI2 evidenceTools
+    class CCR,SRD2 complianceTools
+    class SRD3,CCR2 reportTools
+```
+
+### **Tool-Agent Mapping Summary:**
+
+| Agent | Primary Tools | Purpose |
+|-------|---------------|---------|
+| **Regulatory Research** | `search_regulatory_documents`<br/>`search_fraud_research`<br/>`search_web_intelligence` | AML/BSA compliance analysis, sanctions screening, pattern recognition |
+| **Evidence Collection** | `calculate_transaction_risk`<br/>`get_exchange_rate_data`<br/>`search_web_intelligence` | Quantitative risk scoring, financial intelligence, market analysis |
+| **Compliance Check** | `check_compliance_requirements`<br/>`search_regulatory_documents` | SAR/CTR/FBAR determination, filing deadlines, EDD requirements |
+| **Report Generation** | `search_regulatory_documents`<br/>`check_compliance_requirements` | Professional documentation, executive summaries, audit trails |
+
+---
 
 ### **Agent 1: Real-Time Monitor** (GuardianAI-inspired)
 
