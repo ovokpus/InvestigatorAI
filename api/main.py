@@ -19,6 +19,7 @@ from api.models.schemas import (
 from api.services.document_processor import DocumentProcessor
 from api.services.vector_store import VectorStoreManager
 from api.services.external_apis import ExternalAPIService
+from api.services.cache_service import get_cache_service
 from api.agents.multi_agent_system import FraudInvestigationSystem
 
 # Configure logging
@@ -167,6 +168,80 @@ async def health_check(
         api_keys_available=settings.api_keys_available,
         vector_store_initialized=vector_store.is_initialized if vector_store else False
     )
+
+# Cache statistics endpoint
+@app.get("/cache/stats")
+async def get_cache_stats():
+    """Get cache statistics and performance metrics"""
+    try:
+        cache_service = get_cache_service()
+        stats = cache_service.get_cache_stats()
+        return {
+            "cache": stats,
+            "timestamp": datetime.now(),
+            "endpoints": {
+                "clear_cache": "/cache/clear",
+                "clear_investigations": "/cache/clear/investigations",
+                "clear_external_apis": "/cache/clear/external"
+            }
+        }
+    except Exception as e:
+        logger.error(f"Cache stats failed: {e}")
+        return {"error": f"Cache stats unavailable: {str(e)}"}
+
+# Cache management endpoints
+@app.delete("/cache/clear")
+async def clear_all_cache():
+    """Clear all cache entries"""
+    try:
+        cache_service = get_cache_service()
+        cleared = cache_service.clear_expired_keys()
+        return {
+            "message": "Cache cleared successfully",
+            "keys_cleared": cleared,
+            "timestamp": datetime.now()
+        }
+    except Exception as e:
+        logger.error(f"Cache clear failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Cache clear failed: {str(e)}")
+
+@app.delete("/cache/clear/investigations")
+async def clear_investigation_cache():
+    """Clear investigation-related cache entries"""
+    try:
+        cache_service = get_cache_service()
+        patterns = ["risk_analysis:*", "investigation:*"]
+        total_cleared = 0
+        for pattern in patterns:
+            total_cleared += cache_service.clear_pattern(pattern)
+        
+        return {
+            "message": "Investigation cache cleared successfully",
+            "keys_cleared": total_cleared,
+            "timestamp": datetime.now()
+        }
+    except Exception as e:
+        logger.error(f"Investigation cache clear failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Cache clear failed: {str(e)}")
+
+@app.delete("/cache/clear/external")
+async def clear_external_api_cache():
+    """Clear external API cache entries"""
+    try:
+        cache_service = get_cache_service()
+        patterns = ["web_intel:*", "arxiv:*", "doc_search:*"]
+        total_cleared = 0
+        for pattern in patterns:
+            total_cleared += cache_service.clear_pattern(pattern)
+        
+        return {
+            "message": "External API cache cleared successfully",
+            "keys_cleared": total_cleared,
+            "timestamp": datetime.now()
+        }
+    except Exception as e:
+        logger.error(f"External API cache clear failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Cache clear failed: {str(e)}")
 
 # Progress streaming endpoint
 @app.post("/investigate/stream")

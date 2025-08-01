@@ -1,5 +1,7 @@
 # Merge Instructions for InvestigatorAI Certification Challenge
 
+> **📂 Navigation**: [🏠 Home](README.md) | [🎓 Certification](CERTIFICATION_CHALLENGE.md) | [📊 Data Dictionary](DATA_DICTIONARY.md) | [🎬 Demo Guide](DEMO_GUIDE.md) | [🔄 Merge Instructions](MERGE.md) | [💻 Frontend Docs](frontend/README.md)
+
 ## 🎓 Overview - AIE7 Certification Challenge COMPLETE
 This document provides instructions for merging the `feature/update-pyproject-dependencies` branch containing the **complete AIE7 Certification Challenge implementation** for InvestigatorAI - a production-ready multi-agent fraud investigation system.
 

@@ -1,4 +1,7 @@
 # InvestigatorAI
+
+> **📂 Navigation**: [🏠 Home](README.md) | [🎓 Certification](CERTIFICATION_CHALLENGE.md) | [📊 Data Dictionary](DATA_DICTIONARY.md) | [🎬 Demo Guide](DEMO_GUIDE.md) | [🔄 Merge Instructions](MERGE.md) | [💻 Frontend Docs](frontend/README.md)
+
 A multi-agent fraud investigation assistant that combines real-time fraud detection (GuardianAI) with investigation workflow orchestration (FraudSight patterns) to reduce investigation time from 6 hours to 90 minutes.
 
 # AIE7 Fraud Investigation Assistant

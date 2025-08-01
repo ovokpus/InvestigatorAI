@@ -18,6 +18,7 @@ from ..agents.tools import (
 )
 from ..services.external_apis import ExternalAPIService
 from ..services.config_service import get_config_service
+from ..services.cache_service import get_cache_service
 
 class FraudInvestigationSystem:
     """Multi-agent fraud investigation system using LangGraph"""
@@ -397,8 +398,9 @@ class FraudInvestigationSystem:
     async def investigate_fraud_stream(self, transaction_details: Dict[str, Any]) -> AsyncGenerator[Dict[str, Any], None]:
         """Enhanced streaming fraud investigation with real tool calling and parallel processing"""
         try:
-            # Get configuration service
+            # Get services
             config_service = get_config_service()
+            cache_service = get_cache_service()
             
             # Create investigation state
             investigation_state = self.create_investigation_state(transaction_details)
@@ -434,8 +436,18 @@ class FraudInvestigationSystem:
             
             # Run initial analysis tasks in parallel
             async def run_risk_analysis():
+                # Check cache first
+                cached_risk = cache_service.get_cached_risk_analysis(transaction_details)
+                if cached_risk:
+                    await asyncio.sleep(0.5)  # Reduced time for cache hit
+                    return cached_risk
+                
                 await asyncio.sleep(1.5)  # Simulate analysis time
-                return config_service.calculate_risk_score(transaction_details)
+                risk_data = config_service.calculate_risk_score(transaction_details)
+                
+                # Cache the result
+                cache_service.cache_risk_analysis(transaction_details, risk_data, ttl=1800)
+                return risk_data
             
             async def run_document_search():
                 await asyncio.sleep(2.0)  # Simulate vector search time
@@ -489,21 +501,41 @@ class FraudInvestigationSystem:
             
             # Run external API calls in parallel with realistic latency
             async def run_web_search():
+                customer = transaction_details.get('customer_name', '')
+                country = transaction_details.get('country_to', '')
+                query = f'"{customer}" fraud sanctions {country}'
+                
+                # Check cache first
+                cached_web = cache_service.get_cached_web_intelligence(query)
+                if cached_web:
+                    await asyncio.sleep(0.5)  # Reduced time for cache hit
+                    return cached_web
+                
                 await asyncio.sleep(2.5)  # API call latency
                 try:
-                    customer = transaction_details.get('customer_name', '')
-                    country = transaction_details.get('country_to', '')
-                    query = f'"{customer}" fraud sanctions {country}'
-                    return self.external_api_service.search_web(query, 2)
+                    result = self.external_api_service.search_web(query, 2)
+                    # Cache the result
+                    cache_service.cache_web_intelligence(query, result, ttl=3600)
+                    return result
                 except Exception as e:
                     return f"Web search temporarily unavailable: {str(e)}"
             
             async def run_arxiv_search():
+                description = transaction_details.get('description', '')
+                query = f"financial fraud detection {description[:50]}"
+                
+                # Check cache first
+                cached_arxiv = cache_service.get_cached_arxiv_research(query)
+                if cached_arxiv:
+                    await asyncio.sleep(0.3)  # Reduced time for cache hit
+                    return cached_arxiv
+                
                 await asyncio.sleep(3.0)  # Academic search latency
                 try:
-                    description = transaction_details.get('description', '')
-                    query = f"financial fraud detection {description[:50]}"
-                    return self.external_api_service.search_arxiv(query, 1)
+                    result = self.external_api_service.search_arxiv(query, 1)
+                    # Cache the result
+                    cache_service.cache_arxiv_research(query, result, ttl=7200)
+                    return result
                 except Exception as e:
                     return f"Research database temporarily unavailable: {str(e)}"
             

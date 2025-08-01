@@ -54,7 +54,9 @@ export default function Home() {
     
     try {
       // Use streaming endpoint for real-time progress
-      const response = await fetch('http://localhost:8000/investigate/stream', {
+      // Add cache busting
+      const cacheBuster = Date.now();
+      const response = await fetch(`http://localhost:8000/investigate/stream?t=${cacheBuster}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -134,7 +136,13 @@ export default function Home() {
               setProgressUpdates(prev => [...prev, data]);
               setCurrentProgress(data.progress);
               
-              console.log('📨 Received event:', data.type, 'Progress:', data.progress);
+              console.log('📨 Received event:', {
+                type: data.type, 
+                step: data.step,
+                progress: data.progress,
+                completed_agents: data.completed_agents,
+                hasResult: !!data.result
+              });
               
               // Handle completion
               if (data.type === 'complete' && data.result) {

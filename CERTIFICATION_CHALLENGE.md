@@ -1,4 +1,7 @@
 # InvestigatorAI Certification Challenge Submission
+
+> **📂 Navigation**: [🏠 Home](README.md) | [🎓 Certification](CERTIFICATION_CHALLENGE.md) | [📊 Data Dictionary](DATA_DICTIONARY.md) | [🎬 Demo Guide](DEMO_GUIDE.md) | [🔄 Merge Instructions](MERGE.md) | [💻 Frontend Docs](frontend/README.md)
+
 ## AIE7 Cohort - Fraud Investigation Assistant
 
 ---

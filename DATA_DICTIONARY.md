@@ -1,5 +1,7 @@
 # InvestigatorAI Data Dictionary
 
+> **📂 Navigation**: [🏠 Home](README.md) | [🎓 Certification](CERTIFICATION_CHALLENGE.md) | [📊 Data Dictionary](DATA_DICTIONARY.md) | [🎬 Demo Guide](DEMO_GUIDE.md) | [🔄 Merge Instructions](MERGE.md) | [💻 Frontend Docs](frontend/README.md)
+
 > **Comprehensive catalog of all data sources collected by the InvestigatorAI system**
 
 This document provides a complete reference for all data sources, files, and datasets collected by the three data collection scripts. Each entry includes the source location, data format, content description, and specific relevance to fraud investigation workflows.
