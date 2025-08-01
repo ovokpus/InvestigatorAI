@@ -117,7 +117,7 @@ function MarkdownRenderer({ content }: MarkdownRendererProps) {
         processedLines.push(
           <div 
             key={index} 
-            className={`mb-3 p-4 ${bgColor} rounded-lg border-l-4 ${borderColor} shadow-sm`}
+            className={`mb-3 p-4 ${bgColor} rounded-lg border-l-4 ${borderColor} shadow-sm break-words overflow-wrap-anywhere`}
             dangerouslySetInnerHTML={{ __html: processedLine }}
           />
         );
@@ -127,7 +127,7 @@ function MarkdownRenderer({ content }: MarkdownRendererProps) {
       // Handle regular content with indentation
       if (line.trim() && !line.startsWith('**')) {
         processedLines.push(
-          <div key={index} className="text-gray-700 dark:text-gray-300 mb-2 ml-4">
+          <div key={index} className="text-gray-700 dark:text-gray-300 mb-2 ml-4 break-words overflow-wrap-anywhere">
             {line.trim()}
           </div>
         );
@@ -141,7 +141,7 @@ function MarkdownRenderer({ content }: MarkdownRendererProps) {
       }
       
       processedLines.push(
-        <div key={index} className="text-gray-800 dark:text-gray-200 mb-1">
+        <div key={index} className="text-gray-800 dark:text-gray-200 mb-1 break-words overflow-wrap-anywhere">
           {line}
         </div>
       );
@@ -278,67 +278,13 @@ function DetailedResultsViewer({ results }: DetailedResultsViewerProps) {
   console.log('🎯 Final parsed messages:', parsedMessages);
 
   const formatContent = (content: string) => {
-    // Split content into sections based on patterns
-    const sections: { title: string; content: string; type: string }[] = [];
-    
-    // Look for transaction details
-    if (content.includes('Transaction Details:')) {
-      const transactionMatch = content.match(/Transaction Details:[\s\S]*?(?=\n\n|\n[A-Z]|$)/);
-      if (transactionMatch) {
-        sections.push({
-          title: 'Transaction Overview',
-          content: transactionMatch[0].replace('Transaction Details:', '').trim(),
-          type: 'info'
-        });
-      }
-    }
-
-    // Look for regulatory compliance
-    if (content.includes('Regulatory compliance assessment') || content.includes('**Regulatory Compliance')) {
-      const complianceMatch = content.match(/(\*\*)?Regulatory [Cc]ompliance[\s\S]*?(?=\n\n|\n[0-9]\.|\n[A-Z]|$)/);
-      if (complianceMatch) {
-        sections.push({
-          title: 'Regulatory Compliance Assessment',
-          content: complianceMatch[0].replace(/\*\*/g, '').trim(),
-          type: 'warning'
-        });
-      }
-    }
-
-    // Look for risk assessment
-    if (content.includes('Risk score') || content.includes('risk')) {
-      const riskMatch = content.match(/.*[Rr]isk.*[\s\S]*?(?=\n\n|\n[0-9]\.|\n[A-Z]|$)/);
-      if (riskMatch) {
-        sections.push({
-          title: 'Risk Assessment',
-          content: riskMatch[0].trim(),
-          type: 'danger'
-        });
-      }
-    }
-
-    // Look for filing requirements
-    if (content.includes('Filing requirement') || content.includes('SAR')) {
-      const filingMatch = content.match(/.*[Ff]iling.*[\s\S]*?(?=\n\n|\n[0-9]\.|\n[A-Z]|$)/);
-      if (filingMatch) {
-        sections.push({
-          title: 'Filing Requirements',
-          content: filingMatch[0].trim(),
-          type: 'info'
-        });
-      }
-    }
-
-    // If no specific sections found, return the whole content
-    if (sections.length === 0) {
-      sections.push({
-        title: 'Investigation Analysis',
-        content: content.trim(),
-        type: 'info'
-      });
-    }
-
-    return sections;
+    // For investigation results, don't try to parse sections - display the full content
+    // The backend already provides well-formatted agent responses
+    return [{
+      title: 'Investigation Analysis',
+      content: content.trim(),
+      type: 'info'
+    }];
   };
 
   const getSectionIcon = (type: string) => {
@@ -419,7 +365,7 @@ function DetailedResultsViewer({ results }: DetailedResultsViewerProps) {
                       <h5 className="font-semibold text-contrast">{section.title}</h5>
                     </div>
                     <div className="prose prose-sm max-w-none">
-                      <div className="text-sm text-contrast whitespace-pre-wrap leading-relaxed">
+                      <div className="text-sm text-contrast whitespace-pre-wrap leading-relaxed break-words overflow-wrap-anywhere">
                         {section.content}
                       </div>
                     </div>
@@ -587,11 +533,11 @@ export default function InvestigationResults({ investigation, onNewInvestigation
                 <span>{copySuccess ? 'Copied!' : 'Copy'}</span>
               </button>
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-600 max-w-none overflow-auto">
               {investigation.final_decision.includes('**FRAUD INVESTIGATION COMPLETE**') ? (
                 <MarkdownRenderer content={investigation.final_decision} />
               ) : (
-                <div className="text-gray-700 dark:text-gray-300">{investigation.final_decision}</div>
+                <div className="text-gray-700 dark:text-gray-300 break-words overflow-wrap-anywhere whitespace-pre-wrap">{investigation.final_decision}</div>
               )}
             </div>
           </div>

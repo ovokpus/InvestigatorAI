@@ -622,12 +622,12 @@ class FraudInvestigationSystem:
                     name = message.get('name', '')
                     content = message.get('content', '')
                     if name and content:
-                        # Truncate content if too long but keep it substantial
-                        truncated_content = content[:800] if len(content) > 800 else content
+                        # Keep full content for comprehensive analysis (increased from 800 to 2000 chars)
+                        truncated_content = content[:2000] if len(content) > 2000 else content
                         agent_findings.append(f"**{name.replace('_', ' ').title()}**: {truncated_content}")
                 # Handle BaseMessage format (original format)
                 elif hasattr(message, 'name') and message.name:
-                    content = message.content[:800] if len(message.content) > 800 else message.content
+                    content = message.content[:2000] if len(message.content) > 2000 else message.content
                     agent_findings.append(f"**{message.name.replace('_', ' ').title()}**: {content}")
             
             if not agent_findings:
@@ -936,24 +936,33 @@ class FraudInvestigationSystem:
             country = transaction_details.get('country_to', '')
             customer = transaction_details.get('customer_name', '')
             
+            # Create comprehensive agent messages with full content
+            doc_analysis = investigation_data['document_search'][:400] if len(investigation_data['document_search']) > 400 else investigation_data['document_search']
+            web_intel = investigation_data['web_intelligence'][:500] if len(investigation_data['web_intelligence']) > 500 else investigation_data['web_intelligence']
+            arxiv_research = investigation_data['arxiv_research'][:300] if len(investigation_data['arxiv_research']) > 300 else investigation_data['arxiv_research']
+            
+            # Show more risk factors and compliance requirements
+            risk_factors_display = ', '.join(risk_analysis['risk_factors'][:5]) if len(risk_analysis['risk_factors']) > 5 else ', '.join(risk_analysis['risk_factors'])
+            compliance_display = '; '.join(investigation_data['compliance_requirements'][:4]) if len(investigation_data['compliance_requirements']) > 4 else '; '.join(investigation_data['compliance_requirements'])
+            
             messages = [
                 {
-                    "content": f"REGULATORY ANALYSIS: Transaction of ${amount:,} {currency} analyzed using FATF and FinCEN data. Destination: {country}. "
-                             f"Risk assessment: {risk_analysis['risk_level']} (score: {risk_analysis['risk_score']:.2f}). "
+                    "content": f"REGULATORY ANALYSIS: Transaction of ${amount:,} {currency} analyzed using FATF and FinCEN data. "
+                             f"Destination: {country}. Risk assessment: {risk_analysis['risk_level']} (score: {risk_analysis['risk_score']:.2f}). "
                              f"Regulatory compliance: {len(investigation_data['compliance_requirements'])} requirements identified. "
-                             f"Document analysis: {investigation_data['document_search'][:100]}...",
+                             f"Document analysis: {doc_analysis}{'...' if len(investigation_data['document_search']) > 400 else ''}",
                     "name": "regulatory_research"
                 },
                 {
                     "content": f"EVIDENCE COLLECTION: Risk analysis for {customer} identified {len(risk_analysis['risk_factors'])} risk factors: "
-                             f"{', '.join(risk_analysis['risk_factors'][:3])}. "
-                             f"Web intelligence: {investigation_data['web_intelligence'][:200]}... "
-                             f"Academic research: {investigation_data['arxiv_research'][:100]}...",
+                             f"{risk_factors_display}{'...' if len(risk_analysis['risk_factors']) > 5 else ''}. "
+                             f"Web intelligence: {web_intel}{'...' if len(investigation_data['web_intelligence']) > 500 else ''} "
+                             f"Academic research: {arxiv_research}{'...' if len(investigation_data['arxiv_research']) > 300 else ''}",
                     "name": "evidence_collection"
                 },
                 {
                     "content": f"COMPLIANCE CHECK: {len(investigation_data['compliance_requirements'])} regulatory requirements: "
-                             f"{'; '.join(investigation_data['compliance_requirements'][:2])}. "
+                             f"{compliance_display}{'...' if len(investigation_data['compliance_requirements']) > 4 else ''}. "
                              f"Suspicious indicators: {len(risk_analysis['suspicious_indicators'])} identified. "
                              f"Risk classification: {risk_analysis['risk_level']}.",
                     "name": "compliance_check"
