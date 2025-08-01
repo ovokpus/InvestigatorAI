@@ -46,8 +46,54 @@ function MarkdownRenderer({ content }: MarkdownRendererProps) {
         seenTransactionDetails = true;
       }
       
-      // Handle bold text **text**
-      let processedLine = line.replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-blue-800 dark:text-blue-200">$1</strong>');
+      // Handle bold text **text** and inline bullet points
+      let processedLine = line
+        .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-blue-800 dark:text-blue-200">$1</strong>')
+        .replace(/(\s+)•(\s+)/g, '<br/>• ') // Convert inline bullets to line breaks with proper bullet formatting
+        .replace(/Document analysis:\s*•/g, 'Document analysis:<br/><br/>• ') // Handle specific case with extra spacing
+        .replace(/Web intelligence:\s*•/g, 'Web intelligence:<br/><br/>• ')
+        .replace(/Academic research:\s*•/g, 'Academic research:<br/><br/>• ')
+        .replace(/(\d+)\.\s*([A-Z])/g, '<br/><br/>$1. $2') // Add spacing before numbered items
+        .replace(/Summary:\s*/g, '<br/><strong>Summary:</strong> '); // Format summary sections
+      
+      // Handle bullet points (• character or - at start of line)
+      if (line.trim().startsWith('•') || line.trim().startsWith('- ')) {
+        const bulletContent = line.replace(/^[\s]*[•\-]\s*/, '').trim();
+        processedLines.push(
+          <div key={index} className="flex items-start space-x-2 mb-2 ml-4">
+            <span className="text-blue-600 dark:text-blue-400 mt-1">•</span>
+            <div 
+              className="text-gray-700 dark:text-gray-300 break-words overflow-wrap-anywhere flex-1"
+              dangerouslySetInnerHTML={{ __html: bulletContent.replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-blue-800 dark:text-blue-200">$1</strong>') }}
+            />
+          </div>
+        );
+        return;
+      }
+      
+      // Handle numbered lists (1. 2. etc.) with enhanced formatting
+      if (/^\s*\d+\.\s/.test(line)) {
+        const numberMatch = line.match(/^(\s*)(\d+)\.\s(.*)$/);
+        if (numberMatch) {
+          const [, indent, number, content] = numberMatch;
+          
+          // Format content with better styling
+          let formattedContent = content
+            .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-blue-800 dark:text-blue-200">$1</strong>')
+            .replace(/Summary:\s*/g, '<br/><span class="font-medium text-gray-600 dark:text-gray-400">Summary:</span> ');
+          
+          processedLines.push(
+            <div key={index} className="flex items-start space-x-3 mb-4 ml-4 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-md border-l-2 border-blue-300 dark:border-blue-600">
+              <span className="text-blue-600 dark:text-blue-400 mt-1 font-bold text-lg bg-blue-100 dark:bg-blue-900/30 rounded-full w-8 h-8 flex items-center justify-center">{number}</span>
+              <div 
+                className="text-gray-700 dark:text-gray-300 break-words overflow-wrap-anywhere flex-1 leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: formattedContent }}
+              />
+            </div>
+          );
+          return;
+        }
+      }
       
       // Handle headers starting with **
       if (line.startsWith('**') && line.endsWith('**')) {
@@ -81,11 +127,31 @@ function MarkdownRenderer({ content }: MarkdownRendererProps) {
         return;
       }
       
+      // Handle main investigation headers
+      if (line.includes('FRAUD INVESTIGATION COMPLETE')) {
+        processedLines.push(
+          <div key={index} className="text-2xl font-bold text-green-700 dark:text-green-300 mt-6 mb-4 text-center py-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+            🔍 FRAUD INVESTIGATION COMPLETE
+          </div>
+        );
+        return;
+      }
+      
       // Handle KEY FINDINGS header
       if (line.includes('KEY FINDINGS')) {
         processedLines.push(
-          <div key={index} className="text-lg font-bold text-green-700 dark:text-green-300 mt-4 mb-2">
-            🔍 KEY FINDINGS:
+          <div key={index} className="text-xl font-bold text-blue-700 dark:text-blue-300 mt-6 mb-4 py-2 border-b-2 border-blue-300 dark:border-blue-700">
+            📊 KEY FINDINGS:
+          </div>
+        );
+        return;
+      }
+      
+      // Handle INVESTIGATION STATUS header
+      if (line.includes('INVESTIGATION STATUS')) {
+        processedLines.push(
+          <div key={index} className="text-lg font-bold text-indigo-700 dark:text-indigo-300 mt-6 mb-3 py-2 bg-indigo-50 dark:bg-indigo-900/20 rounded px-3">
+            ✅ {line.trim()}
           </div>
         );
         return;
@@ -114,11 +180,21 @@ function MarkdownRenderer({ content }: MarkdownRendererProps) {
           borderColor = 'border-gray-500';
         }
         
+        // Format agent content with better spacing
+        let formattedContent = processedLine
+          .replace(/(REGULATORY ANALYSIS|EVIDENCE COLLECTION|COMPLIANCE CHECK|FINAL REPORT):/g, '<div class="text-lg font-bold mb-3 text-indigo-800 dark:text-indigo-200">$1:</div>')
+          .replace(/Document analysis:/g, '<div class="mt-4 mb-2 font-semibold text-gray-800 dark:text-gray-200">📄 Document Analysis:</div>')
+          .replace(/Web intelligence:/g, '<div class="mt-4 mb-2 font-semibold text-gray-800 dark:text-gray-200">🌐 Web Intelligence:</div>')
+          .replace(/Academic research:/g, '<div class="mt-4 mb-2 font-semibold text-gray-800 dark:text-gray-200">🎓 Academic Research:</div>')
+          .replace(/Risk assessment:/g, '<div class="mt-2 mb-1 font-medium text-gray-700 dark:text-gray-300">⚠️ Risk Assessment:</div>')
+          .replace(/Regulatory compliance:/g, '<div class="mt-2 mb-1 font-medium text-gray-700 dark:text-gray-300">📋 Regulatory Compliance:</div>');
+        
         processedLines.push(
           <div 
             key={index} 
-            className={`mb-3 p-4 ${bgColor} rounded-lg border-l-4 ${borderColor} shadow-sm break-words overflow-wrap-anywhere`}
-            dangerouslySetInnerHTML={{ __html: processedLine }}
+            className={`mb-4 p-5 ${bgColor} rounded-lg border-l-4 ${borderColor} shadow-sm break-words overflow-wrap-anywhere`}
+            dangerouslySetInnerHTML={{ __html: formattedContent }}
+            style={{ lineHeight: '1.7' }}
           />
         );
         return;
@@ -141,9 +217,12 @@ function MarkdownRenderer({ content }: MarkdownRendererProps) {
       }
       
       processedLines.push(
-        <div key={index} className="text-gray-800 dark:text-gray-200 mb-1 break-words overflow-wrap-anywhere">
-          {line}
-        </div>
+        <div 
+          key={index} 
+          className="text-gray-800 dark:text-gray-200 mb-1 break-words overflow-wrap-anywhere"
+          dangerouslySetInnerHTML={{ __html: processedLine }}
+          style={{ lineHeight: '1.6' }}
+        />
       );
     });
     
