@@ -102,10 +102,22 @@ The application uses a professional dark blue theme:
 
 The frontend connects to these backend endpoints:
 
+### **Core Investigation Endpoints**
 - `GET /health` - System health check
-- `POST /investigate` - Start fraud investigation
-- `GET /search` - Document search
-- `GET /exchange-rate` - Currency rates
+- `POST /investigate` - Start fraud investigation  
+- `POST /investigate/stream` - Stream investigation progress
+- `GET /search` - Vector search regulatory documents
+
+### **External Intelligence Endpoints**
+- `GET /exchange-rate` - Currency exchange rates
+- `GET /web-search` - Web intelligence search via Tavily
+- `GET /arxiv-search` - Academic fraud research search
+
+### **Cache Management Endpoints**
+- `GET /cache/stats` - Cache performance metrics
+- `DELETE /cache/clear` - Clear all cache
+- `DELETE /cache/clear/investigations` - Clear investigation cache  
+- `DELETE /cache/clear/external` - Clear external API cache
 
 ## 📱 Pages & Components
 
@@ -424,25 +436,73 @@ export default function InvestigationForm({ onSubmit, isLoading }: Investigation
 
 2. **Investigation** - `POST /investigate`
    ```typescript
+   const investigationData = {
+     amount: 75000,
+     currency: "USD", 
+     description: "International wire transfer",
+     customer_name: "John Doe",
+     account_type: "Personal",
+     risk_rating: "High",
+     country_to: "Romania"
+   };
+   
    const response = await fetch('http://localhost:8000/investigate', {
      method: 'POST',
      headers: { 'Content-Type': 'application/json' },
-     body: JSON.stringify(formData),
+     body: JSON.stringify(investigationData),
    });
+   
+   const result = await response.json();
+   // Returns: { investigation_id, status, final_decision, agents_completed, full_results }
    ```
 
 3. **Document Search** - `GET /search`
    ```typescript
    const response = await fetch(
-     `http://localhost:8000/search?query=${encodeURIComponent(query)}&max_results=5`
+     `http://localhost:8000/search?query=${encodeURIComponent('AML compliance requirements')}&max_results=5`
    );
+   
+   const results = await response.json();
+   // Returns: [{ content, metadata, score, source }]
    ```
 
 4. **Exchange Rate** - `GET /exchange-rate`
    ```typescript
    const response = await fetch(
-     `http://localhost:8000/exchange-rate?from_currency=${fromCurrency}&to_currency=${toCurrency}`
+     `http://localhost:8000/exchange-rate?from_currency=USD&to_currency=EUR`
    );
+   
+   const data = await response.json();
+   // Returns: { result: "USD to EUR: 0.85", source: "exchangerate-api.com" }
+   ```
+
+5. **Investigation Streaming** - `POST /investigate/stream`
+   ```typescript
+   const response = await fetch('http://localhost:8000/investigate/stream', {
+     method: 'POST',
+     headers: { 'Content-Type': 'application/json' },
+     body: JSON.stringify(investigationData),
+   });
+   
+   const reader = response.body?.getReader();
+   // Stream real-time investigation progress updates
+   ```
+
+6. **Web Intelligence** - `GET /web-search`
+   ```typescript
+   const response = await fetch(
+     `http://localhost:8000/web-search?query=${encodeURIComponent('Romania financial regulations')}&max_results=3`
+   );
+   
+   const intelligence = await response.json();
+   // Returns: { result: "Current intelligence summary", source: "tavily" }
+   ```
+
+7. **Cache Statistics** - `GET /cache/stats`
+   ```typescript
+   const response = await fetch('http://localhost:8000/cache/stats');
+   const stats = await response.json();
+   // Returns: { cache: { hit_rate, total_calls, cache_size }, timestamp, endpoints }
    ```
 
 **Error Handling Strategy:**
@@ -642,10 +702,17 @@ try {
 ### API Endpoints Used
 | Endpoint | Method | Purpose |
 |----------|--------|---------|
-| `/health` | GET | System status |
-| `/investigate` | POST | Start investigation |
-| `/search` | GET | Document search |
-| `/exchange-rate` | GET | Currency rates |
+| `/health` | GET | System status and configuration |
+| `/investigate` | POST | Start fraud investigation |
+| `/investigate/stream` | POST | Stream investigation progress |
+| `/search` | GET | Vector search regulatory documents |
+| `/exchange-rate` | GET | Currency exchange rates |
+| `/web-search` | GET | Web intelligence via Tavily |
+| `/arxiv-search` | GET | Academic fraud research |
+| `/cache/stats` | GET | Cache performance metrics |
+| `/cache/clear` | DELETE | Clear all cache |
+| `/cache/clear/investigations` | DELETE | Clear investigation cache |
+| `/cache/clear/external` | DELETE | Clear external API cache |
 
 ---
 

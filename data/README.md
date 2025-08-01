@@ -206,6 +206,44 @@ data/
 | **SWIFT** | Society for Worldwide Interbank Financial Telecommunication | Global financial messaging network |
 | **XML** | eXtensible Markup Language | Structured markup language for data exchange |
 
+## 🔧 **Data Collection Usage**
+
+### Running Data Collection Scripts
+```bash
+# Collect core regulatory and financial data
+python get_data.py
+
+# Process PDF documents into text files
+python get_text_data.py  
+
+# Gather additional specialized datasets
+python get_additional_data.py
+
+# Run all data collection in sequence
+python get_data.py && python get_text_data.py && python get_additional_data.py
+```
+
+### Environment Setup
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Configure API keys in config.env
+cp config.env.template config.env
+# Edit config.env with your API keys
+```
+
+### Data Verification
+```bash
+# Check collected data
+ls -la data/
+ls -la data/fraud_knowledge_base/
+ls -la data/additional_sources/
+
+# Verify processed text files
+cat data/fraud_knowledge_base/INDEX.txt
+```
+
 ---
 
 **Generated**: `2024-12-28 15:30:00`  

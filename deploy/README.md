@@ -193,8 +193,10 @@ curl http://localhost:8000/cache/stats | jq '.cache.hit_rate'
 
 ### Local Development
 1. Start containers: `docker-compose up -d`
-2. Run API: `uvicorn api.main:app --reload`
-3. Test services: `docker-compose ps && curl http://localhost:6333/collections`
+2. Run API: `uvicorn api.main:app --reload --host 0.0.0.0 --port 8000`
+3. Start frontend: `cd frontend && npm run dev`
+4. Test services: `docker-compose ps && curl http://localhost:6333/collections`
+5. Test API health: `curl http://localhost:8000/health`
 
 ### Cache-Aware Development
 - Use `get_cache_service()` in your services
@@ -211,6 +213,36 @@ result2 = investigate_transaction(data)  # Fast - uses cache
 # Test cache invalidation
 clear_cache("investigations")
 result3 = investigate_transaction(data)  # Slow - cache miss
+```
+
+### Current API Endpoints
+```bash
+# Health check with vector store status
+curl http://localhost:8000/health
+
+# Start investigation
+curl -X POST http://localhost:8000/investigate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 75000,
+    "currency": "USD", 
+    "description": "International wire transfer",
+    "customer_name": "John Doe",
+    "risk_rating": "High",
+    "country_to": "Romania"
+  }'
+
+# Vector search regulatory documents
+curl "http://localhost:8000/search?query=AML%20compliance&max_results=5"
+
+# Get exchange rates
+curl "http://localhost:8000/exchange-rate?from_currency=USD&to_currency=EUR"
+
+# Web intelligence search
+curl "http://localhost:8000/web-search?query=Romania%20financial%20regulations&max_results=3"
+
+# Academic research search
+curl "http://localhost:8000/arxiv-search?query=fraud%20detection%20methods&max_results=3"
 ```
 
 ## 🚨 **Production Considerations**
