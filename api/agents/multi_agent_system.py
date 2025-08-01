@@ -447,6 +447,9 @@ class FraudInvestigationSystem:
                     "full_results": self._serialize_state(final_state)
                 }
             }
+            
+            # Explicitly return to terminate the generator
+            return
                 
         except openai.OpenAIError as e:
             error_message = f"AI service error: {str(e)}"
