@@ -936,10 +936,10 @@ class FraudInvestigationSystem:
             country = transaction_details.get('country_to', '')
             customer = transaction_details.get('customer_name', '')
             
-            # Create comprehensive agent messages with full content
-            doc_analysis = investigation_data['document_search'][:400] if len(investigation_data['document_search']) > 400 else investigation_data['document_search']
-            web_intel = investigation_data['web_intelligence'][:500] if len(investigation_data['web_intelligence']) > 500 else investigation_data['web_intelligence']
-            arxiv_research = investigation_data['arxiv_research'][:300] if len(investigation_data['arxiv_research']) > 300 else investigation_data['arxiv_research']
+            # Create comprehensive agent messages with full content - remove artificial truncation
+            doc_analysis = investigation_data['document_search']  # Show full document analysis
+            web_intel = investigation_data['web_intelligence']     # Show full web intelligence
+            arxiv_research = investigation_data['arxiv_research']  # Show full academic research
             
             # Show more risk factors and compliance requirements
             risk_factors_display = ', '.join(risk_analysis['risk_factors'][:5]) if len(risk_analysis['risk_factors']) > 5 else ', '.join(risk_analysis['risk_factors'])
@@ -950,19 +950,19 @@ class FraudInvestigationSystem:
                     "content": f"REGULATORY ANALYSIS: Transaction of ${amount:,} {currency} analyzed using FATF and FinCEN data. "
                              f"Destination: {country}. Risk assessment: {risk_analysis['risk_level']} (score: {risk_analysis['risk_score']:.2f}). "
                              f"Regulatory compliance: {len(investigation_data['compliance_requirements'])} requirements identified. "
-                             f"Document analysis: {doc_analysis}{'...' if len(investigation_data['document_search']) > 400 else ''}",
+                             f"Document analysis: {doc_analysis}",
                     "name": "regulatory_research"
                 },
                 {
                     "content": f"EVIDENCE COLLECTION: Risk analysis for {customer} identified {len(risk_analysis['risk_factors'])} risk factors: "
-                             f"{risk_factors_display}{'...' if len(risk_analysis['risk_factors']) > 5 else ''}. "
-                             f"Web intelligence: {web_intel}{'...' if len(investigation_data['web_intelligence']) > 500 else ''} "
-                             f"Academic research: {arxiv_research}{'...' if len(investigation_data['arxiv_research']) > 300 else ''}",
+                             f"{risk_factors_display}. "
+                             f"Web intelligence: {web_intel} "
+                             f"Academic research: {arxiv_research}",
                     "name": "evidence_collection"
                 },
                 {
                     "content": f"COMPLIANCE CHECK: {len(investigation_data['compliance_requirements'])} regulatory requirements: "
-                             f"{compliance_display}{'...' if len(investigation_data['compliance_requirements']) > 4 else ''}. "
+                             f"{compliance_display}. "
                              f"Suspicious indicators: {len(risk_analysis['suspicious_indicators'])} identified. "
                              f"Risk classification: {risk_analysis['risk_level']}.",
                     "name": "compliance_check"
