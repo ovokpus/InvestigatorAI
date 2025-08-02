@@ -473,53 +473,68 @@ class FraudInvestigationSystem:
         return state_update
     
     def agent_node(self, state: FraudInvestigationState, agent_name: str):
-        """Agent node that captures complete tool call sequences for RAGAS evaluation"""
+        """Agent node that captures the actual LangChain tool execution messages"""
         agent = self.agents[agent_name]
-        agent_input = {"messages": state["messages"]}
         
-        # Get full result with intermediate steps (tool calls)
+        # Create a fresh message list for this agent's execution
+        agent_messages = state["messages"].copy()
+        
+        # Invoke the agent and get the result with intermediate steps
+        agent_input = {"messages": agent_messages}
         result = agent.invoke(agent_input)
         
         state_updates = self.update_agent_completion(state, agent_name)
         
-        # ✅ CAPTURE COMPLETE TOOL CALL CONVERSATION
+        # ✅ Extract the actual messages from the agent execution
         new_messages = []
         
-        # Extract intermediate steps containing tool calls
+        # Get intermediate steps (these contain the actual tool calls)
         intermediate_steps = result.get("intermediate_steps", [])
         
-        for step in intermediate_steps:
-            if isinstance(step, tuple) and len(step) == 2:
-                agent_action, observation = step
-                
-                # Create AIMessage with tool call
-                ai_message = AIMessage(
-                    content=f"I need to use the {agent_action.tool} tool to investigate this.",
-                    tool_calls=[{
-                        "name": agent_action.tool,
-                        "args": agent_action.tool_input,
-                        "id": f"call_{agent_action.tool}_{len(new_messages)}"
-                    }],
-                    name=agent_name
-                )
-                
-                # Create ToolMessage with response
-                tool_message = ToolMessage(
-                    content=str(observation),
-                    tool_call_id=f"call_{agent_action.tool}_{len(new_messages)}",
-                    name=agent_name
-                )
-                
-                new_messages.extend([ai_message, tool_message])
+        if intermediate_steps:
+            print(f"🔧 Agent {agent_name}: Processing {len(intermediate_steps)} tool executions")
+            
+            # Process each tool execution step
+            for i, step in enumerate(intermediate_steps):
+                if isinstance(step, tuple) and len(step) == 2:
+                    agent_action, observation = step
+                    
+                    # Extract the actual tool call information
+                    tool_name = agent_action.tool
+                    tool_input = agent_action.tool_input
+                    tool_call_id = f"call_{tool_name}_{i}"
+                    
+                    # Create AIMessage with proper tool_calls structure
+                    ai_message = AIMessage(
+                        content="",  # Empty content for tool calls
+                        tool_calls=[{
+                            "id": tool_call_id,
+                            "name": tool_name,
+                            "args": tool_input,
+                            "type": "function"
+                        }],
+                        name=agent_name
+                    )
+                    
+                    # Create ToolMessage with the observation
+                    tool_message = ToolMessage(
+                        content=str(observation),
+                        tool_call_id=tool_call_id,
+                        name=tool_name
+                    )
+                    
+                    new_messages.extend([ai_message, tool_message])
+                    print(f"   ✅ Tool call: {tool_name} -> {len(str(observation))} chars response")
         
-        # Add final response message
-        final_message = HumanMessage(content=result["output"], name=agent_name)
-        new_messages.append(final_message)
+        # Add the final agent response
+        if result.get("output"):
+            final_message = HumanMessage(content=result["output"], name=agent_name)
+            new_messages.append(final_message)
         
-        # ✅ PRESERVE ALL MESSAGES: original + tool calls + final output
+        # Combine original messages with new tool call messages
         updated_messages = state["messages"] + new_messages
         
-        print(f"🔧 Agent {agent_name}: Added {len(intermediate_steps)} tool calls, total {len(new_messages)} new messages")
+        print(f"🔧 Agent {agent_name}: Added {len(new_messages)} messages ({len(intermediate_steps)} tool pairs + 1 final)")
         
         return {
             **state_updates,
