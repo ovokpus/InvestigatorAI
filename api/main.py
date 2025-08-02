@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Optional
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, JSONResponse
 import asyncio
 import json
 from contextlib import asynccontextmanager
