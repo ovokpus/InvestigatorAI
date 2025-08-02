@@ -570,6 +570,15 @@ class FraudInvestigationSystem:
                         "name": message.get("name", None),
                         "timestamp": datetime.now().isoformat()
                     }
+                    
+                    # ✅ PRESERVE TOOL CALLS: Extract tool_calls if present in dict
+                    if "tool_calls" in message and message["tool_calls"]:
+                        serialized_message["tool_calls"] = message["tool_calls"]
+                    
+                    # ✅ PRESERVE TOOL RESPONSES: Extract tool_call_id if present in dict
+                    if "tool_call_id" in message and message["tool_call_id"]:
+                        serialized_message["tool_call_id"] = message["tool_call_id"]
+                    
                     serialized_messages.append(serialized_message)
                 # Handle BaseMessage format (original LangChain format)
                 elif hasattr(message, 'content'):
@@ -579,6 +588,15 @@ class FraudInvestigationSystem:
                         "name": getattr(message, 'name', None),
                         "timestamp": datetime.now().isoformat()
                     }
+                    
+                    # ✅ PRESERVE TOOL CALLS: Extract tool_calls from AIMessage
+                    if hasattr(message, 'tool_calls') and message.tool_calls:
+                        serialized_message["tool_calls"] = message.tool_calls
+                    
+                    # ✅ PRESERVE TOOL RESPONSES: Extract tool_call_id from ToolMessage  
+                    if hasattr(message, 'tool_call_id') and message.tool_call_id:
+                        serialized_message["tool_call_id"] = message.tool_call_id
+                    
                     serialized_messages.append(serialized_message)
                 else:
                     # Fallback for any other format
