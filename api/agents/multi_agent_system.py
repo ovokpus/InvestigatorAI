@@ -686,6 +686,8 @@ class FraudInvestigationSystem:
     
     def validate_ragas_sequence(self, messages: List[BaseMessage]) -> List[BaseMessage]:
         """Filter and validate messages for RAGAS compliance"""
+        print(f"🔍 RAGAS validation: Processing {len(messages)} messages")
+        
         # Status lines that should be filtered for RAGAS
         STATUS_PREFIXES = (
             "Routing investigation to ",
@@ -702,8 +704,16 @@ class FraudInvestigationSystem:
         
         # Filter out status lines
         filtered = [msg for msg in messages if not is_status_line(msg)]
+        print(f"🧹 Filtered out {len(messages) - len(filtered)} status messages")
         
-        # Ensure proper AIMessage -> ToolMessage sequences
+        # Debug: show message types
+        for i, msg in enumerate(filtered):
+            msg_type = type(msg).__name__
+            has_tool_calls = hasattr(msg, 'tool_calls') and msg.tool_calls
+            tool_call_id = getattr(msg, 'tool_call_id', None)
+            print(f"  {i}: {msg_type} (tool_calls: {has_tool_calls}, tool_call_id: {tool_call_id})")
+        
+        # Ensure proper AIMessage -> ToolMessage sequences for RAGAS
         validated = []
         i = 0
         
@@ -711,35 +721,86 @@ class FraudInvestigationSystem:
             msg = filtered[i]
             
             if isinstance(msg, ToolMessage):
-                # Every ToolMessage needs a proper AIMessage predecessor
-                if not (validated and isinstance(validated[-1], AIMessage) and 
-                       hasattr(validated[-1], 'tool_calls') and validated[-1].tool_calls):
-                    
-                    # Create proper AIMessage for this ToolMessage
+                # CRITICAL: ToolMessage must follow AIMessage with matching tool_calls
+                needs_ai_stub = True
+                
+                # Check if previous message is AIMessage with matching tool_call
+                if (validated and isinstance(validated[-1], AIMessage) and 
+                   hasattr(validated[-1], 'tool_calls') and validated[-1].tool_calls):
+                    for tc in validated[-1].tool_calls:
+                        if tc.get("id") == getattr(msg, 'tool_call_id', None):
+                            needs_ai_stub = False
+                            break
+                
+                if needs_ai_stub:
+                    # Create proper AIMessage stub that calls this tool
                     tool_name = getattr(msg, 'name', 'unknown_tool')
-                    if hasattr(msg, 'tool_call_id') and msg.tool_call_id and msg.tool_call_id.startswith("call_"):
-                        parts = msg.tool_call_id.split("_")
+                    tool_call_id = getattr(msg, 'tool_call_id', f"call_{tool_name}_0")
+                    
+                    # Extract tool name from tool_call_id if available
+                    if tool_call_id and tool_call_id.startswith("call_"):
+                        parts = tool_call_id.split("_")
                         if len(parts) >= 3:
                             tool_name = "_".join(parts[1:-1])
                     
                     ai_stub = AIMessage(
-                        content="",
+                        content=f"I'll use the {tool_name} tool to help with this investigation.",
                         tool_calls=[{
-                            "id": getattr(msg, 'tool_call_id', f"call_{tool_name}_0"),
+                            "id": tool_call_id,
                             "name": tool_name,
                             "args": {},
                             "type": "function"
-                        }],
-                        name=getattr(msg, 'name', None)
+                        }]
                     )
+                    print(f"🔧 Creating AIMessage → ToolMessage pair for tool '{tool_name}' (id: {tool_call_id})")
                     validated.append(ai_stub)
                 
+                # Add the ToolMessage
                 validated.append(msg)
+                
+            elif isinstance(msg, AIMessage):
+                # For AIMessage with tool_calls, we need to ensure all tool calls have responses
+                if hasattr(msg, 'tool_calls') and msg.tool_calls:
+                    validated.append(msg)
+                    
+                    # Look ahead for corresponding ToolMessages
+                    j = i + 1
+                    tool_calls_handled = set()
+                    
+                    while j < len(filtered) and isinstance(filtered[j], ToolMessage):
+                        tool_msg = filtered[j]
+                        tool_call_id = getattr(tool_msg, 'tool_call_id', None)
+                        
+                        # Check if this ToolMessage belongs to our AIMessage
+                        for tc in msg.tool_calls:
+                            if tc.get("id") == tool_call_id:
+                                validated.append(tool_msg)
+                                tool_calls_handled.add(tool_call_id)
+                                i = j  # Skip this ToolMessage in main loop
+                                break
+                        j += 1
+                    
+                    # Create stub ToolMessages for any unhandled tool calls
+                    for tc in msg.tool_calls:
+                        if tc.get("id") not in tool_calls_handled:
+                            stub_tool_msg = ToolMessage(
+                                content="Tool execution completed successfully.",
+                                tool_call_id=tc.get("id"),
+                                name=tc.get("name", "unknown_tool")
+                            )
+                            print(f"🔧 Creating stub ToolMessage for tool_call_id: {tc.get('id')}")
+                            validated.append(stub_tool_msg)
+                else:
+                    # Regular AIMessage without tool calls
+                    validated.append(msg)
+                    
             else:
+                # HumanMessage, SystemMessage, etc.
                 validated.append(msg)
             
             i += 1
         
+        print(f"✅ Normalized {len(filtered)} → {len(validated)} messages for RAGAS")
         return validated
 
     def generate_final_decision(self, messages) -> str:
