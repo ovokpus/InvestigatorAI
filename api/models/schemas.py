@@ -39,7 +39,7 @@ class InvestigationResponse(BaseModel):
     all_agents_finished: bool
     error: Optional[str] = None
     full_results: Optional[Dict[str, Any]] = None
-    ragas_validated_messages: Optional[List[Dict[str, Any]]] = None
+    ragas_validated_messages: Optional[List[BaseMessage]] = None
 
 class HealthResponse(BaseModel):
     """Health check response"""

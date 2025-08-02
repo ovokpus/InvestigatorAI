@@ -26,6 +26,38 @@ from api.agents.multi_agent_system import FraudInvestigationSystem
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+def serialize_langchain_objects(obj):
+    """Custom serializer for LangChain objects"""
+    from langchain_core.messages import BaseMessage, AIMessage, ToolMessage, HumanMessage, SystemMessage
+    
+    if isinstance(obj, BaseMessage):
+        # Serialize LangChain messages to dict format
+        serialized = {
+            "content": obj.content,
+            "type": obj.__class__.__name__,
+            "name": getattr(obj, 'name', None),
+        }
+        
+        # Preserve tool calls for AIMessage
+        if hasattr(obj, 'tool_calls') and obj.tool_calls:
+            serialized["tool_calls"] = obj.tool_calls
+        
+        # Preserve tool_call_id for ToolMessage
+        if hasattr(obj, 'tool_call_id') and obj.tool_call_id:
+            serialized["tool_call_id"] = obj.tool_call_id
+            
+        return serialized
+    
+    elif isinstance(obj, list):
+        return [serialize_langchain_objects(item) for item in obj]
+    
+    elif isinstance(obj, dict):
+        return {key: serialize_langchain_objects(value) for key, value in obj.items()}
+    
+    else:
+        # Return object as-is for basic types
+        return obj
+
 def handle_openai_error(e: Exception) -> tuple[int, str]:
     """Handle OpenAI API errors gracefully"""
     if hasattr(e, 'response') and hasattr(e.response, 'status_code'):
@@ -348,19 +380,32 @@ async def investigate_fraud(
         if result.get("full_results"):
             logger.info(f"Full results keys: {list(result.get('full_results', {}).keys())}")
         
+        # Serialize LangChain objects for JSON response
+        ragas_messages = result.get("ragas_validated_messages")
+        if ragas_messages:
+            logger.info(f"🔧 RAGAS messages type: {type(ragas_messages)}, length: {len(ragas_messages)}")
+            if ragas_messages:
+                logger.info(f"🔧 First message type: {type(ragas_messages[0])}")
+            serialized_ragas_messages = serialize_langchain_objects(ragas_messages)
+            logger.info(f"✅ Serialized {len(serialized_ragas_messages)} LangChain objects for RAGAS")
+        else:
+            serialized_ragas_messages = None
+        
         # Return response
-        return InvestigationResponse(
-            investigation_id=result.get("investigation_id", "Unknown"),
-            status=result.get("status", "Unknown"),
-            final_decision=result.get("final_decision", "Pending"),
-            agents_completed=result.get("agents_completed", 0),
-            total_messages=result.get("total_messages", 0),
-            transaction_details=result.get("transaction_details", {}),
-            all_agents_finished=result.get("all_agents_finished", False),
-            error=result.get("error"),
-            full_results=result.get("full_results"),
-            ragas_validated_messages=result.get("ragas_validated_messages")
-        )
+        response_data = {
+            "investigation_id": result.get("investigation_id", "Unknown"),
+            "status": result.get("status", "Unknown"),
+            "final_decision": result.get("final_decision", "Pending"),
+            "agents_completed": result.get("agents_completed", 0),
+            "total_messages": result.get("total_messages", 0),
+            "transaction_details": result.get("transaction_details", {}),
+            "all_agents_finished": result.get("all_agents_finished", False),
+            "error": result.get("error"),
+            "full_results": result.get("full_results"),
+            "ragas_validated_messages": serialized_ragas_messages
+        }
+        
+        return JSONResponse(content=response_data)
         
     except openai.OpenAIError as e:
         logger.error(f"OpenAI API error during investigation: {e}")

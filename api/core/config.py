@@ -17,9 +17,9 @@ class Settings:
         
         # Model configurations
         self.embedding_model: str = os.getenv("EMBEDDING_MODEL", "text-embedding-3-large")
-        self.llm_model: str = os.getenv("LLM_MODEL", "gpt-4")
+        self.llm_model: str = os.getenv("LLM_MODEL", "gpt-4o")
         self.llm_temperature: float = float(os.getenv("LLM_TEMPERATURE", "0"))
-        self.llm_max_tokens: int = int(os.getenv("LLM_MAX_TOKENS", "4000"))  # Configurable via env var
+        self.llm_max_tokens: int = int(os.getenv("LLM_MAX_TOKENS", "5000"))  # Configurable via env var
         
         # Redis Cache Configuration
         self.redis_host: str = os.getenv("REDIS_HOST", "localhost")

@@ -7,24 +7,12 @@ name = "investigator-ai"
 version = "0.1.0"
 description = "A comprehensive fraud investigation tool that aggregates data from legitimate public sources"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.13"
 authors = [
     {name = "InvestigatorAI Team"}
 ]
 license = {file = "LICENSE"}
 keywords = ["fraud", "investigation", "data", "analysis", "compliance"]
-classifiers = [
-    "Development Status :: 3 - Alpha",
-    "Intended Audience :: Financial and Insurance Industry",
-    "Intended Audience :: Legal Industry", 
-    "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
-    "Topic :: Office/Business :: Financial",
-    "Topic :: Scientific/Engineering :: Information Analysis",
-]
 
 dependencies = [
     # Core data collection and analysis
@@ -49,10 +37,23 @@ dependencies = [
     "datasets==2.21.0",
     "langsmith==0.4.8",
     "typing-extensions==4.14.1",
-    "PyMuPDF==1.24.1",
     # FastAPI dependencies
     "fastapi==0.115.6",
     "uvicorn[standard]==0.34.0",
+    "pydantic-settings==2.9.0",
+    "pymupdf==1.26.3",
+    "pillow==11.1.0",
+    "jupyter>=1.0.0",
+    "jupyterlab>=3.6.0",
+    "notebook>=6.4.0",
+    "ipykernel>=6.15.0",
+    "ipython>=8.0.0",
+    "ipywidgets>=8.0.0",
+    "matplotlib>=3.5.0",
+    "seaborn>=0.12.0",
+    "plotly>=5.0.0",
+    "pip",
+    "rapidfuzz==3.1.0",
 ]
 
 [project.optional-dependencies]
@@ -73,6 +74,7 @@ notebook = [
     "matplotlib>=3.5.0",
     "seaborn>=0.12.0",
     "plotly>=5.0.0",
+    "pip"
 ]
 evaluation = [
     # Additional evaluation and testing dependencies

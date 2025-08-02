@@ -861,7 +861,7 @@ class FraudInvestigationSystem:
                 "transaction_details": transaction_details,
                 "all_agents_finished": all_agents_finished,
                 "full_results": self._serialize_state(final_state),
-                "ragas_validated_messages": self._serialize_messages(self.validate_ragas_sequence(final_state.get("messages", [])))
+                "ragas_validated_messages": self.validate_ragas_sequence(final_state.get("messages", []))
             }
             
         except openai.OpenAIError as e:
