@@ -358,7 +358,8 @@ async def investigate_fraud(
             transaction_details=result.get("transaction_details", {}),
             all_agents_finished=result.get("all_agents_finished", False),
             error=result.get("error"),
-            full_results=result.get("full_results")
+            full_results=result.get("full_results"),
+            ragas_validated_messages=result.get("ragas_validated_messages")
         )
         
     except openai.OpenAIError as e:
