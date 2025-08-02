@@ -38,7 +38,7 @@ dependencies = [
     # AI/ML and LangChain dependencies for enhanced notebook
     "langchain-openai==0.3.28",
     "langchain-core==0.3.72", 
-    "langchain-community>=0.3.0",
+    "langchain-community==0.3.27",
     "langgraph==0.6.1",
     "langchain-qdrant>=0.2.0",
     "pydantic==2.11.7",
@@ -47,7 +47,7 @@ dependencies = [
     # RAGAS evaluation framework and dependencies
     "ragas==0.3.0",
     "datasets==2.21.0",
-    "langsmith>=0.4.0",
+    "langsmith==0.4.8",
     "typing-extensions==4.14.1",
     "PyMuPDF==1.24.1",
     # FastAPI dependencies
