@@ -7,6 +7,7 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, BaseMessage, AIMessage, ToolMessage
+from typing import List, Dict, Any, Optional
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.agents import AgentExecutor, create_openai_tools_agent
 from langgraph.graph import END, StateGraph
@@ -682,6 +683,64 @@ class FraudInvestigationSystem:
                 # Convert other objects to string representation
                 serialized_state[key] = str(value)
         return serialized_state
+    
+    def validate_ragas_sequence(self, messages: List[BaseMessage]) -> List[BaseMessage]:
+        """Filter and validate messages for RAGAS compliance"""
+        # Status lines that should be filtered for RAGAS
+        STATUS_PREFIXES = (
+            "Routing investigation to ",
+            "**REGULATORY ANALYSIS REPORT**",
+            "**EVIDENCE COLLECTION REPORT**", 
+            "**COMPLIANCE ASSESSMENT REPORT**",
+            "**EXECUTIVE SUMMARY**",
+            "Investigation completed. All specialist agents",
+        )
+        
+        def is_status_line(msg):
+            return (isinstance(msg, HumanMessage) and 
+                   any(msg.content.startswith(p) for p in STATUS_PREFIXES))
+        
+        # Filter out status lines
+        filtered = [msg for msg in messages if not is_status_line(msg)]
+        
+        # Ensure proper AIMessage -> ToolMessage sequences
+        validated = []
+        i = 0
+        
+        while i < len(filtered):
+            msg = filtered[i]
+            
+            if isinstance(msg, ToolMessage):
+                # Every ToolMessage needs a proper AIMessage predecessor
+                if not (validated and isinstance(validated[-1], AIMessage) and 
+                       hasattr(validated[-1], 'tool_calls') and validated[-1].tool_calls):
+                    
+                    # Create proper AIMessage for this ToolMessage
+                    tool_name = getattr(msg, 'name', 'unknown_tool')
+                    if hasattr(msg, 'tool_call_id') and msg.tool_call_id and msg.tool_call_id.startswith("call_"):
+                        parts = msg.tool_call_id.split("_")
+                        if len(parts) >= 3:
+                            tool_name = "_".join(parts[1:-1])
+                    
+                    ai_stub = AIMessage(
+                        content="",
+                        tool_calls=[{
+                            "id": getattr(msg, 'tool_call_id', f"call_{tool_name}_0"),
+                            "name": tool_name,
+                            "args": {},
+                            "type": "function"
+                        }],
+                        name=getattr(msg, 'name', None)
+                    )
+                    validated.append(ai_stub)
+                
+                validated.append(msg)
+            else:
+                validated.append(msg)
+            
+            i += 1
+        
+        return validated
 
     def generate_final_decision(self, messages) -> str:
         """Generate a comprehensive final decision from all agent analyses"""
@@ -740,7 +799,8 @@ class FraudInvestigationSystem:
                 "total_messages": total_messages,
                 "transaction_details": transaction_details,
                 "all_agents_finished": all_agents_finished,
-                "full_results": self._serialize_state(final_state)
+                "full_results": self._serialize_state(final_state),
+                "ragas_validated_messages": self._serialize_messages(self.validate_ragas_sequence(final_state.get("messages", [])))
             }
             
         except openai.OpenAIError as e:
