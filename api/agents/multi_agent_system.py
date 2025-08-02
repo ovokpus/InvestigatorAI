@@ -8,7 +8,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, BaseMessage, AIMessage, ToolMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain.agents import AgentExecutor, create_openai_functions_agent
+from langchain.agents import AgentExecutor, create_openai_tools_agent
 from langgraph.graph import END, StateGraph
 
 from ..models.schemas import FraudInvestigationState
@@ -44,8 +44,8 @@ class FraudInvestigationSystem:
             MessagesPlaceholder(variable_name="agent_scratchpad"),
         ])
         
-        agent = create_openai_functions_agent(llm, tools, prompt)
-        return AgentExecutor(agent=agent, tools=tools, verbose=False)
+        agent = create_openai_tools_agent(llm, tools, prompt)
+        return AgentExecutor(agent=agent, tools=tools, verbose=False, return_intermediate_steps=True)
     
     def _create_agents(self) -> Dict[str, AgentExecutor]:
         """Create all specialist agents"""
@@ -473,51 +473,18 @@ class FraudInvestigationSystem:
         return state_update
     
     def agent_node(self, state: FraudInvestigationState, agent_name: str):
-        """Agent node that returns proper LangGraph state updates with preserved tool calls"""
+        """Agent node that returns proper LangGraph state updates"""
         agent = self.agents[agent_name]
         agent_input = {"messages": state["messages"]}
         
-        # ✅ Get intermediate steps to capture tool calls
-        result = agent.invoke(agent_input, return_only_outputs=False)
+        # Let AgentExecutor handle tool calls naturally
+        result = agent.invoke(agent_input)
         
         state_updates = self.update_agent_completion(state, agent_name)
         
-        # ✅ Build complete message trace with tool calls
-        new_messages = []
-        
-        # Add tool call messages from intermediate steps
-        intermediate_steps = result.get("intermediate_steps", [])
-        for step in intermediate_steps:
-            if len(step) >= 2:  # (agent_action, observation) pair
-                agent_action, observation = step
-                
-                # Create AIMessage with tool call
-                tool_call = {
-                    "name": agent_action.tool,
-                    "args": agent_action.tool_input,
-                    "id": f"call_{agent_action.tool}_{len(state['messages']) + len(new_messages)}"
-                }
-                
-                ai_message = AIMessage(
-                    content=f"I need to use the {agent_action.tool} tool.",
-                    tool_calls=[tool_call],
-                    name=agent_name
-                )
-                
-                tool_message = ToolMessage(
-                    content=str(observation),
-                    tool_call_id=tool_call["id"],
-                    name=agent_name
-                )
-                
-                new_messages.extend([ai_message, tool_message])
-        
-        # Add final response message
-        final_message = HumanMessage(content=result["output"], name=agent_name)
-        new_messages.append(final_message)
-        
-        # ✅ Preserve ALL messages including tool calls
-        updated_messages = state["messages"] + new_messages
+        # Simple approach: just add the final output message
+        new_message = HumanMessage(content=result["output"], name=agent_name)
+        updated_messages = state["messages"] + [new_message]
         
         return {
             **state_updates,
