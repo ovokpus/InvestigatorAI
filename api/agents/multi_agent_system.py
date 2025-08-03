@@ -567,71 +567,114 @@ class FraudInvestigationSystem:
         if not pending_agents:
             return {"next": "FINISH", "investigation_status": "completed"}
             
-        # Create tool calls for all pending agents
-        tool_calls = []
-        for i, agent_name in enumerate(pending_agents):
-            tool_call = {
-                "name": agent_name,
-                "args": {"transaction_data": state["transaction_details"]},
-                "id": f"call_{agent_name}_{i}",
-                "type": "tool_call"
-            }
-            tool_calls.append(tool_call)
+        # Route to the next agent (one at a time)
+        next_agent = pending_agents[0]
         
-        # Create AI message with tool calls
+        # Create tool call for the next agent
+        tool_call = {
+            "name": next_agent,
+            "args": {"transaction_data": state["transaction_details"]},
+            "id": f"call_{next_agent}_{len(state['messages'])}",
+            "type": "tool_call"
+        }
+        
+        # Create AI message with tool call
         supervisor_message = AIMessage(
-            content="Initiating specialized investigation analysis...",
-            tool_calls=tool_calls,
+            content=f"Initiating {next_agent.replace('_', ' ')} analysis...",
+            tool_calls=[tool_call],
             name="supervisor"
         )
         
         return {
-            "next": "agent_execution",
+            "next": next_agent,
             "messages": state["messages"] + [supervisor_message]
         }
     
-    def agent_execution_node(self, state: FraudInvestigationState):
-        """Execute agent tools and return ToolMessage responses"""
+    def regulatory_research_node(self, state: FraudInvestigationState):
+        """Execute regulatory research agent and return ToolMessage"""
+        return self._execute_agent_tool(state, "regulatory_research")
+    
+    def evidence_collection_node(self, state: FraudInvestigationState):
+        """Execute evidence collection agent and return ToolMessage"""
+        return self._execute_agent_tool(state, "evidence_collection")
+    
+    def compliance_check_node(self, state: FraudInvestigationState):
+        """Execute compliance check agent and return ToolMessage"""
+        return self._execute_agent_tool(state, "compliance_check")
+    
+    def report_generation_node(self, state: FraudInvestigationState):
+        """Execute report generation agent and return ToolMessage"""
+        return self._execute_agent_tool(state, "report_generation")
+    
+    def _execute_agent_tool(self, state: FraudInvestigationState, agent_name: str):
+        """Execute a specific agent tool and return ToolMessage response"""
+        # Find the corresponding tool call in the last message
         last_message = state["messages"][-1]
+        tool_call_id = None
         
-        if not hasattr(last_message, 'tool_calls') or not last_message.tool_calls:
-            return {"messages": state["messages"]}
+        if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
+            for tool_call in last_message.tool_calls:
+                if tool_call["name"] == agent_name:
+                    tool_call_id = tool_call["id"]
+                    break
         
-        new_messages = []
+        if not tool_call_id:
+            tool_call_id = f"call_{agent_name}_{len(state['messages'])}"
+        
+        # 🔧 FIX: Filter messages to remove incomplete tool call sequences
+        # Remove AIMessages with tool_calls that don't have corresponding ToolMessages
+        filtered_messages = []
+        for i, msg in enumerate(state["messages"]):
+            if isinstance(msg, AIMessage) and hasattr(msg, 'tool_calls') and msg.tool_calls:
+                # Check if this AIMessage has corresponding ToolMessages
+                has_responses = True
+                for tool_call in msg.tool_calls:
+                    tc_id = tool_call.get("id")
+                    # Look for ToolMessage with matching tool_call_id
+                    found_response = False
+                    for j in range(i+1, len(state["messages"])):
+                        next_msg = state["messages"][j]
+                        if isinstance(next_msg, ToolMessage) and getattr(next_msg, 'tool_call_id', None) == tc_id:
+                            found_response = True
+                            break
+                    if not found_response:
+                        has_responses = False
+                        break
+                
+                # Only include AIMessage if all tool_calls have responses
+                if has_responses:
+                    filtered_messages.append(msg)
+                else:
+                    print(f"🔧 Filtering incomplete tool call sequence from {msg.name if hasattr(msg, 'name') else 'unknown'}")
+            else:
+                filtered_messages.append(msg)
+        
+        # Execute the agent with filtered messages
+        agent = self.agents[agent_name]
+        agent_input = {"messages": filtered_messages}
+        result = agent.invoke(agent_input)
+        
+        # Extract agent's final output
+        agent_output = result.get("output", f"Analysis completed by {agent_name}")
+        
+        # Create ToolMessage response
+        tool_response = ToolMessage(
+            content=agent_output,
+            tool_call_id=tool_call_id,
+            name=agent_name
+        )
+        
+        # Update agents completed
         agents_completed = state.get("agents_completed", []).copy()
-        
-        # Execute each tool call
-        for tool_call in last_message.tool_calls:
-            agent_name = tool_call["name"]
-            tool_call_id = tool_call["id"]
-            
-            if agent_name in self.agents:
-                # Execute the agent
-                agent = self.agents[agent_name]
-                agent_input = {"messages": state["messages"]}
-                result = agent.invoke(agent_input)
-                
-                # Extract agent's final output
-                agent_output = result.get("output", f"Analysis completed by {agent_name}")
-                
-                # Create ToolMessage response
-                tool_response = ToolMessage(
-                    content=agent_output,
-                    tool_call_id=tool_call_id,
-                    name=agent_name
-                )
-                new_messages.append(tool_response)
-                
-                # Mark agent as completed
-                if agent_name not in agents_completed:
-                    agents_completed.append(agent_name)
+        if agent_name not in agents_completed:
+            agents_completed.append(agent_name)
         
         # Check if all agents completed
         required_agents = ["regulatory_research", "evidence_collection", "compliance_check", "report_generation"]
         all_completed = all(agent in agents_completed for agent in required_agents)
         
         state_updates = {
-            "messages": state["messages"] + new_messages,
+            "messages": state["messages"] + [tool_response],
             "agents_completed": agents_completed
         }
         
@@ -646,47 +689,52 @@ class FraudInvestigationSystem:
         return state_updates
     
     def _build_workflow(self) -> StateGraph:
-        """Build the LangGraph workflow with tool-based architecture"""
+        """Build the LangGraph workflow with individual tool nodes"""
         workflow = StateGraph(FraudInvestigationState)
         
         # Add nodes
         workflow.add_node("supervisor", self.supervisor_node)
-        workflow.add_node("agent_execution", self.agent_execution_node)
+        workflow.add_node("regulatory_research", self.regulatory_research_node)
+        workflow.add_node("evidence_collection", self.evidence_collection_node)
+        workflow.add_node("compliance_check", self.compliance_check_node)
+        workflow.add_node("report_generation", self.report_generation_node)
         
-        # Set up routing
+        # Set up routing from supervisor to tools
         def route_from_supervisor(state: FraudInvestigationState):
             next_step = state.get("next", "")
             if next_step == "FINISH":
                 return END
-            elif next_step == "agent_execution":
-                return "agent_execution"
+            elif next_step in ["regulatory_research", "evidence_collection", "compliance_check", "report_generation"]:
+                return next_step
             else:
                 return "supervisor"
         
-        def route_from_execution(state: FraudInvestigationState):
+        # Set up routing from tools back to supervisor
+        def route_from_tool(state: FraudInvestigationState):
             next_step = state.get("next", "")
             if next_step == "FINISH":
                 return END
             else:
                 return "supervisor"
         
+        # Add conditional edges from supervisor
         workflow.add_conditional_edges(
             "supervisor",
             route_from_supervisor,
             {
-                "agent_execution": "agent_execution",
+                "regulatory_research": "regulatory_research",
+                "evidence_collection": "evidence_collection",
+                "compliance_check": "compliance_check", 
+                "report_generation": "report_generation",
                 END: END
             }
         )
         
-        workflow.add_conditional_edges(
-            "agent_execution", 
-            route_from_execution,
-            {
-                "supervisor": "supervisor",
-                END: END
-            }
-        )
+        # Add edges from each tool back to supervisor
+        workflow.add_conditional_edges("regulatory_research", route_from_tool, {"supervisor": "supervisor", END: END})
+        workflow.add_conditional_edges("evidence_collection", route_from_tool, {"supervisor": "supervisor", END: END})
+        workflow.add_conditional_edges("compliance_check", route_from_tool, {"supervisor": "supervisor", END: END})
+        workflow.add_conditional_edges("report_generation", route_from_tool, {"supervisor": "supervisor", END: END})
         
         workflow.set_entry_point("supervisor")
         return workflow.compile()
