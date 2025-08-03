@@ -677,7 +677,10 @@ class FraudInvestigationSystem:
                     # Extract the actual tool call information
                     tool_name = agent_action.tool
                     tool_input = agent_action.tool_input
-                    actual_tool_call_id = f"call_{tool_name}_{i}_{agent_name}"
+                    # Generate shorter ID to stay within OpenAI's 40-char limit
+                    agent_short = agent_name[:3]  # reg, evi, com, rep
+                    tool_short = tool_name.split('_')[-1][:8]  # last word, max 8 chars
+                    actual_tool_call_id = f"call_{tool_short}_{i}_{agent_short}"
                     
                     # Create AIMessage with proper tool_calls structure for the actual tool
                     ai_message = AIMessage(
