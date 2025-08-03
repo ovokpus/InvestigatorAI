@@ -718,14 +718,14 @@ class FraudInvestigationSystem:
             )
             new_messages = [agent_tool_response]
         else:
-            # Add final summary from the agent
+            # Add final summary from the agent (response to supervisor's tool call)
             agent_output = result.get("output", f"Analysis completed by {agent_name}")
-            summary_message = ToolMessage(
-                content=f"🎯 {agent_name.replace('_', ' ').title()} Summary: {agent_output}",
-                tool_call_id=tool_call_id,
-                name=f"{agent_name}_summary"
+            supervisor_response = ToolMessage(
+                content=f"🎯 {agent_name.replace('_', ' ').title()} Analysis Complete: {agent_output}",
+                tool_call_id=tool_call_id,  # This responds to supervisor's call
+                name=agent_name
             )
-            new_messages.append(summary_message)
+            new_messages.append(supervisor_response)
         
         # 🎯 BUILD FINAL MESSAGE SEQUENCE FOR RAGAS
         # Build the complete message sequence: supervisor AIMessage -> actual tool calls -> summary
