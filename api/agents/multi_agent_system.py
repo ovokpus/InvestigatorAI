@@ -718,22 +718,15 @@ class FraudInvestigationSystem:
             )
             new_messages = [agent_tool_response]
         else:
-            # Add final summary from the agent (response to supervisor's tool call)
-            agent_output = result.get("output", f"Analysis completed by {agent_name}")
-            supervisor_response = ToolMessage(
-                content=f"🎯 {agent_name.replace('_', ' ').title()} Analysis Complete: {agent_output}",
-                tool_call_id=tool_call_id,  # This responds to supervisor's call
-                name=agent_name
-            )
-            new_messages.append(supervisor_response)
+            # No intermediate steps found - will create supervisor response in final message building
         
         # 🎯 BUILD FINAL MESSAGE SEQUENCE FOR RAGAS
-        # Build the complete message sequence: supervisor AIMessage -> actual tool calls -> supervisor response
+        # Ensure proper supervisor tool call -> response sequence
         if supervisor_message:
             # Start with all previous messages except the supervisor's
             prev_messages = state["messages"][:-1]
             
-            # Insert the supervisor's agent call response FIRST to close that loop
+            # Create supervisor response to close the agent call
             agent_output = result.get("output", f"Analysis completed by {agent_name}")
             supervisor_response = ToolMessage(
                 content=f"✅ {agent_name.replace('_', ' ').title()} completed: {agent_output[:100]}...",
@@ -741,11 +734,13 @@ class FraudInvestigationSystem:
                 name=agent_name
             )
             
-            # Build: prev_messages + supervisor_call + supervisor_response + detailed_tool_calls
-            final_messages = prev_messages + [supervisor_message, supervisor_response] + new_messages
-            print(f"🎯 Exposed {len(new_messages)} detailed tool execution messages for {agent_name}")
+            # Build proper sequence: prev -> supervisor_call -> supervisor_response -> [detailed_tools if any]
+            # Remove any duplicate supervisor response from new_messages
+            detailed_tools = [msg for msg in new_messages if not (hasattr(msg, 'tool_call_id') and msg.tool_call_id == tool_call_id)]
+            final_messages = prev_messages + [supervisor_message, supervisor_response] + detailed_tools
+            print(f"🎯 Sequence: supervisor call -> response -> {len(new_messages)} detailed tool messages")
         else:
-            # Fallback: just add the tool response
+            # Fallback: just add the new messages
             final_messages = state["messages"] + new_messages
         
         # Update agents completed
