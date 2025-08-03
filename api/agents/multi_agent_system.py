@@ -728,12 +728,22 @@ class FraudInvestigationSystem:
             new_messages.append(supervisor_response)
         
         # 🎯 BUILD FINAL MESSAGE SEQUENCE FOR RAGAS
-        # Build the complete message sequence: supervisor AIMessage -> actual tool calls -> summary
+        # Build the complete message sequence: supervisor AIMessage -> actual tool calls -> supervisor response
         if supervisor_message:
             # Start with all previous messages except the supervisor's
             prev_messages = state["messages"][:-1]
-            final_messages = prev_messages + [supervisor_message] + new_messages
-            print(f"🎯 Exposed {len(new_messages)} tool execution messages for {agent_name}")
+            
+            # Insert the supervisor's agent call response FIRST to close that loop
+            agent_output = result.get("output", f"Analysis completed by {agent_name}")
+            supervisor_response = ToolMessage(
+                content=f"✅ {agent_name.replace('_', ' ').title()} completed: {agent_output[:100]}...",
+                tool_call_id=tool_call_id,  # This closes the supervisor's tool call
+                name=agent_name
+            )
+            
+            # Build: prev_messages + supervisor_call + supervisor_response + detailed_tool_calls
+            final_messages = prev_messages + [supervisor_message, supervisor_response] + new_messages
+            print(f"🎯 Exposed {len(new_messages)} detailed tool execution messages for {agent_name}")
         else:
             # Fallback: just add the tool response
             final_messages = state["messages"] + new_messages
