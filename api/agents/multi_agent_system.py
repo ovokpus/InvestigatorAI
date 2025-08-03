@@ -608,24 +608,30 @@ class FraudInvestigationSystem:
     
     def _execute_agent_tool(self, state: FraudInvestigationState, agent_name: str):
         """Execute a specific agent tool and return ToolMessage response"""
-        # Find the corresponding tool call in the last message
+        # Find the corresponding tool call in the last message (supervisor's AIMessage)
         last_message = state["messages"][-1]
         tool_call_id = None
+        supervisor_message = None
         
         if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
             for tool_call in last_message.tool_calls:
                 if tool_call["name"] == agent_name:
                     tool_call_id = tool_call["id"]
+                    supervisor_message = last_message  # 🎯 Preserve the supervisor's AIMessage
                     break
         
         if not tool_call_id:
             tool_call_id = f"call_{agent_name}_{len(state['messages'])}"
         
         # 🔧 FIX: Filter messages to remove incomplete tool call sequences
-        # Remove AIMessages with tool_calls that don't have corresponding ToolMessages
+        # BUT preserve the current supervisor message for RAGAS
         filtered_messages = []
         for i, msg in enumerate(state["messages"]):
             if isinstance(msg, AIMessage) and hasattr(msg, 'tool_calls') and msg.tool_calls:
+                # Skip the current supervisor message (we'll handle it separately)
+                if msg == supervisor_message:
+                    continue
+                    
                 # Check if this AIMessage has corresponding ToolMessages
                 has_responses = True
                 for tool_call in msg.tool_calls:
@@ -649,7 +655,7 @@ class FraudInvestigationSystem:
             else:
                 filtered_messages.append(msg)
         
-        # Execute the agent with filtered messages
+        # Execute the agent with filtered messages (without current supervisor tool call)
         agent = self.agents[agent_name]
         agent_input = {"messages": filtered_messages}
         result = agent.invoke(agent_input)
@@ -664,6 +670,19 @@ class FraudInvestigationSystem:
             name=agent_name
         )
         
+        # 🎯 PRESERVE SUPERVISOR'S TOOL CALL FOR RAGAS
+        # If we have the supervisor's AIMessage with tool_calls, ensure it's in the final sequence
+        new_messages = []
+        if supervisor_message:
+            # Make sure the supervisor's AIMessage is preserved in the sequence
+            # Replace the current messages, ensuring supervisor AIMessage -> ToolMessage sequence
+            prev_messages = state["messages"][:-1]  # All except the last (supervisor) message
+            new_messages = prev_messages + [supervisor_message, tool_response]
+            print(f"🎯 Preserved supervisor tool call for {agent_name}: {supervisor_message.tool_calls}")
+        else:
+            # Fallback: just add the tool response
+            new_messages = state["messages"] + [tool_response]
+        
         # Update agents completed
         agents_completed = state.get("agents_completed", []).copy()
         if agent_name not in agents_completed:
@@ -674,7 +693,7 @@ class FraudInvestigationSystem:
         all_completed = all(agent in agents_completed for agent in required_agents)
         
         state_updates = {
-            "messages": state["messages"] + [tool_response],
+            "messages": new_messages,
             "agents_completed": agents_completed
         }
         
