@@ -607,7 +607,7 @@ class FraudInvestigationSystem:
         return self._execute_agent_tool(state, "report_generation")
     
     def _execute_agent_tool(self, state: FraudInvestigationState, agent_name: str):
-        """Execute a specific agent tool and return ToolMessage response"""
+        """Execute a specific agent tool and expose actual tool calls for RAGAS evaluation"""
         # Find the corresponding tool call in the last message (supervisor's AIMessage)
         last_message = state["messages"][-1]
         tool_call_id = None
@@ -660,28 +660,80 @@ class FraudInvestigationSystem:
         agent_input = {"messages": filtered_messages}
         result = agent.invoke(agent_input)
         
-        # Extract agent's final output
-        agent_output = result.get("output", f"Analysis completed by {agent_name}")
-        
-        # Create ToolMessage response
-        tool_response = ToolMessage(
-            content=agent_output,
-            tool_call_id=tool_call_id,
-            name=agent_name
-        )
-        
-        # 🎯 PRESERVE SUPERVISOR'S TOOL CALL FOR RAGAS
-        # If we have the supervisor's AIMessage with tool_calls, ensure it's in the final sequence
+        # 🎯 EXPOSE ACTUAL TOOL CALLS FOR RAGAS
         new_messages = []
+        
+        # Get intermediate steps (these contain the actual tool calls)
+        intermediate_steps = result.get("intermediate_steps", [])
+        
+        if intermediate_steps:
+            print(f"🔧 Agent {agent_name}: Processing {len(intermediate_steps)} actual tool executions")
+            
+            # Process each tool execution step
+            for i, step in enumerate(intermediate_steps):
+                if isinstance(step, tuple) and len(step) == 2:
+                    agent_action, observation = step
+                    
+                    # Extract the actual tool call information
+                    tool_name = agent_action.tool
+                    tool_input = agent_action.tool_input
+                    actual_tool_call_id = f"call_{tool_name}_{i}_{agent_name}"
+                    
+                    # Create AIMessage with proper tool_calls structure for the actual tool
+                    ai_message = AIMessage(
+                        content=f"Using {tool_name} for {agent_name} analysis...",
+                        tool_calls=[{
+                            "id": actual_tool_call_id,
+                            "name": tool_name,
+                            "args": tool_input,
+                            "type": "function"
+                        }],
+                        name=f"{agent_name}_executor"
+                    )
+                    
+                    # Create ToolMessage with the observation
+                    tool_message = ToolMessage(
+                        content=str(observation),
+                        tool_call_id=actual_tool_call_id,
+                        name=tool_name
+                    )
+                    
+                    new_messages.extend([ai_message, tool_message])
+                    print(f"   ✅ Exposed tool call: {tool_name} -> {len(str(observation))} chars response")
+        
+        # If no intermediate steps, fall back to previous behavior
+        if not new_messages:
+            print(f"⚠️ No intermediate steps found for {agent_name}, using fallback")
+            # Extract agent's final output
+            agent_output = result.get("output", f"Analysis completed by {agent_name}")
+            
+            # Create ToolMessage response for the supervisor's agent call
+            agent_tool_response = ToolMessage(
+                content=agent_output,
+                tool_call_id=tool_call_id,
+                name=agent_name
+            )
+            new_messages = [agent_tool_response]
+        else:
+            # Add final summary from the agent
+            agent_output = result.get("output", f"Analysis completed by {agent_name}")
+            summary_message = ToolMessage(
+                content=f"🎯 {agent_name.replace('_', ' ').title()} Summary: {agent_output}",
+                tool_call_id=tool_call_id,
+                name=f"{agent_name}_summary"
+            )
+            new_messages.append(summary_message)
+        
+        # 🎯 BUILD FINAL MESSAGE SEQUENCE FOR RAGAS
+        # Build the complete message sequence: supervisor AIMessage -> actual tool calls -> summary
         if supervisor_message:
-            # Make sure the supervisor's AIMessage is preserved in the sequence
-            # Replace the current messages, ensuring supervisor AIMessage -> ToolMessage sequence
-            prev_messages = state["messages"][:-1]  # All except the last (supervisor) message
-            new_messages = prev_messages + [supervisor_message, tool_response]
-            print(f"🎯 Preserved supervisor tool call for {agent_name}: {supervisor_message.tool_calls}")
+            # Start with all previous messages except the supervisor's
+            prev_messages = state["messages"][:-1]
+            final_messages = prev_messages + [supervisor_message] + new_messages
+            print(f"🎯 Exposed {len(new_messages)} tool execution messages for {agent_name}")
         else:
             # Fallback: just add the tool response
-            new_messages = state["messages"] + [tool_response]
+            final_messages = state["messages"] + new_messages
         
         # Update agents completed
         agents_completed = state.get("agents_completed", []).copy()
@@ -693,7 +745,7 @@ class FraudInvestigationSystem:
         all_completed = all(agent in agents_completed for agent in required_agents)
         
         state_updates = {
-            "messages": new_messages,
+            "messages": final_messages,
             "agents_completed": agents_completed
         }
         
