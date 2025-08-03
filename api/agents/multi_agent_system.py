@@ -719,6 +719,7 @@ class FraudInvestigationSystem:
             new_messages = [agent_tool_response]
         else:
             # No intermediate steps found - will create supervisor response in final message building
+            pass
         
         # 🎯 BUILD FINAL MESSAGE SEQUENCE FOR RAGAS
         # Ensure proper supervisor tool call -> response sequence
