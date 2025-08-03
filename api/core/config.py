@@ -19,7 +19,7 @@ class Settings:
         self.embedding_model: str = os.getenv("EMBEDDING_MODEL", "text-embedding-3-large")
         self.llm_model: str = os.getenv("LLM_MODEL", "gpt-4o")
         self.llm_temperature: float = float(os.getenv("LLM_TEMPERATURE", "0"))
-        self.llm_max_tokens: int = int(os.getenv("LLM_MAX_TOKENS", "5000"))  # Configurable via env var
+        self.llm_max_tokens: int = int(os.getenv("LLM_MAX_TOKENS", "15000"))  # Configurable via env var
         
         # Redis Cache Configuration
         self.redis_host: str = os.getenv("REDIS_HOST", "localhost")
@@ -43,6 +43,11 @@ class Settings:
         # Performance settings
         self.max_concurrent_requests: int = int(os.getenv("MAX_CONCURRENT_REQUESTS", "10"))
         self.request_timeout: int = int(os.getenv("REQUEST_TIMEOUT", "30"))
+        
+        # Retrieval optimization settings
+        self.default_retrieval_method: str = os.getenv("DEFAULT_RETRIEVAL_METHOD", "auto")  # auto, bm25, dense
+        self.enable_performance_logging: bool = os.getenv("ENABLE_PERFORMANCE_LOGGING", "true").lower() == "true"
+        self.bm25_enabled: bool = os.getenv("BM25_ENABLED", "true").lower() == "true"
         
         # Validate required API keys
         self._validate_api_keys()

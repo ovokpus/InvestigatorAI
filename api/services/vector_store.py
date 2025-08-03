@@ -83,17 +83,21 @@ class VectorStoreService:
                 
                 print(f"✅ Vector database created with {len(documents)} document chunks")
             
-            # Initialize BM25 retriever for fast sparse search
-            print("🚀 Initializing BM25 retriever for optimized search...")
-            self.bm25_retriever = BM25Retriever.from_documents(documents)
-            self.bm25_retriever.k = 5  # Default k value
-            print(f"✅ BM25 retriever initialized with {len(documents)} documents")
+            # Initialize BM25 retriever for fast sparse search (if enabled)
+            if self.settings.bm25_enabled:
+                print("🚀 Initializing BM25 retriever for optimized search...")
+                self.bm25_retriever = BM25Retriever.from_documents(documents)
+                self.bm25_retriever.k = 5  # Default k value
+                print(f"✅ BM25 retriever initialized with {len(documents)} documents")
+            else:
+                print("ℹ️ BM25 retriever disabled in configuration, using dense search only")
             
             self.is_initialized = True
             
-            # Test both retrievers
+            # Test retrievers
             self._test_vector_store()
-            self._test_bm25_retriever()
+            if self.settings.bm25_enabled:
+                self._test_bm25_retriever()
             
             return True
             
@@ -133,13 +137,23 @@ class VectorStoreService:
             print(f"   {i}. {filename} ({category})")
             print(f"      {preview}")
     
-    def search(self, query: str, k: int = 5, method: str = "auto") -> List[VectorSearchResult]:
+    def search(self, query: str, k: int = 5, method: str = None) -> List[VectorSearchResult]:
         """
         Optimized search using BM25 primary with dense fallback
         Based on evaluation: BM25 = 2.2ms, 0.953 RAGAS vs Dense = 551ms, 0.800 RAGAS
         """
         if not self.vector_store:
             raise ValueError("Vector store not initialized")
+        
+        # Use configured default method if none specified
+        if method is None:
+            method = self.settings.default_retrieval_method
+        
+        # Check if BM25 is enabled in config
+        if method in ["auto", "bm25"] and not self.settings.bm25_enabled:
+            method = "dense"
+            if self.settings.enable_performance_logging:
+                print("ℹ️ BM25 disabled in config, using dense search")
         
         # Try cache first
         cache_key = f"{query}_{k}_{method}"
@@ -157,19 +171,24 @@ class VectorStoreService:
                 
                 # Fallback to dense if BM25 fails or returns insufficient results
                 if not search_results and method == "auto":
-                    print("🔄 BM25 search failed, falling back to dense vector search...")
+                    if self.settings.enable_performance_logging:
+                        print("🔄 BM25 search failed, falling back to dense vector search...")
                     search_results = self._dense_search(query, k)
                     
             elif method == "dense":
                 search_results = self._dense_search(query, k)
             else:
-                # Default to BM25 for unknown methods
-                search_results = self._bm25_search(query, k)
+                # Default to BM25 for unknown methods (if enabled)
+                if self.settings.bm25_enabled:
+                    search_results = self._bm25_search(query, k)
+                else:
+                    search_results = self._dense_search(query, k)
             
-            # Performance logging
-            elapsed_ms = (time.time() - start_time) * 1000
-            method_used = "BM25" if (method == "auto" or method == "bm25") and search_results else "Dense"
-            print(f"⚡ {method_used} search completed in {elapsed_ms:.1f}ms")
+            # Performance logging (configurable)
+            if self.settings.enable_performance_logging:
+                elapsed_ms = (time.time() - start_time) * 1000
+                method_used = "BM25" if (method == "auto" or method == "bm25") and search_results else "Dense"
+                print(f"⚡ {method_used} search completed in {elapsed_ms:.1f}ms")
             
             # Cache results for 30 minutes
             if search_results:
@@ -266,8 +285,9 @@ class VectorStoreService:
             else:
                 # Fallback to regular BM25 search without scores for other methods
                 bm25_results = self._bm25_search(query, k)
-                elapsed_ms = (time.time() - start_time) * 1000
-                print(f"⚡ BM25 search (no scores) completed in {elapsed_ms:.1f}ms")
+                if self.settings.enable_performance_logging:
+                    elapsed_ms = (time.time() - start_time) * 1000
+                    print(f"⚡ BM25 search (no scores) completed in {elapsed_ms:.1f}ms")
                 return bm25_results
             
             search_results = []
@@ -286,9 +306,10 @@ class VectorStoreService:
                     similarity_score=score
                 ))
             
-            # Performance logging
-            elapsed_ms = (time.time() - start_time) * 1000
-            print(f"⚡ {method_used} search completed in {elapsed_ms:.1f}ms")
+            # Performance logging (configurable)
+            if self.settings.enable_performance_logging:
+                elapsed_ms = (time.time() - start_time) * 1000
+                print(f"⚡ {method_used} search completed in {elapsed_ms:.1f}ms")
             
             return search_results
             
