@@ -256,7 +256,7 @@ function MarkdownRenderer({ content }: MarkdownRendererProps) {
     return (
       <div className="space-y-1">
         {Object.entries(agentSections).map(([agent, content]) => 
-          renderAgentSection(agent, content)
+          <div key={agent}>{renderAgentSection(agent, content)}</div>
         )}
       </div>
     );
