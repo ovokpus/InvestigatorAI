@@ -37,6 +37,42 @@ services:
     networks:
       - investigator_network
 
+  # Document Vector Database Initialization Service
+  init-docs:
+    build:
+      context: .
+      dockerfile: scripts/Dockerfile.init
+    container_name: investigator_init_docs
+    environment:
+      # Database connections
+      - QDRANT_HOST=qdrant
+      - QDRANT_PORT=6333
+      
+      # API Keys
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - TAVILY_SEARCH_API_KEY=${TAVILY_SEARCH_API_KEY}
+      - LANGSMITH_API_KEY=${LANGSMITH_API_KEY}
+      
+      # Model Configuration
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-text-embedding-3-large}
+      - LLM_MODEL=${LLM_MODEL:-gpt-4o}
+      - LLM_TEMPERATURE=${LLM_TEMPERATURE:-0}
+      - LLM_MAX_TOKENS=${LLM_MAX_TOKENS:-15000}
+      
+      # Document processing settings
+      - PDF_DATA_PATH=data/pdf_downloads
+      - VECTOR_COLLECTION_NAME=regulatory_documents
+      - CHUNK_SIZE=1000
+      - CHUNK_OVERLAP=200
+    volumes:
+      - ./data:/app/data:ro
+    depends_on:
+      qdrant:
+        condition: service_healthy
+    networks:
+      - investigator_network
+    restart: "no"  # Run once and exit
+
   # InvestigatorAI API Backend
   api:
     build:
@@ -59,6 +95,12 @@ services:
       - LANGSMITH_API_KEY=${LANGSMITH_API_KEY}
       # Note: Exchange rates now use local JSON data file instead of API
       
+      # Model Configuration
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-text-embedding-3-large}
+      - LLM_MODEL=${LLM_MODEL:-gpt-4o}
+      - LLM_TEMPERATURE=${LLM_TEMPERATURE:-0}
+      - LLM_MAX_TOKENS=${LLM_MAX_TOKENS:-15000}
+      
       # LangSmith Configuration
       - LANGSMITH_TRACING=${LANGSMITH_TRACING:-true}
       - LANGSMITH_PROJECT=${LANGSMITH_PROJECT:-InvestigatorAI-Docker}
@@ -80,6 +122,8 @@ services:
         condition: service_healthy
       qdrant:
         condition: service_healthy
+      init-docs:
+        condition: service_completed_successfully
     networks:
       - investigator_network
     healthcheck:

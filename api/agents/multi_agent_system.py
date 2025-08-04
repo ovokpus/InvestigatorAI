@@ -98,9 +98,9 @@ class FraudInvestigationSystem:
             ## TOOL USAGE PROTOCOL:
             - **ALWAYS** search regulatory documents first using `search_regulatory_documents` for relevant 
               compliance guidance related to the transaction
-            - Use `search_fraud_research` to find academic research on similar fraud patterns or detection methods
-            - Use `search_web_intelligence` for current regulatory updates, sanctions announcements, or 
-              jurisdiction-specific compliance alerts
+            - Use `search_fraud_research` with max_results=4 to find comprehensive academic research on similar fraud patterns or detection methods
+            - Use `search_web_intelligence` with max_results=5 for current regulatory updates, sanctions announcements, or 
+              jurisdiction-specific compliance alerts  
             - Cross-reference findings across multiple sources for comprehensive analysis
 
             ## OUTPUT FORMAT REQUIREMENTS:
@@ -122,10 +122,10 @@ class FraudInvestigationSystem:
             - Overall regulatory risk assessment
             
             **CRITICAL**: 
-            - Synthesize document research into clear, professional analysis
+            - Synthesize document research into clear, professional analysis  
             - Do NOT copy raw regulatory text - provide interpreted guidance
             - Focus on actionable insights, not raw document excerpts
-            - Keep analysis concise but comprehensive (max 500 words total)
+            - Provide comprehensive, thorough analysis with complete coverage (NO WORD LIMITS)
             
             ## PROFESSIONAL STANDARDS:
             - Use precise regulatory terminology and cite specific regulations (e.g., "31 CFR 1020.320")
@@ -163,7 +163,7 @@ class FraudInvestigationSystem:
             - **MANDATORY**: Use `calculate_transaction_risk` for every transaction to generate baseline risk score
             - Use `get_exchange_rate_data` to verify current exchange rates and identify potential 
               over/under-pricing manipulation
-            - Use `search_web_intelligence` to gather current intelligence about involved entities, 
+            - Use `search_web_intelligence` with max_results=5 to gather current intelligence about involved entities, 
               beneficial owners, or associated businesses
             - Cross-validate findings across multiple intelligence sources
 
@@ -199,9 +199,10 @@ class FraudInvestigationSystem:
             - Comparative analysis against customer profile
             
             **CRITICAL**: 
-            - Provide synthesized intelligence, not raw search results
-            - Focus on actionable risk factors and evidence
-            - Keep intelligence concise and professional (max 400 words)
+            - Provide comprehensive, detailed intelligence analysis, not raw search results
+            - Focus on actionable risk factors and evidence with thorough explanations
+            - Provide complete, professional analysis with comprehensive coverage (NO WORD LIMITS)
+            - Include all relevant findings and detailed supporting evidence
             - Distinguish between verified facts and analytical assessments
 
             ## ANALYTICAL STANDARDS:
@@ -277,8 +278,9 @@ class FraudInvestigationSystem:
             
             **CRITICAL**: 
             - Focus on actionable compliance requirements, not general guidance
-            - Provide specific deadlines and thresholds
-            - Keep assessment professional and concise (max 300 words)
+            - Provide specific deadlines and thresholds with complete explanations
+            - Provide comprehensive, detailed compliance assessment (NO WORD LIMITS)
+            - Cover all relevant compliance actions with thorough analysis
             - Prioritize most critical compliance actions
 
             ## COMPLIANCE STANDARDS:
@@ -365,9 +367,10 @@ class FraudInvestigationSystem:
 
             **CRITICAL SYNTHESIS REQUIREMENTS**: 
             - Combine insights from ALL agents into coherent narrative
-            - Focus on actionable conclusions, not raw data
+            - Focus on actionable conclusions, not raw data  
             - Ensure professional tone suitable for management/regulatory review
-            - Maximum 600 words for entire report
+            - Provide comprehensive, complete investigation report (NO WORD LIMITS)
+            - Include all relevant findings with detailed analysis and supporting evidence
             - NO raw document excerpts or incomplete sentences
 
             ## PROFESSIONAL STANDARDS:
@@ -497,6 +500,7 @@ class FraudInvestigationSystem:
         agent_input = {"messages": agent_messages}
         result = agent.invoke(agent_input)
         
+
         state_updates = self.update_agent_completion(state, agent_name)
         
         # ✅ Extract the actual messages from the agent execution
@@ -743,7 +747,7 @@ class FraudInvestigationSystem:
             # Create supervisor response to close the agent call
             agent_output = result.get("output", f"Analysis completed by {agent_name}")
             supervisor_response = ToolMessage(
-                content=f"✅ {agent_name.replace('_', ' ').title()} completed: {agent_output[:100]}...",
+                content=f"✅ {agent_name.replace('_', ' ').title()} completed: {agent_output}",
                 tool_call_id=tool_call_id,  # This closes the supervisor's tool call
                 name=agent_name
             )
@@ -1089,16 +1093,16 @@ class FraudInvestigationSystem:
         # Extract insights based on agent type
         if agent_name == 'regulatory_research':
             insights['summary'] = f"Regulatory analysis completed for destination jurisdiction"
-            insights['key_points'] = [line for line in clean_lines[:3] if 'risk' in line.lower() or 'compliance' in line.lower()]
+            insights['key_points'] = [line for line in clean_lines[:12] if 'risk' in line.lower() or 'compliance' in line.lower()]
         elif agent_name == 'evidence_collection':
             insights['summary'] = f"Risk assessment and evidence collection completed"
-            insights['key_points'] = [line for line in clean_lines[:3] if 'risk' in line.lower() or 'score' in line.lower()]
+            insights['key_points'] = [line for line in clean_lines[:12] if 'risk' in line.lower() or 'score' in line.lower()]
         elif agent_name == 'compliance_check':
             insights['summary'] = f"Compliance requirements assessment completed"
-            insights['key_points'] = [line for line in clean_lines[:3] if 'required' in line.lower() or 'SAR' in line or 'CTR' in line]
+            insights['key_points'] = [line for line in clean_lines[:12] if 'required' in line.lower() or 'SAR' in line or 'CTR' in line]
         elif agent_name == 'report_generation':
             insights['summary'] = f"Final report compilation completed"
-            insights['key_points'] = [line for line in clean_lines[:2] if 'complete' in line.lower() or 'classification' in line.lower()]
+            insights['key_points'] = [line for line in clean_lines[:8] if 'complete' in line.lower() or 'classification' in line.lower()]
         
         return insights
     
@@ -1205,7 +1209,7 @@ class FraudInvestigationSystem:
         for agent_name, findings in agent_findings.items():
             if findings['key_points']:
                 # Validate each key point before adding
-                validated_points = [self._validate_content(point) for point in findings['key_points'][:2]]
+                validated_points = [self._validate_content(point) for point in findings['key_points'][:8]]
                 validated_points = [point for point in validated_points if point and len(point) > 10]
                 key_findings.extend(validated_points)
                 
@@ -1240,7 +1244,7 @@ class FraudInvestigationSystem:
         # Add validated key findings if available
         if key_findings:
             report += "**DETAILED FINDINGS**\n"
-            for i, finding in enumerate(key_findings[:4], 1):  # Limit to top 4 findings
+            for i, finding in enumerate(key_findings[:10], 1):  # Limit to top 10 findings
                 if self._is_valid_sentence(finding):
                     report += f"{i}. {finding}\n"
             report += "\n"
@@ -1248,7 +1252,7 @@ class FraudInvestigationSystem:
         # Compliance Requirements
         if compliance_items:
             report += "**COMPLIANCE REQUIREMENTS**\n"
-            for i, item in enumerate(compliance_items[:3], 1):  # Limit and number
+            for i, item in enumerate(compliance_items[:10], 1):  # Limit and number
                 if self._is_valid_sentence(item):
                     report += f"{i}. {item}\n"
             report += "\n"
@@ -1492,7 +1496,7 @@ class FraudInvestigationSystem:
                     
                     # Log raw content to trace where fragments come from
                     for i, r in enumerate(results):
-                        raw_preview = r.content[:200] + "..." if len(r.content) > 200 else r.content
+                        raw_preview = r.content[:500] + "..." if len(r.content) > 500 else r.content
                         logger.info(f"🔍 [DEBUG] Raw result {i+1}: {raw_preview}")
                     
                     # Apply the same filtering as the regulatory research tool
@@ -1506,10 +1510,10 @@ class FraudInvestigationSystem:
                         category = r.metadata.content_category if hasattr(r, 'metadata') and hasattr(r.metadata, 'content_category') else 'regulatory'
                         logger.info(f"🔍 [DEBUG] Processing result {i+1} with category: {category}")
                         insights = _extract_regulatory_insights(r.content, category)
-                        logger.info(f"🔍 [DEBUG] Filtered insights {i+1}: {insights[:150]}...")
+                        logger.info(f"🔍 [DEBUG] Filtered insights {i+1}: {insights[:300]}...")
                         
                         # Avoid duplicates
-                        insight_key = insights[:100]
+                        insight_key = insights[:200]
                         if insight_key not in seen_insights and len(insights) > 20:
                             seen_insights.add(insight_key)
                             unique_results.append(insights)
@@ -1519,7 +1523,7 @@ class FraudInvestigationSystem:
                     
                     final_result = "\n\n".join(unique_results) if unique_results else "BSA/AML compliance requirements apply to this transaction type."
                     logger.info(f"🔍 [DEBUG] Final document_search result length: {len(final_result)} chars")
-                    logger.info(f"🔍 [DEBUG] Final result preview: {final_result[:300]}...")
+                    logger.info(f"🔍 [DEBUG] Final result preview: {final_result[:600]}...")
                     return final_result
                 logger.warning("🔍 [DEBUG] Vector database not available for document search")
                 return "Vector database not available for document search"
@@ -1585,7 +1589,7 @@ class FraudInvestigationSystem:
             
             async def run_arxiv_search():
                 description = transaction_details.get('description', '')
-                query = f"financial fraud detection {description[:50]}"
+                query = f"financial fraud detection {description[:150]}"
                 
                 # Check cache first
                 cached_arxiv = cache_service.get_cached_arxiv_research(query)
@@ -1701,22 +1705,22 @@ class FraudInvestigationSystem:
                 arxiv_research = "Academic research review completed focusing on fraud detection methodologies."
             
             # Show validated risk factors and compliance requirements
-            risk_factors_display = ', '.join(risk_analysis['risk_factors'][:3])  # Limit to top 3
-            compliance_display = '; '.join(investigation_data['compliance_requirements'][:3])  # Limit to top 3
+            risk_factors_display = ', '.join(risk_analysis['risk_factors'][:6])  # Limit to top 6
+            compliance_display = '; '.join(investigation_data['compliance_requirements'][:6])  # Limit to top 6
             
             messages = [
                 {
                     "content": f"REGULATORY ANALYSIS: Comprehensive analysis of ${amount:,} {currency} transaction to {country}. "
                              f"Risk assessment: {risk_analysis['risk_level']} (score: {risk_analysis['risk_score']:.2f}). "
                              f"Regulatory compliance: {len(investigation_data['compliance_requirements'])} requirements identified. "
-                             f"Analysis summary: {doc_analysis[:200]}{'...' if len(doc_analysis) > 200 else ''}",
+                             f"Analysis summary: {doc_analysis[:800]}{'...' if len(doc_analysis) > 800 else ''}",
                     "name": "regulatory_research"
                 },
                 {
                     "content": f"EVIDENCE COLLECTION: Risk assessment for {customer} identified {len(risk_analysis['risk_factors'])} risk factors: "
                              f"{risk_factors_display}. "
-                             f"Intelligence summary: {web_intel[:150]}{'...' if len(web_intel) > 150 else ''} "
-                             f"Research findings: {arxiv_research[:100]}{'...' if len(arxiv_research) > 100 else ''}",
+                             f"Intelligence summary: {web_intel[:600]}{'...' if len(web_intel) > 600 else ''} "
+                             f"Research findings: {arxiv_research[:400]}{'...' if len(arxiv_research) > 400 else ''}",
                     "name": "evidence_collection"
                 },
                 {

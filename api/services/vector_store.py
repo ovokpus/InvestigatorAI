@@ -437,3 +437,45 @@ class VectorStoreManager:
     def get_instance(cls) -> Optional[VectorStoreService]:
         """Get the vector store service instance"""
         return cls._instance
+    
+    @classmethod
+    def connect_existing(cls, embeddings: OpenAIEmbeddings, settings: Settings) -> Optional[VectorStoreService]:
+        """Connect to existing vector store without processing documents"""
+        logger.info("🔗 Connecting to existing vector store...")
+        
+        if cls._instance is None:
+            cls._instance = VectorStoreService(embeddings, settings)
+            
+            try:
+                # Check if collection exists
+                if cls._instance.qdrant_client:
+                    collection_info = cls._instance.qdrant_client.get_collection(settings.vector_collection_name)
+                    points_count = collection_info.points_count
+                    
+                    if points_count > 0:
+                        logger.info(f"✅ Found existing collection with {points_count} documents")
+                        
+                        # Connect to existing vector store
+                        cls._instance.vector_store = QdrantVectorStore(
+                            client=cls._instance.qdrant_client,
+                            collection_name=settings.vector_collection_name,
+                            embedding=embeddings
+                        )
+                        
+                        # Initialize BM25 if enabled (will need documents)
+                        if settings.bm25_enabled:
+                            logger.info("ℹ️  BM25 retriever will be initialized on first search")
+                        
+                        cls._instance.is_initialized = True
+                        logger.info("✅ Successfully connected to existing vector store")
+                    else:
+                        logger.warning("⚠️  Collection exists but is empty")
+                        
+                else:
+                    logger.error("❌ Qdrant client not available")
+                    
+            except Exception as e:
+                logger.warning(f"⚠️  Could not connect to existing vector store: {e}")
+                logger.info("💡 This is normal if the init service hasn't run yet")
+        
+        return cls._instance

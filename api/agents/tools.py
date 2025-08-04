@@ -130,7 +130,7 @@ def _extract_regulatory_insights(content: str, category: str) -> str:
             # Additional quality checks
             if not sentence.startswith('•') and not sentence.startswith('-'):
                 analytical_sentences.append(sentence)
-                if len(analytical_sentences) >= 2:  # Limit to 2 insights
+                if len(analytical_sentences) >= 12:  # Allow up to 12 comprehensive insights
                     break
     
     if analytical_sentences:
@@ -169,7 +169,7 @@ def get_exchange_rate_data(from_currency: str, to_currency: str = "USD") -> str:
     return _external_api_service.get_exchange_rate(from_currency, to_currency)
 
 @tool  
-def search_fraud_research(query: str, max_results: int = 2) -> str:
+def search_fraud_research(query: str, max_results: int = 4) -> str:
     """Search ArXiv for research papers on fraud detection and financial crime."""
     if not _external_api_service:
         return "External API service not initialized"
@@ -182,7 +182,7 @@ def check_compliance_requirements(amount: float, risk_score: float, country_to: 
     return ComplianceChecker.check_compliance_requirements(amount, risk_score, country_to)
 
 @tool
-def search_web_intelligence(query: str, max_results: int = 2) -> str:
+def search_web_intelligence(query: str, max_results: int = 5) -> str:
     """Search the web using Tavily for current fraud intelligence and news."""
     logger.info(f"🔧 Tool called: search_web_intelligence - Query: '{query}', Max results: {max_results}")
     

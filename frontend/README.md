@@ -1,6 +1,6 @@
 # InvestigatorAI Frontend
 
-> **📂 Navigation**: [🏠 Home](../README.md) | [🤖 Agent Prompts](../docs/AGENT_PROMPTS.md) | [🎓 Certification](../docs/CERTIFICATION_CHALLENGE.md) | [🎬 Demo Guide](../docs/DEMO_GUIDE.md) | [🔄 Merge Instructions](../MERGE.md) | [💻 Frontend Docs](README.md) | [📊 Data Docs](../data/README.md) | [🚀 Deploy Docs](../deploy/README.md)
+> **📂 Navigation**: [🏠 Home](../README.md) | [🔧 API Docs](../api/README.md) | [🤖 Agent Architecture](../docs/AGENT_PROMPTS.md) | [📈 Advanced Retrievers](../docs/ADVANCED_RETRIEVERS.md) | [💼 Business Case](../docs/BUSINESS_CASE.md) | [🎓 Certification](../docs/CERTIFICATION_CHALLENGE.md) | [🎬 Demo Guide](../docs/DEMO_GUIDE.md) | [💻 Frontend](README.md) | [📊 Data](../data/README.md) | [🚀 Deploy](../deploy/README.md) | [🧪 Tests](../tests/README.md) | [🔄 Merge](../MERGE.md)
 
 A modern Next.js frontend for the InvestigatorAI Multi-Agent Fraud Investigation System.
 

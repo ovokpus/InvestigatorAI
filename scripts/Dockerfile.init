@@ -1,0 +1,27 @@
+# Document Vector Database Initialization Service
+FROM python:3.13-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy pyproject.toml and install Python dependencies
+COPY pyproject.toml .
+COPY uv.lock .
+RUN pip install --no-cache-dir .
+
+# Copy the entire codebase (needed for imports)
+COPY api/ ./api/
+COPY scripts/init_vector_database.py ./
+
+# Copy data directory (regulatory PDFs)
+COPY data/ ./data/
+
+# Make the script executable
+RUN chmod +x init_vector_database.py
+
+# Run the initialization script
+CMD ["python", "init_vector_database.py"]

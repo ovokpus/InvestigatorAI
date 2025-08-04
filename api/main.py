@@ -127,11 +127,16 @@ async def lifespan(app: FastAPI):
         app_state["external_api_service"] = external_api_service
         logger.info("✅ External API service initialized")
         
-        # Initialize document processor and vector store
-        document_processor = DocumentProcessor(embeddings, settings)
-        vector_store = VectorStoreManager.initialize(embeddings, settings, document_processor)
+        # Connect to existing vector store (documents pre-loaded by init service)
+        logger.info("🔗 Connecting to pre-initialized vector store...")
+        vector_store = VectorStoreManager.connect_existing(embeddings, settings)
         app_state["vector_store"] = vector_store
-        logger.info("✅ Vector store initialized")
+        
+        if vector_store and vector_store.is_initialized:
+            logger.info("✅ Vector store connected successfully")
+        else:
+            logger.warning("⚠️  Vector store not ready - API will start but document search may be limited")
+            logger.info("💡 Ensure the init-docs service has completed successfully")
         
         # Initialize fraud investigation system
         fraud_investigation_system = FraudInvestigationSystem(llm, external_api_service)
@@ -557,7 +562,7 @@ async def get_exchange_rate(
 @app.get("/web-search", response_model=AgentToolResponse)
 async def search_web(
     query: str,
-    max_results: int = 3,
+    max_results: int = 5,
     external_api: ExternalAPIService = Depends(get_external_api_service)
 ) -> AgentToolResponse:
     """Search the web using Tavily"""
@@ -584,7 +589,7 @@ async def search_web(
 @app.get("/arxiv-search", response_model=AgentToolResponse)
 async def search_arxiv(
     query: str,
-    max_results: int = 2,
+    max_results: int = 4,
     external_api: ExternalAPIService = Depends(get_external_api_service)
 ) -> AgentToolResponse:
     """Search ArXiv for research papers"""

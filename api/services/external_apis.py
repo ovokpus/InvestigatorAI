@@ -94,7 +94,7 @@ class ExternalAPIService:
             logger.exception(f"   🔍 Full exception details:")
             return f"Exchange rate lookup failed: {e}"
     
-    def search_web(self, query: str, max_results: int = 3) -> str:
+    def search_web(self, query: str, max_results: int = 7) -> str:
         """Search web using Tavily API"""
         logger.info(f"🌐 Tavily Search initiated - Query: '{query}', Max results: {max_results}")
         
@@ -152,7 +152,7 @@ class ExternalAPIService:
             logger.error(f"❌ Tavily search failed for query '{query}': {e}")
             return f"Web search failed: {e}"
     
-    def search_arxiv(self, query: str, max_results: int = 2) -> str:
+    def search_arxiv(self, query: str, max_results: int = 5) -> str:
         """Search ArXiv for research papers"""
         try:
             # Format query for ArXiv API

@@ -1,10 +1,14 @@
 # InvestigatorAI Certification Challenge Submission
 
-> **📂 Navigation**: [🏠 Home](../README.md) | [🤖 Agent Prompts](AGENT_PROMPTS.md) | [🎓 Certification](CERTIFICATION_CHALLENGE.md) | [🎬 Demo Guide](DEMO_GUIDE.md) | [💰 Business Case](BUSINESS_CASE.md) | [🔄 Merge Instructions](../MERGE.md) | [💻 Frontend Docs](../frontend/README.md) | [📊 Data Docs](../data/README.md) | [🚀 Deploy Docs](../deploy/README.md)
+> **📂 Navigation**: [🏠 Home](../README.md) | [🔧 API Docs](../api/README.md) | [🤖 Agent Architecture](AGENT_PROMPTS.md) | [📈 Advanced Retrievers](ADVANCED_RETRIEVERS.md) | [💼 Business Case](BUSINESS_CASE.md) | [🎓 Certification](CERTIFICATION_CHALLENGE.md) | [🎬 Demo Guide](DEMO_GUIDE.md) | [💻 Frontend](../frontend/README.md) | [📊 Data](../data/README.md) | [🚀 Deploy](../deploy/README.md) | [🧪 Tests](../tests/README.md) | [🔄 Merge](../MERGE.md)
 
 ## AIE7 Cohort - Fraud Investigation Assistant
 
+### ✅ Answers
+
 ### 🔍 **ACCURATE IMPLEMENTATION STATUS** (Updated: August 3, 2025)
+
+Here is the **[Loom Walkthrough Video](https://www.loom.com/share/390bd824a8a84ea1aa7cc709bff6c065)**
 
 **Overall Progress**: **7/7 tasks completed** + **ADVANCED EVALUATION FRAMEWORKS** (exceeding requirements)
 
@@ -13,7 +17,7 @@
 | **Task 1**: Problem & Audience | ✅ **Complete** | Fraud analyst investigation inefficiency defined | Well-documented problem statement |
 | **Task 2**: Solution Architecture | ✅ **Complete** | Multi-agent system with LangGraph orchestration | 5 agents fully implemented |
 | **Task 3**: Data Sources & APIs | ✅ **Complete** | Real FinCEN/FFIEC/OFAC regulatory data | 9 PDF documents + external APIs |
-| **Task 4**: End-to-End Prototype | ✅ **Complete** | Complete multi-agent investigation system | Working FastAPI + React frontend |
+| **Task 4**: End-to-End Prototype | ✅ **Complete** | Complete multi-agent investigation system + **LangSmith Tracing** | Working FastAPI + React frontend with monitoring |
 | **Task 5**: Golden Dataset & RAGAS | 🌟 **EXCEEDED** | Comprehensive RAGAS evaluation with baseline metrics | 11-question evaluation dataset |
 | **Task 6**: Advanced Retrieval | ✅ **COMPLETE** | 9 advanced retrieval techniques implemented | Comprehensive technique comparison |
 | **Task 7**: Performance Assessment | ✅ **COMPLETE** | Full comparative analysis with composite scoring | BM25 identified as optimal (0.971 score) |
@@ -22,12 +26,13 @@
 
 ### 🌟 **INNOVATION BEYOND REQUIREMENTS**
 
-**Comprehensive Retrieval Evaluation Framework**: Implementation includes both traditional RAG evaluation AND advanced retrieval technique assessment with:
+**Comprehensive System with Enterprise Monitoring**: Implementation includes both traditional RAG evaluation AND advanced retrieval technique assessment PLUS production-grade LangSmith tracing with:
 
 - **9 Advanced Retrieval Techniques**: Baseline Dense, BM25 Sparse, Hybrid, Multi-Query, Contextual Compression, Parent Document, Semantic Chunking, Domain Filtering, and Ensemble methods
 - **Multi-Dimensional Performance Analysis**: RAGAS metrics + latency + cost analysis with composite scoring (quality 60%, speed 25%, cost 15%)
 - **Production-Ready Insights**: Identified optimal techniques for fraud investigation with measurable performance improvements
 - **Comprehensive Documentation**: Complete evaluation pipeline in `investigator_ai_ragas_evaluation.ipynb`
+- **🔍 Enterprise-Grade Monitoring**: Full LangSmith tracing integration with agent execution tracking, audit trails, and performance monitoring
 
 **🏆 Best Performing System**: **BM25 (Sparse) - 0.971 composite score** - Optimal for fraud investigation with excellent quality (0.953) and exceptional speed (2.2ms)
 
@@ -126,7 +131,49 @@ graph TB
 
 ---
 
+## 🔍 **LangSmith Production Monitoring Implementation**
+
+### ✅ **COMPREHENSIVE TRACING & MONITORING SYSTEM**
+
+**InvestigatorAI features complete LangSmith integration** providing enterprise-grade monitoring and observability for fraud investigation workflows:
+
+#### **🚀 Agent Execution Tracing**
+- **Multi-Agent Orchestration Tracking**: Complete visibility into LangGraph workflow execution
+- **Individual Agent Performance**: Dedicated tracing for Regulatory Research, Evidence Collection, Compliance Check, and Report Generation agents
+- **State Management Monitoring**: Full traceability of investigation state transitions and agent handoffs
+- **Tool Call Analytics**: Detailed tracking of regulatory document searches, risk calculations, and compliance verifications
+
+#### **📊 Production Monitoring Dashboard**
+- **Real-time Investigation Metrics**: Live tracking of investigation completion times, success rates, and performance bottlenecks
+- **Regulatory Compliance Audit Trails**: Complete investigation history with timestamps for regulatory review
+- **Error Detection & Alerting**: Automated monitoring for failed tool calls, timeout issues, and system errors
+- **Performance Optimization**: Token usage tracking, latency analysis, and cost optimization insights
+
+#### **🛠️ Debugging & Development Support**
+- **Step-by-Step Agent Reasoning**: Complete visibility into LLM decision-making process for each investigation step
+- **Tool Call Success/Failure Analysis**: Detailed logging of external API calls (Tavily, ArXiv, Exchange Rate APIs)
+- **Vector Search Performance**: Monitoring of Qdrant document retrieval quality and response times
+- **Investigation Quality Metrics**: Tracking of report completeness, regulatory citation accuracy, and compliance coverage
+
+#### **📈 LangSmith Integration Files**
+- **API Integration**: [`api/core/config.py`](../api/core/config.py) - LangSmith configuration and initialization
+- **Testing Framework**: [`tests/test_langsmith_integration.py`](../tests/test_langsmith_integration.py) - Comprehensive monitoring tests
+- **API Tracing**: [`tests/test_langsmith_api_tracing.py`](../tests/test_langsmith_api_tracing.py) - API endpoint tracing verification
+- **Performance Tests**: [`tests/run_langsmith_tests.py`](../tests/run_langsmith_tests.py) - Production monitoring validation
+
+#### **🎯 Regulatory Compliance Benefits**
+- **Complete Audit Trails**: Every investigation step logged for regulatory review and compliance verification
+- **Performance Accountability**: SLA monitoring for investigation completion times and quality metrics
+- **Error Transparency**: Full visibility into system failures and remediation actions for risk management
+- **Continuous Improvement**: Data-driven optimization based on real investigation performance metrics
+
+**🏆 Production Status**: LangSmith monitoring fully operational with comprehensive tracing across all investigation workflows, providing enterprise-grade observability for regulatory compliance environments.
+
+---
+
 ## Task 1: Defining Problem and Audience
+
+### ✅ Answer
 
 ### Problem Statement (1-sentence)
 
@@ -149,6 +196,8 @@ The target users - fraud analysts, AML compliance officers, and investigation su
 
 ## Task 2: Proposed Solution
 
+### ✅ Answer
+
 ### Solution Overview
 
 **InvestigatorAI transforms fraud investigation from a 6-hour manual process into a 90-minute AI-assisted workflow** by deploying a multi-agent system that combines real-time fraud detection with comprehensive investigation orchestration. The solution provides fraud analysts with an intelligent investigation assistant that automatically researches similar historical cases, compiles evidence across multiple data sources, ensures regulatory compliance requirements are met, and generates investigation documentation - all while maintaining the analyst's decision-making authority and meeting strict financial industry security standards.
@@ -163,7 +212,7 @@ The target users - fraud analysts, AML compliance officers, and investigation su
 
 *Chosen for superior reasoning capabilities in complex financial investigation scenarios and proven performance in regulatory document analysis.*
 
-#### 2. **Embedding Model: OpenAI text-embedding-3-large**
+#### 2. **Embedding Model: OpenAI text-embedding-3-large** 
 
 *Selected for high-dimensional representation that captures nuanced financial terminology and regulatory language patterns essential for accurate case similarity matching.*
 
@@ -175,9 +224,17 @@ The target users - fraud analysts, AML compliance officers, and investigation su
 
 *Offers production-grade vector search with metadata filtering capabilities essential for searching regulatory documents and research papers by content type, jurisdiction, and regulatory topic.*
 
-#### 5. **Monitoring: LangSmith**
+#### 5. **Monitoring: LangSmith** 🔍
 
 *Enables comprehensive agent performance tracking and investigation audit trails necessary for regulatory compliance and system optimization.*
+
+**✅ FULLY IMPLEMENTED**: Complete LangSmith tracing integration with:
+- **Agent execution tracing** across all 4 specialized agents
+- **Tool call monitoring** for regulatory document searches, risk calculations, and compliance checks
+- **Performance metrics** including latency, token usage, and success rates
+- **Investigation audit trails** for regulatory compliance and case review
+- **Real-time monitoring dashboard** accessible via LangSmith UI
+- **Error tracking and debugging** for system optimization
 
 #### 6. **Evaluation: RAGAS Framework**
 
@@ -206,6 +263,8 @@ The target users - fraud analysts, AML compliance officers, and investigation su
 ---
 
 ## Task 3: Dealing with the Data
+
+### ✅ Answer
 
 ### Data Sources and External APIs
 
@@ -295,6 +354,8 @@ All chunks include structured metadata for advanced filtering:
 
 ## Task 4: Building Quick End-to-End Agentic RAG Prototype
 
+### ✅ Answer
+
 ### Implementation Complete ✅
 
 **Deliverable 1: Complete End-to-End System**
@@ -317,6 +378,8 @@ All chunks include structured metadata for advanced filtering:
 ---
 
 ## Task 5: Creating Golden Test Data Set
+
+### ✅ Answer
 
 ### Status: 🌟 **EXCEEDED REQUIREMENTS**
 
@@ -412,11 +475,11 @@ All chunks include structured metadata for advanced filtering:
 - Provides baseline metrics for comparison with advanced retrieval techniques (Task 6)
 - Complete evaluation pipeline in `investigator_ai_ragas_evaluation.ipynb`
 
-
-
 ---
 
 ## Task 6: Advanced Retrieval Techniques
+
+### ✅ Answer
 
 ### Status: ✅ **COMPLETE** - 9 Advanced Techniques Implemented & Evaluated
 
@@ -493,6 +556,8 @@ graph TB
 ---
 
 ## Task 7: Performance Assessment
+
+### ✅ Answer
 
 ### Status: ✅ **COMPLETE** - Comprehensive Multi-Dimensional Analysis
 

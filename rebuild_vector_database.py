@@ -24,19 +24,19 @@ async def rebuild_vector_database():
         
         # Get settings
         settings = get_settings()
-        print(f"📁 PDF Directory: {settings.pdf_directory}")
+        print(f"📁 PDF Directory: {settings.pdf_data_path}")
         print(f"🗄️  Vector Collection: {settings.vector_collection_name}")
         
-        # Initialize embeddings
-        embeddings = OpenAIEmbeddings()
-        print("✅ OpenAI embeddings initialized")
+        # Initialize embeddings with configured model
+        embeddings = OpenAIEmbeddings(model=settings.embedding_model)
+        print(f"✅ OpenAI embeddings initialized with model: {settings.embedding_model}")
         
         # Initialize document processor with filtering
         doc_processor = DocumentProcessor(embeddings, settings)
         print("✅ Document processor initialized with procedural text filtering")
         
         # Process all PDFs with new filtering
-        pdf_dir = Path(settings.pdf_directory)
+        pdf_dir = Path(settings.pdf_data_path)
         if not pdf_dir.exists():
             print(f"❌ PDF directory not found: {pdf_dir}")
             return False
@@ -66,7 +66,7 @@ async def rebuild_vector_database():
         langchain_docs = []
         for doc_data in all_documents:
             doc = Document(
-                page_content=doc_data['content'],
+                page_content=doc_data['page_content'],
                 metadata=doc_data['metadata']
             )
             langchain_docs.append(doc)
@@ -77,8 +77,15 @@ async def rebuild_vector_database():
         print("\n🗄️  RECREATING VECTOR DATABASE...")
         vector_service = VectorStoreManager.initialize(embeddings, settings, doc_processor)
         
-        # Initialize with new filtered documents (force recreate)
-        success = await vector_service.initialize_vector_store(langchain_docs, force_recreate=True)
+        # Delete existing collection first to handle dimension mismatch
+        try:
+            vector_service.qdrant_client.delete_collection(collection_name=settings.vector_collection_name)
+            print(f"🗑️  Deleted existing collection: {settings.vector_collection_name}")
+        except Exception as e:
+            print(f"ℹ️  Collection deletion: {e}")
+        
+        # Initialize with new filtered documents
+        success = vector_service.initialize_from_documents(langchain_docs)
         
         if success:
             print("✅ Vector database successfully rebuilt with filtered documents!")

@@ -1,6 +1,6 @@
 # InvestigatorAI Demo Guide
 
-> **📂 Navigation**: [🏠 Home](../README.md) | [🤖 Agent Prompts](AGENT_PROMPTS.md) | [🎓 Certification](CERTIFICATION_CHALLENGE.md) | [🎬 Demo Guide](DEMO_GUIDE.md) | [🔄 Merge Instructions](../MERGE.md) | [💻 Frontend Docs](../frontend/README.md) | [📊 Data Docs](../data/README.md) | [🚀 Deploy Docs](../deploy/README.md)
+> **📂 Navigation**: [🏠 Home](../README.md) | [🔧 API Docs](../api/README.md) | [🤖 Agent Architecture](AGENT_PROMPTS.md) | [📈 Advanced Retrievers](ADVANCED_RETRIEVERS.md) | [💼 Business Case](BUSINESS_CASE.md) | [🎓 Certification](CERTIFICATION_CHALLENGE.md) | [🎬 Demo Guide](DEMO_GUIDE.md) | [💻 Frontend](../frontend/README.md) | [📊 Data](../data/README.md) | [🚀 Deploy](../deploy/README.md) | [🧪 Tests](../tests/README.md) | [🔄 Merge](../MERGE.md)
 
 ## 🎯 Live Demo Instructions
 
