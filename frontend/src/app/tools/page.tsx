@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import Header from '@/components/Header';
 import HealthStatus from '@/components/HealthStatus';
 import DocumentSearch from '@/components/DocumentSearch';
@@ -17,12 +18,12 @@ export default function ToolsPage() {
         {/* Navigation Bar */}
         <div className="mb-8">
           <nav className="flex space-x-4">
-            <a 
+            <Link 
               href="/" 
               className="px-4 py-2 bg-secondary text-secondary-foreground hover:bg-accent rounded-lg font-medium transition-colors"
             >
               Investigation
-            </a>
+            </Link>
             <span className="px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium">
               Tools & Search
             </span>

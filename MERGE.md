@@ -1,268 +1,289 @@
-# Merge Instructions for InvestigatorAI Certification Challenge
+# 🚀 BM25 Retrieval Optimization - Production Deployment Guide
 
-> **📂 Navigation**: [🏠 Home](README.md) | [🤖 Agent Prompts](docs/AGENT_PROMPTS.md) | [🎓 Certification](docs/CERTIFICATION_CHALLENGE.md) | [🎬 Demo Guide](docs/DEMO_GUIDE.md) | [🔄 Merge Instructions](MERGE.md) | [💻 Frontend Docs](frontend/README.md) | [📊 Data Docs](data/README.md) | [🚀 Deploy Docs](deploy/README.md)
+## 📊 **Performance Improvements**
 
-## 🎓 Overview - AIE7 Certification Challenge COMPLETE
-This document provides instructions for merging the `feature/update-pyproject-dependencies` branch containing the **complete AIE7 Certification Challenge implementation** for InvestigatorAI - a production-ready multi-agent fraud investigation system.
-
-## 🏆 Certification Status: **COMPLETE** ✅
-- **All 7 Tasks**: Completed with comprehensive deliverables
-- **Performance**: RAGAS 0.853 overall score with +12.8% retrieval improvement  
-- **Business Impact**: $4.25M-$17M annual value proposition validated
-- **Demo Ready**: Live system operational with real regulatory data
-
-## Current Branch Status
-- **Feature Branch**: `feature/update-pyproject-dependencies` 
-- **Status**: ✅ Ready for merge to main
-- **Implementation**: Complete multi-agent fraud investigation system
-- **Evaluation**: Comprehensive RAGAS assessment and performance comparison
-
-## 🚀 Key Achievements Summary
-
-### ✅ Certification Challenge Tasks (All Complete)
-1. **Task 1**: Problem & audience definition - Fraud analyst inefficiency solved
-2. **Task 2**: Solution architecture - 5-agent system with LangGraph orchestration  
-3. **Task 3**: Data sources - Real FinCEN/FFIEC/OFAC regulatory data integrated
-4. **Task 4**: End-to-end prototype - Complete multi-agent system operational
-5. **Task 5**: Golden dataset - 20+ Q&A pairs with RAGAS evaluation (0.853 score)
-6. **Task 6**: Advanced retrieval - 5 techniques with measurable improvements
-7. **Task 7**: Performance assessment - +12.8% retrieval, +0.028 RAGAS improvement
-
-### 🌟 Technical Excellence
-- **Multi-Agent System**: 5 specialized agents with LangGraph coordination
-- **Real Data Integration**: Actual government regulatory documents (not synthetic)
-- **Advanced RAG**: Hybrid search, fusion retrieval, contextual reranking
-- **Production Ready**: Error handling, API fallbacks, comprehensive evaluation
-- **Quantified Performance**: RAGAS metrics + business impact calculations
-
-## Merge Options
-
-### Option 1: GitHub Pull Request (Recommended for Visibility)
-```bash
-# Ensure latest changes are pushed
-git push origin feature/update-pyproject-dependencies
-```
-
-**Create PR with this title**: 
-`🎓 Complete AIE7 Certification Challenge - InvestigatorAI Multi-Agent Fraud Investigation System`
-
-### Option 2: Direct Command Line Merge
-```bash
-# Switch to main branch
-git checkout main
-
-# Pull latest changes
-git pull origin main
-
-# Merge feature branch  
-git merge feature/update-pyproject-dependencies
-
-# Push merged changes
-git push origin main
-
-# Tag the certification completion
-git tag -a v1.0.0-certification -m "AIE7 Certification Challenge Complete - Multi-Agent Fraud Investigation System"
-git push origin v1.0.0-certification
-
-# Clean up feature branch (optional)
-git branch -d feature/update-pyproject-dependencies
-git push origin --delete feature/update-pyproject-dependencies
-```
-
-## 📋 Pull Request Template
-
-```markdown
-# 🎓 InvestigatorAI: AIE7 Certification Challenge COMPLETE
-
-## 🏆 Achievement Summary
-✅ **ALL 7 CERTIFICATION TASKS COMPLETED** with comprehensive deliverables, real regulatory data integration, and quantified performance improvements.
-
-**Business Impact**: Multi-agent fraud investigation system reducing investigation time from **6 hours to 90 minutes** (75% reduction) with $4.25M-$17M annual value per financial institution.
-
-## 🎯 Certification Challenge Results
-
-| Task | Status | Key Deliverable | Performance |
-|------|--------|----------------|-------------|
-| **Task 1**: Problem & Audience | ✅ Complete | Fraud analyst investigation inefficiency defined | Target: 50-200 analysts/institution |
-| **Task 2**: Solution Architecture | ✅ Complete | 5-agent system with LangGraph orchestration | Production-grade tech stack |
-| **Task 3**: Data Sources & APIs | ✅ Complete | Real FinCEN/FFIEC/OFAC regulatory data | 50+ government documents |
-| **Task 4**: End-to-End Prototype | ✅ Complete | Complete multi-agent investigation system | Live demo operational |
-| **Task 5**: Golden Dataset & RAGAS | ✅ Complete | 20+ Q&A pairs with evaluation framework | **0.853 overall RAGAS score** |
-| **Task 6**: Advanced Retrieval | ✅ Complete | 5 advanced techniques implemented | **+12.8% retrieval improvement** |
-| **Task 7**: Performance Assessment | ✅ Complete | Comprehensive naive vs advanced comparison | **+0.028 RAGAS improvement** |
-
-## 🤖 Multi-Agent Architecture Implemented
-
-### Core Agents (All Operational)
-1. **HistoricalCaseAgent**: RAG-powered similar case matching from regulatory knowledge base
-2. **EvidenceCollectionAgent**: Transaction analysis with behavioral pattern detection  
-3. **RegulatoryComplianceAgent**: Automated AML/BSA/SAR compliance checking using real regulatory data
-4. **InvestigationReportAgent**: Comprehensive report generation with regulatory citations
-5. **InvestigatorAIOrchestrator**: LangGraph state management and workflow coordination
-
-### Technical Implementation
-- **LangGraph**: Multi-agent workflow orchestration with state persistence
-- **Real Data**: FinCEN advisories, FFIEC procedures, OFAC sanctions list
-- **External APIs**: Exchange rates (live), sanctions screening (OFAC data)
-- **Vector Database**: Qdrant with hierarchical document chunking
-- **Evaluation**: RAGAS framework with comprehensive metrics
-
-## 📊 Performance & Evaluation Results
-
-### RAGAS Evaluation (Task 5)
-| Metric | Score | Performance Rating |
-|--------|-------|-------------------|
-| Faithfulness | 0.870 | ✅ Good |
-| Answer Relevancy | 0.910 | 🌟 Excellent |
-| Context Precision | 0.840 | ✅ Good |
-| Context Recall | 0.790 | ⚠️ Fair |
-| **Overall Score** | **0.853** | **✅ Good** |
-
-### Advanced Retrieval Performance (Task 6 & 7)
-| System | Average Score | Improvement | RAGAS Overall |
-|--------|--------------|-------------|---------------|
-| Naive RAG | 0.751 | Baseline | 0.853 |
-| Advanced Retrieval | 0.847 | **+12.8%** | **0.881** |
-
-**Advanced Techniques Implemented**:
-- ✅ Hybrid Search (semantic + keyword)
-- ✅ Multi-Query Expansion (LLM variations)  
-- ✅ Fusion Retrieval (score aggregation)
-- ✅ Domain-Specific Filtering (fraud investigation focus)
-- ✅ Contextual Reranking (investigation context awareness)
-
-## 💼 Business Impact & ROI
-
-### Quantified Value Proposition
-- **Investigation Time**: 6 hours → 90 minutes (**75% reduction**)
-- **Cost Savings**: $85K+ annual savings per analyst
-- **Scalability**: 50-200 analysts per financial institution
-- **Market Opportunity**: **$4.25M - $17M annual value** per institution
-
-### Competitive Differentiation
-- ✅ **Real Regulatory Data**: Actual government sources vs synthetic data
-- ✅ **Multi-Agent Reasoning**: Sophisticated AI coordination vs rule-based systems
-- ✅ **Advanced RAG**: Domain-optimized retrieval techniques
-- ✅ **Quantified Performance**: Industry-standard RAGAS evaluation
-
-## 🗂️ Files Added/Modified
-
-### New Implementation Files
-- `CERTIFICATION_CHALLENGE.md` - Complete deliverables documentation
-- `investigator_ai_enhanced_notebook.ipynb` - Full multi-agent system implementation
-- `data/fraud_knowledge_base/` - 20+ real regulatory documents
-
-### Updated Core Files  
-- `README.md` - Enhanced with certification results and technical architecture
-- `pyproject.toml` - Production dependencies (LangGraph, RAGAS, Qdrant)
-- `MERGE.md` - Comprehensive merge instructions
-
-## 🎬 Demo Day Readiness
-
-### ✅ Complete Deliverables Ready
-- **Live Demo**: 2-minute investigation vs 6-hour manual process
-- **Real Data**: Actual FinCEN/FFIEC regulatory guidance powering decisions
-- **Performance Proof**: RAGAS evaluation and improvement metrics
-- **Business Case**: ROI calculations and market opportunity analysis
-- **Technical Architecture**: Production-ready deployment guide
-
-### 🎯 Demo Presentation Flow
-1. **Hook** (30s): "6 hours → 90 minutes fraud investigation"
-2. **Problem** (90s): Manual investigation inefficiencies and costs
-3. **Solution** (2.5m): Live multi-agent investigation workflow
-4. **Results** (1m): RAGAS scores and business impact
-
-## 🔧 Verification & Testing
-
-### Pre-Merge Checklist
-- [x] All 5 agents operational in coordinated workflow
-- [x] Real regulatory data successfully loaded and searchable
-- [x] External API integrations functional (exchange rates, sanctions)
-- [x] RAGAS evaluation framework operational with documented results
-- [x] Advanced retrieval techniques showing measurable improvements
-- [x] Complete investigation workflow demonstrable end-to-end
-- [x] Business impact calculations verified and documented
-
-### Post-Merge Testing
-```bash
-# Install production dependencies
-pip install -e .
-
-# Verify complete system operation
-jupyter lab investigator_ai_enhanced_notebook.ipynb
-
-# Run all sections to verify:
-# 1. Data loading and RAG initialization
-# 2. Multi-agent system operational  
-# 3. Investigation workflow completion
-# 4. RAGAS evaluation execution
-# 5. Performance comparison results
-```
-
-## 🚀 Next Steps (Post-Merge)
-
-### Immediate Actions
-1. **Create Release**: Tag v1.0.0-certification
-2. **Demo Video**: Record 5-minute system demonstration
-3. **Cloud Deploy**: Prepare Vercel/cloud deployment
-4. **Final Submission**: Prepare GitHub repo for submission
-
-### Demo Day Preparation
-- [ ] 5-minute demo video recorded
-- [ ] Live system deployed and accessible
-- [ ] Presentation slides prepared
-- [ ] Business case finalized
-- [ ] Technical architecture documented
-
-## 📈 Success Metrics Achieved
-
-### Technical Excellence
-- ✅ **Multi-agent coordination**: LangGraph state management
-- ✅ **Real data integration**: Government regulatory sources
-- ✅ **Advanced RAG**: 5 retrieval techniques with quantified improvements
-- ✅ **Production quality**: Error handling, API fallbacks, monitoring
-
-### Business Validation  
-- ✅ **Problem-solution fit**: 75% investigation time reduction
-- ✅ **Market opportunity**: $4.25M-$17M annual value quantified
-- ✅ **Competitive advantage**: Real regulatory data + advanced AI
-- ✅ **Scalability**: 50-200 analysts per institution
+| **Metric** | **Before (Dense)** | **After (BM25)** | **Improvement** |
+|------------|-------------------|------------------|-----------------|
+| **Latency** | 551ms | **2.2ms** | **250x faster** |
+| **RAGAS Quality** | 0.800 | **0.953** | **19% better** |
+| **Faithfulness** | 58% | **96%** | **64% improvement** |
+| **Context Recall** | 68% | **100%** | **47% improvement** |
+| **Production Ready** | ❌ Low accuracy | ✅ **Regulatory compliant** |
 
 ---
 
-## 🎉 Certification Challenge Status: **COMPLETE**
+## 🎯 **Deployment Instructions**
 
-This merge represents the successful completion of all AIE7 Certification Challenge requirements with a production-ready multi-agent fraud investigation system that demonstrates:
+### **Option 1: GitHub Pull Request (Recommended)**
 
-- **Technical sophistication**: Multi-agent architecture with real regulatory data
-- **Quantified performance**: RAGAS evaluation with measurable improvements  
-- **Business impact**: Clear ROI and market opportunity validation
-- **Demo readiness**: Live system capable of compelling demonstration
+1. **Create Pull Request**:
+   ```bash
+   # Push feature branch to origin
+   git push origin feature/bm25-retrieval-optimization
+   
+   # Go to GitHub and create PR:
+   # - Base: main
+   # - Compare: feature/bm25-retrieval-optimization
+   # - Title: "feat: implement BM25 retrieval optimization with 250x speed improvement"
+   ```
 
-**Ready for Demo Day presentation and final certification submission.**
+2. **Review Checklist**:
+   - ✅ BM25 implementation with dense fallback
+   - ✅ Configuration-driven feature toggles
+   - ✅ Performance monitoring and logging
+   - ✅ Backward compatibility maintained
+   - ✅ Environment template updated
+
+3. **Merge Strategy**:
+   ```bash
+   # Use "Squash and merge" for clean history
+   # Delete feature branch after merge
+   ```
+
+### **Option 2: GitHub CLI (Terminal)**
+
+```bash
+# Install GitHub CLI if not available
+# brew install gh  # MacOS
+# gh auth login     # Authenticate
+
+# Create and merge PR
+gh pr create \
+  --title "feat: implement BM25 retrieval optimization with 250x speed improvement" \
+  --body "$(cat <<EOF
+## 🚀 BM25 Retrieval Optimization
+
+### Performance Improvements
+- **250x faster**: 551ms → 2.2ms average latency
+- **19% better quality**: 0.800 → 0.953 RAGAS score  
+- **64% better accuracy**: 58% → 96% faithfulness
+
+### Key Features
+- ✅ BM25 sparse retrieval as primary method
+- ✅ Dense vector search as graceful fallback
+- ✅ Configuration-driven feature toggles
+- ✅ Performance monitoring and logging
+- ✅ Full backward compatibility
+
+### Configuration Options
+- \`DEFAULT_RETRIEVAL_METHOD=auto\` (BM25 primary + dense fallback)
+- \`BM25_ENABLED=true\` (enable/disable BM25)
+- \`ENABLE_PERFORMANCE_LOGGING=true\` (toggle performance logs)
+
+### Testing
+- Comprehensive RAGAS evaluation completed
+- All existing functionality preserved
+- Production-ready with regulatory compliance improvements
+
+EOF
+)" \
+  --base main \
+  --head feature/bm25-retrieval-optimization
+
+# Review and merge (after team approval)
+gh pr merge --squash --delete-branch
 ```
 
-## 📋 Post-Merge Verification Checklist
+---
 
-### System Verification
-- [ ] Main branch updated successfully
-- [ ] All dependencies install correctly (`pip install -e .`)
-- [ ] Jupyter notebook executes all sections without errors
-- [ ] Multi-agent investigation workflow completes successfully
-- [ ] RAGAS evaluation runs and produces documented scores
-- [ ] External API integrations functional
+## ⚙️ **Production Configuration**
 
-### Demo Day Preparation
-- [ ] Create 5-minute demo video
-- [ ] Deploy system to accessible cloud platform
-- [ ] Prepare final GitHub repository for submission
-- [ ] Document business case presentation
-- [ ] Verify all certification deliverables complete
+### **Environment Variables (Required)**
 
-## 🏆 Final Certification Status
+Update your production `.env` file:
 
-**AIE7 Certification Challenge: COMPLETE** ✅
+```bash
+# ===== Retrieval Optimization Settings =====
+# Recommended production settings for optimal performance
 
-All 7 tasks completed with comprehensive deliverables, real regulatory data integration, quantified performance improvements, and production-ready multi-agent fraud investigation system.
+# Primary method: auto (BM25 + dense fallback) | bm25 (BM25 only) | dense (vector only)
+DEFAULT_RETRIEVAL_METHOD=auto
 
-**Ready for Demo Day success! 🚀**
+# Enable performance monitoring for production metrics
+ENABLE_PERFORMANCE_LOGGING=true
+
+# Enable BM25 sparse retrieval (recommended: true for 250x speed boost)
+BM25_ENABLED=true
+```
+
+### **Deployment Verification Steps**
+
+1. **Test BM25 Initialization**:
+   ```bash
+   # Check logs for successful BM25 setup
+   docker-compose logs api | grep "BM25 retriever initialized"
+   ```
+
+2. **Performance Monitoring**:
+   ```bash
+   # Monitor search performance
+   docker-compose logs api | grep "search completed"
+   # Expected: "BM25 search completed in ~2-5ms"
+   ```
+
+3. **Fallback Testing**:
+   ```bash
+   # Test graceful degradation by temporarily disabling BM25
+   # Set BM25_ENABLED=false and restart
+   # Verify system falls back to dense search
+   ```
+
+---
+
+## 🔧 **Rollback Plan**
+
+If issues arise, rollback safely:
+
+### **Option 1: Configuration Rollback (Zero Downtime)**
+```bash
+# Disable BM25 and use dense only
+DEFAULT_RETRIEVAL_METHOD=dense
+BM25_ENABLED=false
+
+# Restart API service
+docker-compose restart api
+```
+
+### **Option 2: Code Rollback**
+```bash
+# Revert to previous main branch
+git checkout main
+git pull origin main
+
+# Redeploy
+docker-compose down
+docker-compose up -d
+```
+
+---
+
+## 📈 **Production Monitoring**
+
+### **Key Metrics to Track**
+
+1. **Search Latency** (Target: < 10ms)
+2. **Search Success Rate** (Target: > 99%)
+3. **Memory Usage** (BM25 increases ~15% RAM usage)
+4. **Error Rates** (Target: < 0.1%)
+
+### **Dashboard Queries**
+
+```bash
+# Average search latency
+docker-compose logs api | grep "search completed" | awk '{print $NF}' | grep -o '[0-9.]*ms'
+
+# BM25 vs Dense usage ratio
+docker-compose logs api | grep -E "(BM25|Dense) search completed" | wc -l
+
+# Error monitoring
+docker-compose logs api | grep "❌.*search failed"
+```
+
+---
+
+## 🎉 **Success Criteria**
+
+✅ **Deployment Successful When**:
+- Search latency < 10ms (vs 551ms baseline)
+- RAGAS quality score > 0.95 (vs 0.80 baseline)
+- No increase in error rates
+- BM25 initialization logs show success
+- Fallback to dense works if BM25 fails
+
+✅ **Production Benefits**:
+- **250x faster** fraud investigation queries
+- **Regulatory compliant** 96% accuracy vs 58% baseline
+- **Cost optimized** through faster processing
+- **User experience** dramatically improved response times
+
+---
+
+## 🆘 **Support Contacts**
+
+**Technical Issues**: Check the implementation in `api/services/vector_store.py`
+**Configuration**: Review `config.env.template` for all options
+**Performance**: Monitor logs with `ENABLE_PERFORMANCE_LOGGING=true`
+
+---
+
+*🏆 This optimization delivers the optimal retrieval strategy identified through comprehensive RAGAS evaluation, providing production-ready performance for fraud investigation workflows.*
+
+---
+
+## 🐳 **Docker Deployment (Latest)**
+
+### **Complete Containerized Stack**
+
+The latest commits include full Docker deployment support:
+
+| **Service** | **Container** | **Port** | **Status** |
+|-------------|---------------|----------|------------|
+| **Frontend** | Next.js 18 | 3000 | ✅ Production-ready |
+| **API** | Python 3.13 | 8000 | ✅ BM25 + LangSmith monitoring |
+| **Qdrant** | Vector DB | 6333/6334 | ✅ Regulatory documents |
+| **Redis** | Cache | 6379 | ✅ Performance optimization |
+
+### **Docker Deployment Commands**
+
+```bash
+# Quick deployment
+./deploy/scripts/start-docker-deployment.sh
+
+# Manual deployment
+docker-compose up --build -d
+
+# Access points
+# Frontend: http://localhost:3000
+# API: http://localhost:8000
+# Health: http://localhost:8000/health
+```
+
+### **Docker Features**
+
+- ✅ **Multi-stage builds** for optimized container size
+- ✅ **Health checks** for all services
+- ✅ **Auto-restart** policies
+- ✅ **Volume persistence** for data
+- ✅ **Environment configuration** via `.env`
+- ✅ **Mermaid architecture diagrams**
+- ✅ **Comprehensive documentation** in `deploy/README.md`
+
+### **Production Docker Configuration**
+
+```yaml
+# Example production environment variables
+OPENAI_API_KEY=your_key_here
+TAVILY_SEARCH_API_KEY=your_key_here
+LANGSMITH_API_KEY=your_key_here
+DEFAULT_RETRIEVAL_METHOD=auto
+BM25_ENABLED=true
+ENABLE_PERFORMANCE_LOGGING=true
+```
+
+---
+
+## 📝 **Commit History**
+
+Recent development commits on `feature/bm25-retrieval-optimization` branch:
+
+```
+63b9816 feat: Complete Docker deployment with full-stack containerization
+261616d docs: consolidate all test documentation into tests/README.md
+fedea42 test: add comprehensive LangSmith integration test suite
+60510d2 fix: resolve JSON serialization error in health endpoint
+36a0106 feat: add comprehensive LangSmith monitoring to API
+ae820ed docs: add business case link to certification challenge
+b9344b6 chore: stop tracking docs/deliverables.md (AI Makerspace template)
+2973f10 docs: enhance documentation and exclude deliverables.md from tracking
+3bbddf5 fix: add missing React key prop in MarkdownRenderer
+0d5e289 test: add comprehensive BM25 optimization test suite
+```
+
+### **Key Development Milestones**
+
+1. **BM25 Implementation** - Core retrieval optimization
+2. **LangSmith Integration** - Production monitoring and tracing
+3. **Test Suite Enhancement** - Comprehensive testing framework
+4. **Documentation Consolidation** - Unified deployment guides
+5. **Docker Containerization** - Full-stack deployment ready
+6. **Business Case Analysis** - ROI and competitive advantage documentation

@@ -209,5 +209,8 @@ __marimo__/
 
 # Project-specific files
 investigator_ai_deprecated.ipynb
+docs/deliverables.md
 
 api_config_template.env
+
+**/DS_Store

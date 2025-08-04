@@ -4,12 +4,22 @@ from datetime import datetime
 from typing import Optional
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, JSONResponse
 import asyncio
 import json
 from contextlib import asynccontextmanager
 import openai
 from openai import OpenAI
+
+# LangSmith monitoring
+try:
+    from langsmith import traceable
+    LANGSMITH_AVAILABLE = True
+except ImportError:
+    # Create no-op decorator if LangSmith is not installed
+    def traceable(func):
+        return func
+    LANGSMITH_AVAILABLE = False
 
 from api.core.config import get_settings, initialize_llm_components, Settings
 from api.models.schemas import (
@@ -25,6 +35,38 @@ from api.agents.multi_agent_system import FraudInvestigationSystem
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+def serialize_langchain_objects(obj):
+    """Custom serializer for LangChain objects"""
+    from langchain_core.messages import BaseMessage, AIMessage, ToolMessage, HumanMessage, SystemMessage
+    
+    if isinstance(obj, BaseMessage):
+        # Serialize LangChain messages to dict format
+        serialized = {
+            "content": obj.content,
+            "type": obj.__class__.__name__,
+            "name": getattr(obj, 'name', None),
+        }
+        
+        # Preserve tool calls for AIMessage
+        if hasattr(obj, 'tool_calls') and obj.tool_calls:
+            serialized["tool_calls"] = obj.tool_calls
+        
+        # Preserve tool_call_id for ToolMessage
+        if hasattr(obj, 'tool_call_id') and obj.tool_call_id:
+            serialized["tool_call_id"] = obj.tool_call_id
+            
+        return serialized
+    
+    elif isinstance(obj, list):
+        return [serialize_langchain_objects(item) for item in obj]
+    
+    elif isinstance(obj, dict):
+        return {key: serialize_langchain_objects(value) for key, value in obj.items()}
+    
+    else:
+        # Return object as-is for basic types
+        return obj
 
 def handle_openai_error(e: Exception) -> tuple[int, str]:
     """Handle OpenAI API errors gracefully"""
@@ -155,19 +197,33 @@ def get_app_settings() -> Settings:
 
 # Health check endpoint
 @app.get("/health", response_model=HealthResponse)
+@traceable(name="health_check_api", tags=["api", "health"])
 async def health_check(
     settings: Settings = Depends(get_app_settings)
 ) -> HealthResponse:
     """Health check endpoint"""
     vector_store = app_state.get("vector_store")
     
-    return HealthResponse(
+    # Check LangSmith status
+    langsmith_status = {
+        "available": LANGSMITH_AVAILABLE and settings.langsmith_available,
+        "configured": settings.langsmith_available,
+        "project": settings.langsmith_project if settings.langsmith_available else None
+    }
+    
+    response = HealthResponse(
         status="healthy",
         timestamp=datetime.now(),
         version="1.0.0",
         api_keys_available=settings.api_keys_available,
         vector_store_initialized=vector_store.is_initialized if vector_store else False
     )
+    
+    # Add LangSmith status to response (this will require updating the schema)
+    response_dict = response.model_dump(mode='json')  # Serialize datetime to ISO format
+    response_dict["langsmith"] = langsmith_status
+    
+    return JSONResponse(content=response_dict)
 
 # Cache statistics endpoint
 @app.get("/cache/stats")
@@ -245,6 +301,7 @@ async def clear_external_api_cache():
 
 # Progress streaming endpoint
 @app.post("/investigate/stream")
+@traceable(name="investigate_fraud_stream_api", tags=["api", "investigation", "stream"])
 async def investigate_fraud_stream(
     request: InvestigationRequest,
     fraud_system: FraudInvestigationSystem = Depends(get_fraud_investigation_system)
@@ -320,6 +377,7 @@ async def investigate_fraud_stream(
 
 # Main investigation endpoint
 @app.post("/investigate", response_model=InvestigationResponse)
+@traceable(name="investigate_fraud_api", tags=["api", "investigation", "fraud"])
 async def investigate_fraud(
     request: InvestigationRequest,
     fraud_system: FraudInvestigationSystem = Depends(get_fraud_investigation_system)
@@ -348,18 +406,32 @@ async def investigate_fraud(
         if result.get("full_results"):
             logger.info(f"Full results keys: {list(result.get('full_results', {}).keys())}")
         
+        # Serialize LangChain objects for JSON response
+        ragas_messages = result.get("ragas_validated_messages")
+        if ragas_messages:
+            logger.info(f"🔧 RAGAS messages type: {type(ragas_messages)}, length: {len(ragas_messages)}")
+            if ragas_messages:
+                logger.info(f"🔧 First message type: {type(ragas_messages[0])}")
+            serialized_ragas_messages = serialize_langchain_objects(ragas_messages)
+            logger.info(f"✅ Serialized {len(serialized_ragas_messages)} LangChain objects for RAGAS")
+        else:
+            serialized_ragas_messages = None
+        
         # Return response
-        return InvestigationResponse(
-            investigation_id=result.get("investigation_id", "Unknown"),
-            status=result.get("status", "Unknown"),
-            final_decision=result.get("final_decision", "Pending"),
-            agents_completed=result.get("agents_completed", 0),
-            total_messages=result.get("total_messages", 0),
-            transaction_details=result.get("transaction_details", {}),
-            all_agents_finished=result.get("all_agents_finished", False),
-            error=result.get("error"),
-            full_results=result.get("full_results")
-        )
+        response_data = {
+            "investigation_id": result.get("investigation_id", "Unknown"),
+            "status": result.get("status", "Unknown"),
+            "final_decision": result.get("final_decision", "Pending"),
+            "agents_completed": result.get("agents_completed", 0),
+            "total_messages": result.get("total_messages", 0),
+            "transaction_details": result.get("transaction_details", {}),
+            "all_agents_finished": result.get("all_agents_finished", False),
+            "error": result.get("error"),
+            "full_results": result.get("full_results"),
+            "ragas_validated_messages": serialized_ragas_messages
+        }
+        
+        return JSONResponse(content=response_data)
         
     except openai.OpenAIError as e:
         logger.error(f"OpenAI API error during investigation: {e}")
@@ -376,6 +448,7 @@ async def investigate_fraud(
 
 # Vector search endpoint
 @app.get("/search", response_model=list[VectorSearchResult])
+@traceable(name="search_documents_api", tags=["api", "search", "vector", "documents"])
 async def search_documents(
     query: str,
     max_results: int = 5,

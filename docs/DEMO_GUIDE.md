@@ -129,6 +129,258 @@
 - Switzerland requires enhanced PEP monitoring
 - Potential for corruption proceeds
 
+---
+
+### Scenario 6: "The Trade Finance Manipulation"
+**Based on**: Import/export fraud schemes
+
+```json
+{
+  "amount": 180000,
+  "currency": "USD",
+  "description": "Import payment for agricultural commodities from emerging market",
+  "customer_name": "Agri-Trade International",
+  "account_type": "Corporate",
+  "risk_rating": "Medium",
+  "country_to": "Nigeria"
+}
+```
+
+**Why This Is Suspicious:**
+- Nigeria on FATF grey list for AML deficiencies
+- Agricultural commodities often used for trade-based money laundering
+- Large payment without proper trade documentation
+- Potential for invoice manipulation and value transfer
+
+---
+
+### Scenario 7: "The Charity Front Operation"
+**Based on**: Nonprofit fraud and terrorist financing
+
+```json
+{
+  "amount": 45000,
+  "currency": "USD",
+  "description": "Humanitarian aid transfer to international relief organization",
+  "customer_name": "Global Relief Foundation",
+  "account_type": "Nonprofit",
+  "risk_rating": "Low",
+  "country_to": "Turkey"
+}
+```
+
+**Why This Is Suspicious:**
+- Turkey border region with conflict zones
+- Nonprofit sector vulnerable to terrorist financing
+- Humanitarian aid can mask illicit fund transfers
+- Requires enhanced due diligence for NPO accounts
+
+---
+
+### Scenario 8: "The Professional Services Laundering"
+**Based on**: Service-based money laundering schemes
+
+```json
+{
+  "amount": 95000,
+  "currency": "USD",
+  "description": "Consulting fees for business development and market analysis",
+  "customer_name": "Strategic Consulting Group",
+  "account_type": "Professional Services",
+  "risk_rating": "Low",
+  "country_to": "Panama"
+}
+```
+
+**Why This Is Suspicious:**
+- Panama known for offshore financial services
+- Consulting services difficult to verify and value
+- Professional services commonly used for laundering
+- High fees for vague service descriptions
+
+---
+
+### Scenario 9: "The Gaming Platform Deposit"
+**Based on**: Online gambling money laundering
+
+```json
+{
+  "amount": 35000,
+  "currency": "USD",
+  "description": "Gaming platform deposit for online casino and sports betting",
+  "customer_name": "Digital Entertainment LLC",
+  "account_type": "Gaming/Entertainment",
+  "risk_rating": "High",
+  "country_to": "Malta"
+}
+```
+
+**Why This Is Suspicious:**
+- Online gambling high-risk for money laundering
+- Malta gaming jurisdiction with regulatory challenges
+- Digital platforms enable rapid fund movement
+- Entertainment entities used to obscure beneficial ownership
+
+---
+
+### Scenario 10: "The Precious Metals Investment"
+**Based on**: Alternative asset money laundering
+
+```json
+{
+  "amount": 220000,
+  "currency": "USD",
+  "description": "Investment in precious metals and rare earth commodities",
+  "customer_name": "Precious Assets Holdings",
+  "account_type": "Investment",
+  "risk_rating": "Medium",
+  "country_to": "Hong Kong"
+}
+```
+
+**Why This Is Suspicious:**
+- Precious metals traditional money laundering vehicle
+- Hong Kong financial hub with complex regulations
+- Investment entities may obscure true ownership
+- Alternative assets used to transfer value across borders
+
+## 🛠️ Investigation Tools Deep Dive
+
+### Tool 1: Regulatory Document Search
+**Purpose**: Access real-time regulatory guidance and compliance requirements
+
+**Example Usage**:
+```
+Query: "SAR filing threshold suspicious activity"
+Agent: Regulatory Research Agent
+Tool: search_regulatory_documents
+Result: FinCEN guidance on $5,000 SAR threshold and filing requirements
+Business Value: Instant access to current regulations vs. 2-hour manual research
+```
+
+**Advanced Queries**:
+- `"beneficial ownership requirements CDD rule"`
+- `"AML program requirements small banks"`
+- `"wire transfer recordkeeping BSA requirements"`
+
+### Tool 2: Transaction Risk Calculation
+**Purpose**: Quantitative risk assessment using multiple factors
+
+**Example Usage**:
+```
+Input: amount=75000, currency=USD, country=UAE, customer_risk=Medium
+Agent: Evidence Collection Agent
+Tool: calculate_transaction_risk
+Result: Risk Score: 7.2/10 (High Risk)
+Factors: Geographic risk (3.5), Amount threshold (2.1), Customer profile (1.6)
+```
+
+**Risk Factors Analyzed**:
+- Geographic jurisdiction risk levels
+- Transaction amount thresholds
+- Customer risk profile weighting
+- Historical pattern analysis
+
+### Tool 3: Exchange Rate Verification
+**Purpose**: Detect unusual currency movements and pricing anomalies
+
+**Example Usage**:
+```
+Query: EUR to USD conversion for €180,000 transaction
+Agent: Evidence Collection Agent
+Tool: get_exchange_rate_data
+Result: Current rate: 1.0875, Historical variance: Normal
+Red Flag: None detected for current transaction
+```
+
+**Anomaly Detection**:
+- Unusual exchange rate timing
+- Off-market rate transactions
+- Currency arbitrage schemes
+- Cross-border value transfer analysis
+
+### Tool 4: Compliance Requirements Checker
+**Purpose**: Automated regulatory requirement determination
+
+**Example Usage**:
+```
+Transaction: $125,000 to cryptocurrency exchange
+Agent: Compliance Check Agent
+Tool: check_compliance_requirements
+Result: 
+- SAR Filing: Recommended (crypto high-risk)
+- CTR Filing: Required (>$10,000 cash equivalent)
+- Enhanced Due Diligence: Required (VASP transaction)
+- Recordkeeping: 5-year BSA requirement
+```
+
+### Tool 5: Web Intelligence Gathering
+**Purpose**: Current threat intelligence and entity verification
+
+**Example Usage**:
+```
+Entity: "Global Trading LLC"
+Agent: Evidence Collection Agent
+Tool: search_web_intelligence
+Result: 
+- No significant adverse media
+- Business registration: Delaware (2023)
+- Industry: Import/Export (general)
+- Risk Indicators: New entity, minimal web presence
+```
+
+**Intelligence Sources**:
+- Adverse media screening
+- Business registration verification
+- Sanctions list checking
+- Corporate structure analysis
+
+## 🎯 Agent Coordination Examples
+
+### Multi-Agent Investigation Flow
+**Scenario**: $85,000 payment to British Virgin Islands shell company
+
+1. **Regulatory Research Agent**:
+   - Searches BVI regulatory status
+   - Identifies offshore jurisdiction risks
+   - Locates relevant FinCEN advisories
+
+2. **Evidence Collection Agent**:
+   - Calculates transaction risk score
+   - Gathers exchange rate data
+   - Performs entity intelligence gathering
+
+3. **Compliance Check Agent**:
+   - Determines SAR filing requirements
+   - Checks CTR thresholds
+   - Reviews EDD requirements
+
+4. **Report Generation Agent**:
+   - Synthesizes findings from all agents
+   - Generates regulatory-compliant documentation
+   - Provides investigation recommendations
+
+### Agent Tool Specialization
+```
+Regulatory Research Agent:
+├── search_regulatory_documents (Primary)
+├── search_fraud_research (Secondary)
+└── search_web_intelligence (Supplementary)
+
+Evidence Collection Agent:
+├── calculate_transaction_risk (Primary)
+├── get_exchange_rate_data (Primary)
+└── search_web_intelligence (Primary)
+
+Compliance Check Agent:
+├── check_compliance_requirements (Primary)
+└── search_regulatory_documents (Secondary)
+
+Report Generation Agent:
+├── search_regulatory_documents (Documentation)
+└── check_compliance_requirements (Verification)
+```
+
 ## 🧪 Testing Workflow
 
 ### Step 1: System Health Check
@@ -138,16 +390,43 @@
    - ✅ AI Models: Ready
    - ✅ Vector DB: Ready
 
-### Step 2: Document Search Test
+### Step 2: Advanced Document Search Tests
 1. Click "Tools & Search"
-2. Search for: `"suspicious activity report requirements"`
-3. Expected: INTERPOL and regulatory document results
-4. Verify: Regulatory guidance from real documents
+2. **Basic Regulatory Search**: 
+   - Query: `"suspicious activity report requirements"`
+   - Expected: FinCEN SAR filing instructions and regulatory guidance
+   
+3. **Specific Compliance Query**:
+   - Query: `"currency transaction report threshold BSA"`
+   - Expected: FFIEC CTR requirements and $10,000 threshold documentation
+   
+4. **International Standards Search**:
+   - Query: `"FATF recommendations money laundering"`
+   - Expected: International regulatory standards and compliance frameworks
+   
+5. **Sanctions Screening Query**:
+   - Query: `"OFAC sanctions screening requirements"`
+   - Expected: Treasury department guidance and prohibited parties information
 
-### Step 3: Exchange Rate Test
+### Step 3: Investigation Tools Testing
+
+#### Exchange Rate Tool
 1. In Tools page, test EUR → USD conversion
 2. Expected: "Exchange rate API key not available" (graceful handling)
 3. Note: Shows proper error handling for missing API keys
+
+#### Advanced Search Techniques Testing
+4. **Complex Regulatory Query**:
+   - Query: `"customer due diligence enhanced requirements high risk"`
+   - Expected: CDD rule documentation and enhanced due diligence procedures
+   
+5. **Cross-Reference Testing**:
+   - Query: `"wire transfer $3000 threshold recordkeeping"`
+   - Expected: BSA recordkeeping requirements for wire transfers
+   
+6. **Industry-Specific Search**:
+   - Query: `"money services business MSB registration requirements"`
+   - Expected: FinCEN MSB registration and compliance guidance
 
 ### Step 4: Main Investigation Demo
 
