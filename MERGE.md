@@ -207,3 +207,83 @@ docker-compose logs api | grep "❌.*search failed"
 ---
 
 *🏆 This optimization delivers the optimal retrieval strategy identified through comprehensive RAGAS evaluation, providing production-ready performance for fraud investigation workflows.*
+
+---
+
+## 🐳 **Docker Deployment (Latest)**
+
+### **Complete Containerized Stack**
+
+The latest commits include full Docker deployment support:
+
+| **Service** | **Container** | **Port** | **Status** |
+|-------------|---------------|----------|------------|
+| **Frontend** | Next.js 18 | 3000 | ✅ Production-ready |
+| **API** | Python 3.13 | 8000 | ✅ BM25 + LangSmith monitoring |
+| **Qdrant** | Vector DB | 6333/6334 | ✅ Regulatory documents |
+| **Redis** | Cache | 6379 | ✅ Performance optimization |
+
+### **Docker Deployment Commands**
+
+```bash
+# Quick deployment
+./deploy/scripts/start-docker-deployment.sh
+
+# Manual deployment
+docker-compose up --build -d
+
+# Access points
+# Frontend: http://localhost:3000
+# API: http://localhost:8000
+# Health: http://localhost:8000/health
+```
+
+### **Docker Features**
+
+- ✅ **Multi-stage builds** for optimized container size
+- ✅ **Health checks** for all services
+- ✅ **Auto-restart** policies
+- ✅ **Volume persistence** for data
+- ✅ **Environment configuration** via `.env`
+- ✅ **Mermaid architecture diagrams**
+- ✅ **Comprehensive documentation** in `deploy/README.md`
+
+### **Production Docker Configuration**
+
+```yaml
+# Example production environment variables
+OPENAI_API_KEY=your_key_here
+TAVILY_SEARCH_API_KEY=your_key_here
+LANGSMITH_API_KEY=your_key_here
+DEFAULT_RETRIEVAL_METHOD=auto
+BM25_ENABLED=true
+ENABLE_PERFORMANCE_LOGGING=true
+```
+
+---
+
+## 📝 **Commit History**
+
+Recent development commits on `feature/bm25-retrieval-optimization` branch:
+
+```
+63b9816 feat: Complete Docker deployment with full-stack containerization
+261616d docs: consolidate all test documentation into tests/README.md
+fedea42 test: add comprehensive LangSmith integration test suite
+60510d2 fix: resolve JSON serialization error in health endpoint
+36a0106 feat: add comprehensive LangSmith monitoring to API
+ae820ed docs: add business case link to certification challenge
+b9344b6 chore: stop tracking docs/deliverables.md (AI Makerspace template)
+2973f10 docs: enhance documentation and exclude deliverables.md from tracking
+3bbddf5 fix: add missing React key prop in MarkdownRenderer
+0d5e289 test: add comprehensive BM25 optimization test suite
+```
+
+### **Key Development Milestones**
+
+1. **BM25 Implementation** - Core retrieval optimization
+2. **LangSmith Integration** - Production monitoring and tracing
+3. **Test Suite Enhancement** - Comprehensive testing framework
+4. **Documentation Consolidation** - Unified deployment guides
+5. **Docker Containerization** - Full-stack deployment ready
+6. **Business Case Analysis** - ROI and competitive advantage documentation
