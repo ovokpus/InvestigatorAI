@@ -56,8 +56,8 @@ services:
       # API Keys (set these in your .env file)
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - TAVILY_SEARCH_API_KEY=${TAVILY_SEARCH_API_KEY}
-      - EXCHANGE_RATE_API_KEY=${EXCHANGE_RATE_API_KEY}
       - LANGSMITH_API_KEY=${LANGSMITH_API_KEY}
+      # Note: Exchange rates now use local JSON data file instead of API
       
       # LangSmith Configuration
       - LANGSMITH_TRACING=${LANGSMITH_TRACING:-true}
