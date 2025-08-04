@@ -515,15 +515,15 @@ All chunks include structured metadata for advanced filtering:
 graph TB
     A[Query Input] --> B{Retrieval Router}
     
-    B --> C[1. Baseline Dense]
-    B --> D[2. BM25 Sparse] 
-    B --> E[3. Hybrid Dense+Sparse]
-    B --> F[4. Multi-Query]
-    B --> G[5. Contextual Compression]
-    B --> H[6. Parent Document]
-    B --> I[7. Semantic Chunking]
-    B --> J[8. Domain Filtering]
-    B --> K[9. Ensemble ALL]
+    B --> C[1 - Baseline Dense]
+    B --> D[2 - BM25 Sparse] 
+    B --> E[3 - Hybrid Dense+Sparse]
+    B --> F[4 - Multi-Query]
+    B --> G[5 - Contextual Compression]
+    B --> H[6 - Parent Document]
+    B --> I[7 - Semantic Chunking]
+    B --> J[8 - Domain Filtering]
+    B --> K[9 - Ensemble ALL]
     
     C --> L[Vector Store]
     D --> M[BM25 Index]
