@@ -12,6 +12,16 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.agents import AgentExecutor, create_openai_tools_agent
 from langgraph.graph import END, StateGraph
 
+# LangSmith monitoring
+try:
+    from langsmith import traceable
+    LANGSMITH_AVAILABLE = True
+except ImportError:
+    # Create no-op decorator if LangSmith is not installed
+    def traceable(func):
+        return func
+    LANGSMITH_AVAILABLE = False
+
 from ..models.schemas import FraudInvestigationState
 from ..agents.tools import (
     REGULATORY_TOOLS, EVIDENCE_TOOLS, COMPLIANCE_TOOLS, REPORT_TOOLS,
@@ -1048,6 +1058,7 @@ class FraudInvestigationSystem:
             print(f"❌ Error generating final decision: {e}")
             return f"Investigation completed with some technical issues: {str(e)}"
     
+    @traceable(name="investigate_fraud_multi_agent", tags=["investigation", "multi-agent", "fraud"])
     def investigate_fraud(self, transaction_details: Dict[str, Any]) -> Dict[str, Any]:
         """Run a fraud investigation using the LangGraph multi-agent system"""
         try:
@@ -1109,6 +1120,7 @@ class FraudInvestigationSystem:
                 "error": error_message
             }
     
+    @traceable(name="investigate_fraud_stream_multi_agent", tags=["investigation", "multi-agent", "fraud", "stream"])
     async def investigate_fraud_stream(self, transaction_details: Dict[str, Any]) -> AsyncGenerator[Dict[str, Any], None]:
         """Enhanced streaming fraud investigation with real tool calling and parallel processing"""
         try:

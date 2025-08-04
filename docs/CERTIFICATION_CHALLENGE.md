@@ -4,7 +4,7 @@
 
 ## AIE7 Cohort - Fraud Investigation Assistant
 
-### 🔍 **ACCURATE IMPLEMENTATION STATUS** (Updated: February 2, 2025)
+### 🔍 **ACCURATE IMPLEMENTATION STATUS** (Updated: August 3, 2025)
 
 **Overall Progress**: **7/7 tasks completed** + **ADVANCED EVALUATION FRAMEWORKS** (exceeding requirements)
 
@@ -347,7 +347,7 @@ All chunks include structured metadata for advanced filtering:
 - ✅ **Fixed** `_execute_agent_tool()` in multi-agent system to expose individual tool executions
 - ✅ **RAGAS now sees** actual tool calls (`search_regulatory_documents`, `calculate_transaction_risk`, etc.)
 - ✅ **Proper separation** between agent orchestration and tool usage evaluation
-- ✅ **Dedicated agent evaluation notebook** (`investigator_ai_agent_evaluation.ipynb`)
+- ✅ **Dedicated agent evaluation notebook** ([`investigator_ai_agent_evaluation.ipynb`](../investigator_ai_agent_evaluation.ipynb))
 
 **📊 Comprehensive Agent Metrics Implemented**:
 1. **🛠️ Tool Call Accuracy**: 1.000 (7/7 correct tools used)
@@ -358,8 +358,8 @@ All chunks include structured metadata for advanced filtering:
 **🏆 Overall Performance**: **0.967** - Outstanding multi-agent system performance
 
 **📁 Implementation Files**:
-- `investigator_ai_agent_evaluation.ipynb` - Dedicated multi-agent evaluation
-- `investigator_ai_ragas_evaluation.ipynb` - Traditional RAG evaluation
+- [`investigator_ai_agent_evaluation.ipynb`](../investigator_ai_agent_evaluation.ipynb) - Dedicated multi-agent evaluation
+- [`investigator_ai_ragas_evaluation.ipynb`](../investigator_ai_ragas_evaluation.ipynb) - Traditional RAG evaluation
 - Working tool call architecture with OpenAI API compliance
 
 ### 📊 **Baseline RAGAS Evaluation Results**

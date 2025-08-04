@@ -8,6 +8,16 @@ from langchain_community.retrievers import BM25Retriever
 from qdrant_client import QdrantClient
 from qdrant_client.http import models
 
+# LangSmith monitoring
+try:
+    from langsmith import traceable
+    LANGSMITH_AVAILABLE = True
+except ImportError:
+    # Create no-op decorator if LangSmith is not installed
+    def traceable(func):
+        return func
+    LANGSMITH_AVAILABLE = False
+
 from ..core.config import Settings
 from ..services.document_processor import DocumentProcessor
 from ..services.cache_service import get_cache_service
@@ -137,6 +147,7 @@ class VectorStoreService:
             print(f"   {i}. {filename} ({category})")
             print(f"      {preview}")
     
+    @traceable(name="vector_store_search", tags=["search", "vector", "retrieval"])
     def search(self, query: str, k: int = 5, method: str = None) -> List[VectorSearchResult]:
         """
         Optimized search using BM25 primary with dense fallback
@@ -201,6 +212,7 @@ class VectorStoreService:
             print(f"❌ Search failed: {e}")
             return []
     
+    @traceable(name="bm25_search", tags=["search", "bm25", "sparse"])
     def _bm25_search(self, query: str, k: int) -> List[VectorSearchResult]:
         """
         BM25 sparse search - optimized for speed and quality
@@ -235,6 +247,7 @@ class VectorStoreService:
             print(f"❌ BM25 search failed: {e}")
             return []
     
+    @traceable(name="dense_search", tags=["search", "dense", "vector"])
     def _dense_search(self, query: str, k: int) -> List[VectorSearchResult]:
         """
         Dense vector search - fallback method

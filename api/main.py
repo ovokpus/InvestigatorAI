@@ -11,6 +11,16 @@ from contextlib import asynccontextmanager
 import openai
 from openai import OpenAI
 
+# LangSmith monitoring
+try:
+    from langsmith import traceable
+    LANGSMITH_AVAILABLE = True
+except ImportError:
+    # Create no-op decorator if LangSmith is not installed
+    def traceable(func):
+        return func
+    LANGSMITH_AVAILABLE = False
+
 from api.core.config import get_settings, initialize_llm_components, Settings
 from api.models.schemas import (
     InvestigationRequest, InvestigationResponse, HealthResponse,
@@ -187,19 +197,33 @@ def get_app_settings() -> Settings:
 
 # Health check endpoint
 @app.get("/health", response_model=HealthResponse)
+@traceable(name="health_check_api", tags=["api", "health"])
 async def health_check(
     settings: Settings = Depends(get_app_settings)
 ) -> HealthResponse:
     """Health check endpoint"""
     vector_store = app_state.get("vector_store")
     
-    return HealthResponse(
+    # Check LangSmith status
+    langsmith_status = {
+        "available": LANGSMITH_AVAILABLE and settings.langsmith_available,
+        "configured": settings.langsmith_available,
+        "project": settings.langsmith_project if settings.langsmith_available else None
+    }
+    
+    response = HealthResponse(
         status="healthy",
         timestamp=datetime.now(),
         version="1.0.0",
         api_keys_available=settings.api_keys_available,
         vector_store_initialized=vector_store.is_initialized if vector_store else False
     )
+    
+    # Add LangSmith status to response (this will require updating the schema)
+    response_dict = response.model_dump()
+    response_dict["langsmith"] = langsmith_status
+    
+    return JSONResponse(content=response_dict)
 
 # Cache statistics endpoint
 @app.get("/cache/stats")
@@ -277,6 +301,7 @@ async def clear_external_api_cache():
 
 # Progress streaming endpoint
 @app.post("/investigate/stream")
+@traceable(name="investigate_fraud_stream_api", tags=["api", "investigation", "stream"])
 async def investigate_fraud_stream(
     request: InvestigationRequest,
     fraud_system: FraudInvestigationSystem = Depends(get_fraud_investigation_system)
@@ -352,6 +377,7 @@ async def investigate_fraud_stream(
 
 # Main investigation endpoint
 @app.post("/investigate", response_model=InvestigationResponse)
+@traceable(name="investigate_fraud_api", tags=["api", "investigation", "fraud"])
 async def investigate_fraud(
     request: InvestigationRequest,
     fraud_system: FraudInvestigationSystem = Depends(get_fraud_investigation_system)
@@ -422,6 +448,7 @@ async def investigate_fraud(
 
 # Vector search endpoint
 @app.get("/search", response_model=list[VectorSearchResult])
+@traceable(name="search_documents_api", tags=["api", "search", "vector", "documents"])
 async def search_documents(
     query: str,
     max_results: int = 5,

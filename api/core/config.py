@@ -14,6 +14,7 @@ class Settings:
         self.openai_api_key: str = os.getenv("OPENAI_API_KEY", "")
         self.tavily_search_api_key: str = os.getenv("TAVILY_SEARCH_API_KEY", "")
         self.exchange_rate_api_key: str = os.getenv("EXCHANGE_RATE_API_KEY", "")
+        self.langsmith_api_key: str = os.getenv("LANGSMITH_API_KEY", "")
         
         # Model configurations
         self.embedding_model: str = os.getenv("EMBEDDING_MODEL", "text-embedding-3-large")
@@ -49,8 +50,16 @@ class Settings:
         self.enable_performance_logging: bool = os.getenv("ENABLE_PERFORMANCE_LOGGING", "true").lower() == "true"
         self.bm25_enabled: bool = os.getenv("BM25_ENABLED", "true").lower() == "true"
         
+        # LangSmith monitoring settings
+        self.langsmith_project: str = os.getenv("LANGSMITH_PROJECT", "InvestigatorAI-Production")
+        self.langsmith_tracing: bool = os.getenv("LANGSMITH_TRACING", "false").lower() == "true"
+        self.langsmith_endpoint: str = os.getenv("LANGSMITH_ENDPOINT", "https://api.smith.langchain.com")
+        
         # Validate required API keys
         self._validate_api_keys()
+        
+        # Initialize LangSmith if configured
+        self._setup_langsmith()
     
     def _validate_api_keys(self) -> None:
         """Validate that required API keys are present"""
@@ -68,6 +77,21 @@ class Settings:
     def api_keys_available(self) -> bool:
         """Check if all required API keys are available"""
         return bool(self.openai_api_key and self.tavily_search_api_key)
+    
+    @property
+    def langsmith_available(self) -> bool:
+        """Check if LangSmith is configured and available"""
+        return bool(self.langsmith_api_key and self.langsmith_tracing)
+    
+    def _setup_langsmith(self) -> None:
+        """Set up LangSmith environment variables if configured"""
+        if self.langsmith_available:
+            os.environ["LANGSMITH_API_KEY"] = self.langsmith_api_key
+            os.environ["LANGSMITH_PROJECT"] = self.langsmith_project
+            os.environ["LANGSMITH_TRACING"] = str(self.langsmith_tracing).lower()
+            os.environ["LANGSMITH_ENDPOINT"] = self.langsmith_endpoint
+            # Also set legacy LangChain project for compatibility
+            os.environ["LANGCHAIN_PROJECT"] = self.langsmith_project
 
 def get_settings() -> Settings:
     """Get application settings"""
