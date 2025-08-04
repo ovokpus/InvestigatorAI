@@ -1,6 +1,6 @@
 # InvestigatorAI Certification Challenge Submission
 
-> **📂 Navigation**: [🏠 Home](../README.md) | [🤖 Agent Prompts](AGENT_PROMPTS.md) | [🎓 Certification](CERTIFICATION_CHALLENGE.md) | [🎬 Demo Guide](DEMO_GUIDE.md) | [🔄 Merge Instructions](../MERGE.md) | [💻 Frontend Docs](../frontend/README.md) | [📊 Data Docs](../data/README.md) | [🚀 Deploy Docs](../deploy/README.md)
+> **📂 Navigation**: [🏠 Home](../README.md) | [🤖 Agent Prompts](AGENT_PROMPTS.md) | [🎓 Certification](CERTIFICATION_CHALLENGE.md) | [🎬 Demo Guide](DEMO_GUIDE.md) | [💰 Business Case](BUSINESS_CASE.md) | [🔄 Merge Instructions](../MERGE.md) | [💻 Frontend Docs](../frontend/README.md) | [📊 Data Docs](../data/README.md) | [🚀 Deploy Docs](../deploy/README.md)
 
 ## AIE7 Cohort - Fraud Investigation Assistant
 
@@ -154,6 +154,8 @@ The target users - fraud analysts, AML compliance officers, and investigation su
 **InvestigatorAI transforms fraud investigation from a 6-hour manual process into a 90-minute AI-assisted workflow** by deploying a multi-agent system that combines real-time fraud detection with comprehensive investigation orchestration. The solution provides fraud analysts with an intelligent investigation assistant that automatically researches similar historical cases, compiles evidence across multiple data sources, ensures regulatory compliance requirements are met, and generates investigation documentation - all while maintaining the analyst's decision-making authority and meeting strict financial industry security standards.
 
 **User Experience**: Analysts will interact with a unified investigation dashboard where they can input a flagged transaction and receive a comprehensive investigation package within 90 minutes. The system presents evidence in an interactive timeline, highlights similar historical cases with outcomes, provides regulatory compliance checklists, and generates draft investigation reports. This allows analysts to focus their expertise on pattern recognition and decision-making rather than data gathering and documentation compilation.
+
+> **💰 Business Value Analysis**: For comprehensive ROI analysis, competitive advantages, and quantified business benefits, see [InvestigatorAI Business Case](BUSINESS_CASE.md)
 
 ### Technology Stack with Justification
 
