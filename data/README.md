@@ -1,6 +1,6 @@
 # InvestigatorAI Data Dictionary
 
-> **📂 Navigation**: [🏠 Home](../README.md) | [🤖 Agent Prompts](../docs/AGENT_PROMPTS.md) | [🎓 Certification](../docs/CERTIFICATION_CHALLENGE.md) | [🎬 Demo Guide](../docs/DEMO_GUIDE.md) | [🔄 Merge Instructions](../MERGE.md) | [💻 Frontend Docs](../frontend/README.md) | [📊 Data Docs](README.md) | [🚀 Deploy Docs](../deploy/README.md)
+> **📂 Navigation**: [🏠 Home](../README.md) | [🔧 API Docs](../api/README.md) | [🤖 Agent Architecture](../docs/AGENT_PROMPTS.md) | [📈 Advanced Retrievers](../docs/ADVANCED_RETRIEVERS.md) | [💼 Business Case](../docs/BUSINESS_CASE.md) | [🎓 Certification](../docs/CERTIFICATION_CHALLENGE.md) | [🎬 Demo Guide](../docs/DEMO_GUIDE.md) | [💻 Frontend](../frontend/README.md) | [📊 Data](README.md) | [🚀 Deploy](../deploy/README.md) | [🧪 Tests](../tests/README.md) | [🔄 Merge](../MERGE.md)
 
 > **Comprehensive catalog of all data sources collected by the InvestigatorAI system**
 

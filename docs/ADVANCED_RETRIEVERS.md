@@ -1,5 +1,7 @@
 # Advanced Retrieval Production Decision Guide for InvestigatorAI
 
+> **📂 Navigation**: [🏠 Home](../README.md) | [🔧 API Docs](../api/README.md) | [🤖 Agent Architecture](AGENT_PROMPTS.md) | [📈 Advanced Retrievers](ADVANCED_RETRIEVERS.md) | [💼 Business Case](BUSINESS_CASE.md) | [🎓 Certification](CERTIFICATION_CHALLENGE.md) | [🎬 Demo Guide](DEMO_GUIDE.md) | [💻 Frontend](../frontend/README.md) | [📊 Data](../data/README.md) | [🚀 Deploy](../deploy/README.md) | [🧪 Tests](../tests/README.md) | [🔄 Merge](../MERGE.md)
+
 ## Executive Summary
 
 Based on comprehensive RAGAS evaluation of 9 advanced retrieval techniques, **BM25 Sparse retrieval emerges as the optimal choice for fraud investigation workflows**, delivering exceptional performance in both quality and speed metrics critical for regulatory compliance environments.

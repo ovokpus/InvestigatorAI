@@ -1,5 +1,7 @@
 # InvestigatorAI Test Suite
 
+> **📂 Navigation**: [🏠 Home](../README.md) | [🔧 API Docs](../api/README.md) | [🤖 Agent Architecture](../docs/AGENT_PROMPTS.md) | [📈 Advanced Retrievers](../docs/ADVANCED_RETRIEVERS.md) | [💼 Business Case](../docs/BUSINESS_CASE.md) | [🎓 Certification](../docs/CERTIFICATION_CHALLENGE.md) | [🎬 Demo Guide](../docs/DEMO_GUIDE.md) | [💻 Frontend](../frontend/README.md) | [📊 Data](../data/README.md) | [🚀 Deploy](../deploy/README.md) | [🧪 Tests](README.md) | [🔄 Merge](../MERGE.md)
+
 Comprehensive test suite for the InvestigatorAI fraud investigation system, covering API functionality, LangSmith monitoring integration, and BM25 retrieval optimization.
 
 ## 📋 Test Overview

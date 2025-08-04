@@ -1,6 +1,6 @@
 # InvestigatorAI
 
-> **📂 Navigation**: [🏠 Home](README.md) | [🤖 Agent Prompts](docs/AGENT_PROMPTS.md) | [🎓 Certification](docs/CERTIFICATION_CHALLENGE.md) | [🎬 Demo Guide](docs/DEMO_GUIDE.md) | [🔄 Merge Instructions](MERGE.md) | [💻 Frontend Docs](frontend/README.md) | [📊 Data Docs](data/README.md) | [🚀 Deploy Docs](deploy/README.md)
+> **📂 Navigation**: [🏠 Home](README.md) | [🔧 API Docs](api/README.md) | [🤖 Agent Architecture](docs/AGENT_PROMPTS.md) | [📈 Advanced Retrievers](docs/ADVANCED_RETRIEVERS.md) | [💼 Business Case](docs/BUSINESS_CASE.md) | [🎓 Certification](docs/CERTIFICATION_CHALLENGE.md) | [🎬 Demo Guide](docs/DEMO_GUIDE.md) | [💻 Frontend](frontend/README.md) | [📊 Data](data/README.md) | [🚀 Deploy](deploy/README.md) | [🧪 Tests](tests/README.md) | [🔄 Merge](MERGE.md)
 
 A multi-agent fraud investigation assistant that combines real-time fraud detection (GuardianAI) with investigation workflow orchestration (FraudSight patterns) to reduce investigation time from 6 hours to 90 minutes.
 

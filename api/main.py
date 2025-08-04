@@ -127,11 +127,16 @@ async def lifespan(app: FastAPI):
         app_state["external_api_service"] = external_api_service
         logger.info("✅ External API service initialized")
         
-        # Initialize document processor and vector store
-        document_processor = DocumentProcessor(embeddings, settings)
-        vector_store = VectorStoreManager.initialize(embeddings, settings, document_processor)
+        # Connect to existing vector store (documents pre-loaded by init service)
+        logger.info("🔗 Connecting to pre-initialized vector store...")
+        vector_store = VectorStoreManager.connect_existing(embeddings, settings)
         app_state["vector_store"] = vector_store
-        logger.info("✅ Vector store initialized")
+        
+        if vector_store and vector_store.is_initialized:
+            logger.info("✅ Vector store connected successfully")
+        else:
+            logger.warning("⚠️  Vector store not ready - API will start but document search may be limited")
+            logger.info("💡 Ensure the init-docs service has completed successfully")
         
         # Initialize fraud investigation system
         fraud_investigation_system = FraudInvestigationSystem(llm, external_api_service)
@@ -384,9 +389,23 @@ async def investigate_fraud(
 ) -> InvestigationResponse:
     """Run a fraud investigation using the multi-agent system"""
     
+    # Start request logging
+    request_start = datetime.now()
+    investigation_id = f"INV_{request_start.strftime('%Y%m%d_%H%M%S')}_{hash(str(request.dict())) % 10000:04d}"
+    
+    logger.info("🔍 ==> FRAUD INVESTIGATION REQUEST RECEIVED")
+    logger.info(f"   🆔 Request ID: {investigation_id}")
+    logger.info(f"   💰 Amount: {request.amount} {request.currency}")
+    logger.info(f"   👤 Customer: {request.customer_name}")
+    logger.info(f"   🌍 Destination: {request.country_to}")
+    logger.info(f"   📝 Description: {request.description[:100]}...")
+    logger.info(f"   ⚠️  Risk Rating: {request.risk_rating}")
+    logger.info(f"   🏢 Account Type: {request.account_type}")
+    
     try:
         # Convert request to transaction details
         transaction_details = {
+            "investigation_id": investigation_id,
             "amount": request.amount,
             "currency": request.currency,
             "description": request.description,
@@ -394,52 +413,105 @@ async def investigate_fraud(
             "account_type": request.account_type,
             "customer_risk_rating": request.risk_rating,
             "country_to": request.country_to,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": request_start.isoformat()
         }
         
-        # Run investigation
-        result = fraud_system.investigate_fraud(transaction_details)
+        logger.info(f"📋 Transaction details prepared - starting multi-agent investigation...")
         
-        # Debug logging
-        logger.info(f"Investigation result keys: {list(result.keys())}")
-        logger.info(f"Full results available: {result.get('full_results') is not None}")
-        if result.get("full_results"):
-            logger.info(f"Full results keys: {list(result.get('full_results', {}).keys())}")
+        # Run investigation
+        investigation_start = datetime.now()
+        result = fraud_system.investigate_fraud(transaction_details)
+        investigation_end = datetime.now()
+        
+        investigation_duration = (investigation_end - investigation_start).total_seconds()
+        
+        # Log investigation results
+        investigation_status = result.get("status", "Unknown")
+        final_decision = result.get("final_decision", "Pending")
+        agents_completed = result.get("agents_completed", 0)
+        total_messages = result.get("total_messages", 0)
+        all_agents_finished = result.get("all_agents_finished", False)
+        has_error = result.get("error") is not None
+        
+        logger.info(f"📊 INVESTIGATION RESULTS - ID: {investigation_id}")
+        logger.info(f"   ⏱️  Investigation Duration: {investigation_duration:.2f}s")
+        logger.info(f"   📊 Status: {investigation_status}")
+        logger.info(f"   ⚖️  Decision: {final_decision}")
+        logger.info(f"   🤖 Agents Completed: {agents_completed}/4")
+        logger.info(f"   💬 Total Messages: {total_messages}")
+        logger.info(f"   🏁 All Agents Finished: {all_agents_finished}")
+        logger.info(f"   🚨 Has Error: {has_error}")
+        
+        if has_error:
+            logger.error(f"   ❌ Investigation Error: {result.get('error')}")
+        
+        if agents_completed < 4:
+            logger.warning(f"   ⚠️  Incomplete investigation - only {agents_completed}/4 agents completed")
+        
+        # Performance analysis
+        if investigation_duration > 120:  # 2 minutes
+            logger.warning(f"   🐌 Slow investigation - {investigation_duration:.2f}s (target: <60s)")
+        elif investigation_duration < 30:
+            logger.info(f"   ⚡ Fast investigation - {investigation_duration:.2f}s")
         
         # Serialize LangChain objects for JSON response
         ragas_messages = result.get("ragas_validated_messages")
         if ragas_messages:
-            logger.info(f"🔧 RAGAS messages type: {type(ragas_messages)}, length: {len(ragas_messages)}")
+            logger.debug(f"🔧 Processing RAGAS messages - type: {type(ragas_messages)}, count: {len(ragas_messages)}")
             if ragas_messages:
-                logger.info(f"🔧 First message type: {type(ragas_messages[0])}")
+                logger.debug(f"   First message type: {type(ragas_messages[0])}")
             serialized_ragas_messages = serialize_langchain_objects(ragas_messages)
-            logger.info(f"✅ Serialized {len(serialized_ragas_messages)} LangChain objects for RAGAS")
+            logger.debug(f"   ✅ Serialized {len(serialized_ragas_messages)} LangChain objects for RAGAS")
         else:
+            logger.debug("   ℹ️  No RAGAS messages to serialize")
             serialized_ragas_messages = None
         
-        # Return response
+        # Prepare response
         response_data = {
-            "investigation_id": result.get("investigation_id", "Unknown"),
-            "status": result.get("status", "Unknown"),
-            "final_decision": result.get("final_decision", "Pending"),
-            "agents_completed": result.get("agents_completed", 0),
-            "total_messages": result.get("total_messages", 0),
+            "investigation_id": result.get("investigation_id", investigation_id),
+            "status": investigation_status,
+            "final_decision": final_decision,
+            "agents_completed": agents_completed,
+            "total_messages": total_messages,
             "transaction_details": result.get("transaction_details", {}),
-            "all_agents_finished": result.get("all_agents_finished", False),
+            "all_agents_finished": all_agents_finished,
             "error": result.get("error"),
             "full_results": result.get("full_results"),
-            "ragas_validated_messages": serialized_ragas_messages
+            "ragas_validated_messages": serialized_ragas_messages,
+            "performance": result.get("performance", {})
         }
+        
+        # Final request logging
+        total_duration = (datetime.now() - request_start).total_seconds()
+        response_size_kb = len(str(response_data)) / 1024
+        
+        logger.info(f"✅ FRAUD INVESTIGATION COMPLETED - ID: {investigation_id}")
+        logger.info(f"   ⏱️  Total Request Duration: {total_duration:.2f}s")
+        logger.info(f"   📦 Response Size: {response_size_kb:.1f} KB")
+        logger.info(f"   🎯 Final Decision: {final_decision}")
         
         return JSONResponse(content=response_data)
         
     except openai.OpenAIError as e:
-        logger.error(f"OpenAI API error during investigation: {e}")
+        duration = (datetime.now() - request_start).total_seconds()
+        error_type = type(e).__name__
+        logger.error(f"❌ FRAUD INVESTIGATION FAILED - ID: {investigation_id}")
+        logger.error(f"   🚨 Error Type: OpenAI API Error ({error_type})")
+        logger.error(f"   💥 Error Details: {e}")
+        logger.error(f"   ⏱️  Duration before failure: {duration:.2f}s")
+        
         status_code, error_message = handle_openai_error(e)
         raise HTTPException(status_code=status_code, detail=error_message)
         
     except Exception as e:
-        logger.error(f"Investigation failed: {e}")
+        duration = (datetime.now() - request_start).total_seconds()
+        error_type = type(e).__name__
+        logger.error(f"❌ FRAUD INVESTIGATION FAILED - ID: {investigation_id}")
+        logger.error(f"   🚨 Error Type: {error_type}")
+        logger.error(f"   💥 Error Details: {e}")
+        logger.error(f"   ⏱️  Duration before failure: {duration:.2f}s")
+        logger.exception(f"   🔍 Full exception traceback:")
+        
         # Check if it's an OpenAI error wrapped in another exception
         if "openai" in str(e).lower() or "max_tokens" in str(e).lower():
             status_code, error_message = handle_openai_error(e)
@@ -490,29 +562,34 @@ async def get_exchange_rate(
 @app.get("/web-search", response_model=AgentToolResponse)
 async def search_web(
     query: str,
-    max_results: int = 3,
+    max_results: int = 5,
     external_api: ExternalAPIService = Depends(get_external_api_service)
 ) -> AgentToolResponse:
     """Search the web using Tavily"""
+    logger.info(f"🌐 API endpoint called: /web-search - Query: '{query}', Max results: {max_results}")
     
     try:
+        logger.info(f"📡 Calling Tavily search service...")
         result = external_api.search_web(query, max_results)
         
-        return AgentToolResponse(
+        response = AgentToolResponse(
             result=result,
             source="Tavily",
             timestamp=datetime.now()
         )
         
+        logger.info(f"✅ API endpoint /web-search completed successfully for query: '{query}'")
+        return response
+        
     except Exception as e:
-        logger.error(f"Web search failed: {e}")
+        logger.error(f"❌ Web search API endpoint failed for query '{query}': {e}")
         raise HTTPException(status_code=500, detail=f"Web search failed: {str(e)}")
 
 # ArXiv search endpoint
 @app.get("/arxiv-search", response_model=AgentToolResponse)
 async def search_arxiv(
     query: str,
-    max_results: int = 2,
+    max_results: int = 4,
     external_api: ExternalAPIService = Depends(get_external_api_service)
 ) -> AgentToolResponse:
     """Search ArXiv for research papers"""

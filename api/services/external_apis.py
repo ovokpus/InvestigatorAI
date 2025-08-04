@@ -1,12 +1,16 @@
 """External API integrations for InvestigatorAI"""
 import os
+import json
 import requests
 import urllib.parse
 import xml.etree.ElementTree as ET
+import logging
 from typing import Dict, Any
 from datetime import datetime
 
 from ..core.config import Settings
+
+logger = logging.getLogger(__name__)
 
 class ExternalAPIService:
     """Service for handling external API calls"""
@@ -15,33 +19,89 @@ class ExternalAPIService:
         self.settings = settings
     
     def get_exchange_rate(self, from_currency: str, to_currency: str = "USD") -> str:
-        """Get exchange rate from ExchangeRates-API"""
+        """Get exchange rate from local JSON configuration file"""
+        logger.info(f"💱 Exchange Rate Request - From: {from_currency} → To: {to_currency}")
+        
         try:
-            api_key = self.settings.exchange_rate_api_key
-            if not api_key:
-                return f"Exchange rate API key not available"
+            # Path to the exchange rates JSON file
+            exchange_rates_file = "data/configs/exchange_rates_20250731_1954.json"
             
-            url = f"https://v6.exchangerate-api.com/v6/{api_key}/pair/{from_currency}/{to_currency}"
-            response = requests.get(url)
+            logger.debug(f"📂 Loading exchange rates from: {exchange_rates_file}")
             
-            if response.status_code == 200:
-                data = response.json()
-                if data['result'] == 'success':
-                    rate = data['conversion_rate']
-                    return f"Exchange rate {from_currency} to {to_currency}: {rate}"
-                else:
-                    return f"Error: {data.get('error-type', 'Unknown error')}"
+            # Check if file exists
+            if not os.path.exists(exchange_rates_file):
+                logger.error(f"❌ Exchange rates file not found: {exchange_rates_file}")
+                return f"Exchange rates configuration file not available"
+            
+            # Load exchange rates from JSON file
+            with open(exchange_rates_file, 'r') as file:
+                exchange_data = json.load(file)
+            
+            base_currency = exchange_data.get('base', 'USD')
+            rates = exchange_data.get('rates', {})
+            rate_date = exchange_data.get('date', 'Unknown')
+            
+            logger.debug(f"📊 Loaded exchange rates - Base: {base_currency}, Date: {rate_date}, Currencies: {len(rates)}")
+            
+            # Normalize currency codes to uppercase
+            from_currency = from_currency.upper()
+            to_currency = to_currency.upper()
+            
+            # Check if currencies are available in the rates
+            if from_currency not in rates:
+                logger.warning(f"⚠️  Currency '{from_currency}' not found in exchange rates data")
+                return f"Currency '{from_currency}' not supported. Available currencies: {', '.join(sorted(rates.keys())[:10])}..."
+            
+            if to_currency not in rates:
+                logger.warning(f"⚠️  Currency '{to_currency}' not found in exchange rates data")
+                return f"Currency '{to_currency}' not supported. Available currencies: {', '.join(sorted(rates.keys())[:10])}..."
+            
+            # Calculate exchange rate (both currencies are relative to USD base)
+            from_rate = rates[from_currency]
+            to_rate = rates[to_currency]
+            
+            # Convert: amount_in_from_currency * (1/from_rate) * to_rate = amount_in_to_currency
+            # So the rate from_currency -> to_currency is: to_rate / from_rate
+            conversion_rate = to_rate / from_rate
+            
+            logger.info(f"✅ Exchange rate calculated successfully")
+            logger.info(f"   💱 {from_currency} → {to_currency}: {conversion_rate:.6f}")
+            logger.info(f"   📅 Rate Date: {rate_date}")
+            logger.info(f"   📊 Base Currency: {base_currency}")
+            
+            # Format result with precision
+            if conversion_rate >= 1:
+                formatted_rate = f"{conversion_rate:.4f}"
             else:
-                return f"HTTP Error: {response.status_code}"
+                formatted_rate = f"{conversion_rate:.6f}"
                 
+            return f"Exchange rate {from_currency} to {to_currency}: {formatted_rate} (as of {rate_date})"
+                
+        except FileNotFoundError:
+            logger.error(f"❌ Exchange rates configuration file not found")
+            return f"Exchange rates configuration file not available"
+        except json.JSONDecodeError as e:
+            logger.error(f"❌ Invalid JSON in exchange rates file: {e}")
+            return f"Exchange rates configuration file is corrupted"
+        except KeyError as e:
+            logger.error(f"❌ Missing required field in exchange rates data: {e}")
+            return f"Exchange rates configuration file has invalid structure"
+        except ZeroDivisionError:
+            logger.error(f"❌ Invalid exchange rate data - division by zero for {from_currency}")
+            return f"Invalid exchange rate data for {from_currency}"
         except Exception as e:
+            logger.error(f"❌ Exchange rate lookup failed: {e}")
+            logger.exception(f"   🔍 Full exception details:")
             return f"Exchange rate lookup failed: {e}"
     
-    def search_web(self, query: str, max_results: int = 3) -> str:
+    def search_web(self, query: str, max_results: int = 7) -> str:
         """Search web using Tavily API"""
+        logger.info(f"🌐 Tavily Search initiated - Query: '{query}', Max results: {max_results}")
+        
         try:
             api_key = self.settings.tavily_search_api_key
             if not api_key:
+                logger.warning("❌ Tavily API key not available")
                 return "Tavily API key not available"
             
             url = "https://api.tavily.com/search"
@@ -52,29 +112,47 @@ class ExternalAPIService:
                 "search_depth": "basic"
             }
             
-            response = requests.post(url, json=payload)
+            logger.info(f"🔍 Calling Tavily API: {url}")
+            start_time = datetime.now()
+            
+            response = requests.post(url, json=payload, timeout=30)
+            
+            end_time = datetime.now()
+            latency_ms = (end_time - start_time).total_seconds() * 1000
             
             if response.status_code == 200:
                 data = response.json()
                 results = data.get('results', [])
+                
+                logger.info(f"✅ Tavily API success - Retrieved {len(results)} results in {latency_ms:.1f}ms")
                 
                 if results:
                     formatted_results = []
                     for i, result in enumerate(results, 1):
                         title = result.get('title', 'No title')
                         content = result.get('content', 'No content')  # Show full content
-                        formatted_results.append(f"{i}. {title}\n   {content}")
+                        url_result = result.get('url', 'No URL')
+                        formatted_results.append(f"{i}. {title}\n   {content}\n   Source: {url_result}")
+                        logger.debug(f"   Result {i}: {title[:50]}...")
                     
-                    return "\n\n".join(formatted_results)
+                    result_text = "\n\n".join(formatted_results)
+                    logger.info(f"📝 Tavily search completed - {len(results)} results formatted")
+                    return result_text
                 else:
+                    logger.warning(f"🔍 Tavily API returned no results for query: {query}")
                     return f"No results found for query: {query}"
             else:
+                logger.error(f"❌ Tavily API error - Status: {response.status_code}, Response: {response.text[:200]}")
                 return f"Tavily API error: {response.status_code}"
                 
+        except requests.exceptions.Timeout:
+            logger.error(f"⏰ Tavily API timeout after 30s for query: {query}")
+            return f"Tavily API timeout for query: {query}"
         except Exception as e:
+            logger.error(f"❌ Tavily search failed for query '{query}': {e}")
             return f"Web search failed: {e}"
     
-    def search_arxiv(self, query: str, max_results: int = 2) -> str:
+    def search_arxiv(self, query: str, max_results: int = 5) -> str:
         """Search ArXiv for research papers"""
         try:
             # Format query for ArXiv API

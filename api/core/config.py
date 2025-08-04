@@ -13,8 +13,8 @@ class Settings:
         # API Keys
         self.openai_api_key: str = os.getenv("OPENAI_API_KEY", "")
         self.tavily_search_api_key: str = os.getenv("TAVILY_SEARCH_API_KEY", "")
-        self.exchange_rate_api_key: str = os.getenv("EXCHANGE_RATE_API_KEY", "")
         self.langsmith_api_key: str = os.getenv("LANGSMITH_API_KEY", "")
+        # Note: Exchange rates now use local JSON data file instead of API
         
         # Model configurations
         self.embedding_model: str = os.getenv("EMBEDDING_MODEL", "text-embedding-3-large")
