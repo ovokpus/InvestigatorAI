@@ -1484,18 +1484,23 @@ class FraudInvestigationSystem:
                     amount = transaction_details.get('amount', 0)
                     query = f"suspicious activity report requirements {country} ${amount:,}"
                     results = vector_store.search(query, k=3)
-                    # Deduplicate and format results properly
+                    # Apply the same filtering as the regulatory research tool
+                    from ..agents.tools import _extract_regulatory_insights
                     unique_results = []
-                    seen_content = set()
-                    for r in results:
-                        # Take first 200 chars for deduplication check
-                        content_key = r.content[:200].strip()
-                        if content_key not in seen_content:
-                            seen_content.add(content_key)
-                            # Format with proper structure - show full content for comprehensive analysis
-                            unique_results.append(f"• {r.content}")
+                    seen_insights = set()
                     
-                    return "\n\n".join(unique_results) if unique_results else "No relevant regulatory documents found"
+                    for r in results:
+                        # Extract professional insights instead of raw content
+                        category = r.metadata.content_category if hasattr(r, 'metadata') and hasattr(r.metadata, 'content_category') else 'regulatory'
+                        insights = _extract_regulatory_insights(r.content, category)
+                        
+                        # Avoid duplicates
+                        insight_key = insights[:100]
+                        if insight_key not in seen_insights and len(insights) > 20:
+                            seen_insights.add(insight_key)
+                            unique_results.append(insights)
+                    
+                    return "\n\n".join(unique_results) if unique_results else "BSA/AML compliance requirements apply to this transaction type."
                 return "Vector database not available for document search"
             
             # Execute parallel tasks
