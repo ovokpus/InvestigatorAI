@@ -10,6 +10,14 @@
 
 Here is the **[Loom Walkthrough Video](https://www.loom.com/share/390bd824a8a84ea1aa7cc709bff6c065)**
 
+**Implementation Code Artifacts**
+[Base Prototype `investigator_ai_enhanced_notebook.ipynb`](../investigator_ai_enhanced_notebook.ipynb)
+[RAGAS RAG Eval `investigator_ai_ragas_evaluation.ipynb`](../investigator_ai_ragas_evaluation.ipynb)
+[RAGAS Agent Eval `nvestigator_ai_agent_evaluation.ipynb`](../investigator_ai_agent_evaluation.ipynb)
+[Frontend - React/Typecsript/Next.js](../frontend/)
+[Backend (api) - FastAPI](../api)
+[Containerisation](../docker-compose.yml)
+
 **Overall Progress**: **7/7 tasks completed** + **ADVANCED EVALUATION FRAMEWORKS** (exceeding requirements)
 
 | Task | Status | Implementation | Verification |
@@ -473,7 +481,7 @@ All chunks include structured metadata for advanced filtering:
 - Integrates with existing InvestigatorAI vector store and multi-agent system
 - Follows AI Makerspace evaluation patterns and best practices
 - Provides baseline metrics for comparison with advanced retrieval techniques (Task 6)
-- Complete evaluation pipeline in `investigator_ai_ragas_evaluation.ipynb`
+- Complete evaluation pipeline in [`investigator_ai_ragas_evaluation.ipynb`](../investigator_ai_ragas_evaluation.ipynb)
 
 ---
 
