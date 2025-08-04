@@ -1476,6 +1476,7 @@ class FraudInvestigationSystem:
                 return risk_data
             
             async def run_document_search():
+                logger.info("🔍 [DEBUG] Starting run_document_search() in streaming endpoint")
                 await asyncio.sleep(2.0)  # Simulate vector search time
                 from ..services.vector_store import VectorStoreManager
                 vector_store = VectorStoreManager.get_instance()
@@ -1483,24 +1484,42 @@ class FraudInvestigationSystem:
                     country = transaction_details.get('country_to', '')
                     amount = transaction_details.get('amount', 0)
                     query = f"suspicious activity report requirements {country} ${amount:,}"
+                    logger.info(f"🔍 [DEBUG] Vector search query: {query}")
                     results = vector_store.search(query, k=3)
+                    logger.info(f"🔍 [DEBUG] Vector search returned {len(results)} results")
+                    
+                    # Log raw content to trace where fragments come from
+                    for i, r in enumerate(results):
+                        raw_preview = r.content[:200] + "..." if len(r.content) > 200 else r.content
+                        logger.info(f"🔍 [DEBUG] Raw result {i+1}: {raw_preview}")
+                    
                     # Apply the same filtering as the regulatory research tool
                     from ..agents.tools import _extract_regulatory_insights
+                    logger.info("🔍 [DEBUG] Applying _extract_regulatory_insights filtering")
                     unique_results = []
                     seen_insights = set()
                     
-                    for r in results:
+                    for i, r in enumerate(results):
                         # Extract professional insights instead of raw content
                         category = r.metadata.content_category if hasattr(r, 'metadata') and hasattr(r.metadata, 'content_category') else 'regulatory'
+                        logger.info(f"🔍 [DEBUG] Processing result {i+1} with category: {category}")
                         insights = _extract_regulatory_insights(r.content, category)
+                        logger.info(f"🔍 [DEBUG] Filtered insights {i+1}: {insights[:150]}...")
                         
                         # Avoid duplicates
                         insight_key = insights[:100]
                         if insight_key not in seen_insights and len(insights) > 20:
                             seen_insights.add(insight_key)
                             unique_results.append(insights)
+                            logger.info(f"🔍 [DEBUG] Added insight {i+1} to results")
+                        else:
+                            logger.info(f"🔍 [DEBUG] Skipped insight {i+1} (duplicate or too short: {len(insights)} chars)")
                     
-                    return "\n\n".join(unique_results) if unique_results else "BSA/AML compliance requirements apply to this transaction type."
+                    final_result = "\n\n".join(unique_results) if unique_results else "BSA/AML compliance requirements apply to this transaction type."
+                    logger.info(f"🔍 [DEBUG] Final document_search result length: {len(final_result)} chars")
+                    logger.info(f"🔍 [DEBUG] Final result preview: {final_result[:300]}...")
+                    return final_result
+                logger.warning("🔍 [DEBUG] Vector database not available for document search")
                 return "Vector database not available for document search"
             
             # Execute parallel tasks

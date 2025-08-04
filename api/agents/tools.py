@@ -62,7 +62,14 @@ def search_regulatory_documents(query: str, max_results: int = 5) -> str:
 
 def _extract_regulatory_insights(content: str, category: str) -> str:
     """Extract key regulatory insights from document content, filtering out procedural text"""
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info(f"🔍 [DEBUG] _extract_regulatory_insights called with category: {category}")
+    logger.info(f"🔍 [DEBUG] Input content length: {len(content)} chars")
+    logger.info(f"🔍 [DEBUG] Input content preview: {content[:300]}...")
+    
     if not content:
+        logger.info("🔍 [DEBUG] No content provided, returning fallback")
         return "No content available"
     
     # Aggressive filtering of procedural and administrative text
