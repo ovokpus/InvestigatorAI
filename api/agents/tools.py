@@ -20,7 +20,7 @@ def initialize_tools(external_api_service: ExternalAPIService):
 
 @tool
 def search_regulatory_documents(query: str, max_results: int = 5) -> str:
-    """Search regulatory documents for fraud investigation guidance."""
+    """Search regulatory documents for fraud investigation guidance and return summarized insights."""
     vector_store = VectorStoreManager.get_instance()
     
     if not vector_store or not vector_store.is_initialized:
@@ -32,20 +32,70 @@ def search_regulatory_documents(query: str, max_results: int = 5) -> str:
         if not results:
             return f"No regulatory documents found for query: {query}"
         
-        formatted_results = []
+        # Process and summarize results instead of returning raw content
+        summarized_insights = []
+        seen_insights = set()
+        
         for i, result in enumerate(results, 1):
             filename = result.metadata.filename
             category = result.metadata.content_category
-            content_preview = result.content  # Show full content for comprehensive analysis
+            content = result.content
             
-            formatted_results.append(
-                f"{i}. {filename} ({category})\n   {content_preview}"
-            )
+            # Extract key insights instead of showing full content
+            key_insights = _extract_regulatory_insights(content, category)
+            
+            # Avoid duplicates
+            insight_key = key_insights[:100]  # First 100 chars for deduplication
+            if insight_key not in seen_insights:
+                seen_insights.add(insight_key)
+                summarized_insights.append(
+                    f"{i}. {filename} ({category}):\n   {key_insights}"
+                )
         
-        return "\n\n".join(formatted_results)
+        if not summarized_insights:
+            return "Found documents but could not extract relevant insights."
+            
+        return "\n\n".join(summarized_insights)
         
     except Exception as e:
         return f"Error searching regulatory documents: {e}"
+
+def _extract_regulatory_insights(content: str, category: str) -> str:
+    """Extract key regulatory insights from document content"""
+    if not content:
+        return "No content available"
+    
+    # Split into sentences and find key regulatory information
+    sentences = content.split('.')
+    key_sentences = []
+    
+    # Look for sentences containing key regulatory terms
+    important_terms = [
+        'SAR', 'CTR', 'suspicious activity', 'filing', 'required', 'within', 'days',
+        'threshold', 'report', 'compliance', 'violation', 'penalty', 'must',
+        'shall', 'CFR', 'FinCEN', 'OFAC', 'sanction', 'high-risk', 'enhanced due diligence'
+    ]
+    
+    for sentence in sentences[:10]:  # Check first 10 sentences
+        sentence = sentence.strip()
+        if (len(sentence) > 30 and 
+            any(term.lower() in sentence.lower() for term in important_terms) and
+            sentence.count(' ') > 5):  # Ensure it's a substantial sentence
+            key_sentences.append(sentence)
+            if len(key_sentences) >= 2:  # Limit to 2 key insights per document
+                break
+    
+    if key_sentences:
+        return '. '.join(key_sentences) + '.'
+    else:
+        # Fallback: return first coherent part of content (max 200 chars)
+        clean_content = content.replace('\n', ' ').strip()
+        if len(clean_content) > 200:
+            # Find a good breaking point near 200 chars
+            break_point = clean_content.rfind(' ', 0, 200)
+            if break_point > 100:
+                return clean_content[:break_point] + '...'
+        return clean_content[:200] + '...' if len(clean_content) > 200 else clean_content
 
 @tool
 def calculate_transaction_risk(amount: float, country_to: str = "", 

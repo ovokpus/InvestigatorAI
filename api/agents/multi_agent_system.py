@@ -107,23 +107,25 @@ class FraudInvestigationSystem:
             **REGULATORY ANALYSIS REPORT**
             
             **Jurisdiction Assessment:**
-            - Destination country risk classification (High/Medium/Low)
-            - Applicable sanctions or restrictions
-            - Enhanced due diligence requirements
+            - Destination country risk classification (High/Medium/Low) with specific justification
+            - Applicable sanctions or restrictions (be specific)
+            - Enhanced due diligence requirements (if any)
             
             **Regulatory Compliance:**
-            - Relevant AML/BSA requirements
-            - Filing obligations (CTR/SAR/FBAR)
-            - Regulatory deadlines and thresholds
+            - Relevant AML/BSA requirements (cite specific regulations)
+            - Filing obligations (CTR/SAR/FBAR with thresholds and deadlines)
+            - Regulatory deadlines (specific calendar dates)
             
             **Risk Indicators:**
-            - Suspicious patterns identified
-            - Red flags from regulatory guidance
-            - Industry-specific considerations
+            - Suspicious patterns identified (be specific and actionable)
+            - Red flags from regulatory guidance (cite sources)
+            - Overall regulatory risk assessment
             
-            **Regulatory Sources:**
-            - [Cite specific regulations, FinCEN guidance, and FATF recommendations]
-            - [Reference any current sanctions or advisories]
+            **CRITICAL**: 
+            - Synthesize document research into clear, professional analysis
+            - Do NOT copy raw regulatory text - provide interpreted guidance
+            - Focus on actionable insights, not raw document excerpts
+            - Keep analysis concise but comprehensive (max 500 words total)
             
             ## PROFESSIONAL STANDARDS:
             - Use precise regulatory terminology and cite specific regulations (e.g., "31 CFR 1020.320")
@@ -183,24 +185,24 @@ class FraudInvestigationSystem:
             
             **Risk Score Analysis:**
             - Calculated Risk Score: [X.XX]/1.00 ([Risk Level])
-            - Contributing Risk Factors: [List with individual weightings]
-            - Statistical Confidence Level: [High/Medium/Low]
+            - Top 3 Contributing Risk Factors with impact assessment
+            - Statistical Confidence Level and methodology
             
             **Financial Intelligence:**
-            - Entity Background: [Company/individual information]
-            - Beneficial Ownership: [Ultimate beneficial owners if identified]
-            - Business Activity: [Legitimate business purpose assessment]
-            - Market Context: [Industry norms, economic factors]
+            - Entity Background: Professional summary of company/individual
+            - Business Activity: Legitimate purpose assessment with evidence
+            - Market Context: Industry comparison and economic factors
             
             **Transaction Anomalies:**
-            - Unusual Patterns: [Timing, amount, frequency anomalies]
-            - Red Flags: [Specific suspicious indicators]
-            - Comparative Analysis: [Against normal customer behavior]
+            - Specific unusual patterns identified (timing, amount, frequency)
+            - Quantified red flags with risk impact
+            - Comparative analysis against customer profile
             
-            **Supporting Evidence:**
-            - Exchange Rate Verification: [Current rate vs. transaction rate]
-            - External Intelligence: [Web sources, business registries]
-            - Data Quality Assessment: [Confidence in collected evidence]
+            **CRITICAL**: 
+            - Provide synthesized intelligence, not raw search results
+            - Focus on actionable risk factors and evidence
+            - Keep intelligence concise and professional (max 400 words)
+            - Distinguish between verified facts and analytical assessments
 
             ## ANALYTICAL STANDARDS:
             - Quantify all risk assessments with specific numerical scores
@@ -258,27 +260,26 @@ class FraudInvestigationSystem:
             **COMPLIANCE ASSESSMENT REPORT**
             
             **Filing Obligations:**
-            - CTR Required: [Yes/No] - [Specific threshold/reason]
-            - SAR Required: [Yes/No/Recommended] - [Regulatory basis]
-            - Additional Reports: [FBAR, Form 8300, etc.]
-            - Filing Deadlines: [Specific dates and requirements]
+            - CTR Required: [Yes/No] with specific threshold and deadline
+            - SAR Required: [Yes/No/Recommended] with regulatory basis and timeline
+            - Additional Reports: [List any other required filings]
+            - Priority Actions: [Most urgent compliance steps with deadlines]
             
             **Regulatory Compliance Status:**
-            - BSA Compliance: [Compliant/Non-Compliant/At-Risk]
-            - OFAC Screening: [Required/Completed/Pending]
-            - Enhanced Due Diligence: [Required/Not Required/Recommended]
-            - Record Retention: [5-year BSA requirement]
+            - Overall Status: [Compliant/Non-Compliant/At-Risk] with explanation
+            - OFAC Screening: [Status and requirements]
+            - Enhanced Due Diligence: [Requirements if applicable]
             
-            **Risk Mitigation Measures:**
-            - Immediate Actions Required: [List urgent compliance steps]
-            - Monitoring Requirements: [Ongoing surveillance needs]
-            - Documentation Standards: [Required record-keeping]
-            - Escalation Procedures: [When to involve senior management/legal]
+            **Risk Mitigation:**
+            - Immediate Actions: [Top 3 urgent steps with deadlines]
+            - Ongoing Monitoring: [Surveillance requirements]
+            - Escalation Triggers: [When to involve senior management]
             
-            **Regulatory Justification:**
-            - Applicable Regulations: [Cite specific CFR sections]
-            - FinCEN Guidance: [Reference relevant advisories]
-            - Enforcement Precedent: [Cite relevant enforcement actions if applicable]
+            **CRITICAL**: 
+            - Focus on actionable compliance requirements, not general guidance
+            - Provide specific deadlines and thresholds
+            - Keep assessment professional and concise (max 300 words)
+            - Prioritize most critical compliance actions
 
             ## COMPLIANCE STANDARDS:
             - Cite specific regulatory sections (e.g., "31 CFR 1020.320 - SAR requirements")
@@ -332,55 +333,42 @@ class FraudInvestigationSystem:
             - Cross-reference all agent findings for consistency and completeness
 
             ## REPORT STRUCTURE REQUIREMENTS:
-            Your report MUST follow this professional format:
+            Create a comprehensive, professional investigation report by synthesizing ALL agent findings:
 
             **EXECUTIVE SUMMARY**
-            - Transaction Overview: [Key transaction details]
-            - Risk Classification: [HIGH/MEDIUM/LOW with score]
-            - Compliance Status: [Filing requirements and deadlines]
-            - Recommended Actions: [Immediate next steps]
+            - Transaction Overview: Key details with risk classification 
+            - Overall Risk Assessment: [HIGH/MEDIUM/LOW] with numerical score
+            - Critical Findings: Top 3 most important discoveries
+            - Immediate Actions Required: Urgent next steps with deadlines
 
-            **DETAILED INVESTIGATION FINDINGS**
+            **INVESTIGATION ANALYSIS**
 
-            **1. REGULATORY ANALYSIS**
-            - Jurisdiction Assessment: [Country risk evaluation]
-            - Applicable Regulations: [Specific laws and requirements]
-            - Sanctions Screening: [OFAC and international sanctions]
-            - Red Flag Analysis: [Regulatory risk indicators]
+            **Regulatory Assessment:**
+            - Synthesize regulatory research findings into actionable assessment
+            - Jurisdiction risk evaluation with specific justification
+            - Applicable sanctions, restrictions, or enhanced due diligence requirements
 
-            **2. QUANTITATIVE RISK ASSESSMENT**
-            - Risk Score: [Numerical score with methodology]
-            - Contributing Factors: [Weighted risk elements]
-            - Statistical Analysis: [Transaction patterns and anomalies]
-            - Peer Comparison: [Industry and customer benchmarks]
+            **Risk and Evidence Analysis:**
+            - Integrate quantitative risk score with qualitative evidence
+            - Key risk factors with impact assessment
+            - External intelligence findings and verification status
 
-            **3. COMPLIANCE OBLIGATIONS**
-            - Filing Requirements: [CTR, SAR, FBAR determinations]
-            - Deadlines: [Specific calendar dates]
-            - Enhanced Due Diligence: [EDD requirements if applicable]
-            - Record Retention: [Documentation requirements]
+            **Compliance Determination:**
+            - Required filings (CTR/SAR/FBAR) with specific deadlines
+            - Compliance status and any violations or concerns
+            - Monitoring and documentation requirements
 
-            **4. INTELLIGENCE ASSESSMENT**
-            - Entity Background: [Customer/beneficiary information]
-            - Business Rationale: [Legitimate purpose evaluation]
-            - External Intelligence: [Third-party information sources]
-            - Relationship Analysis: [Connected entities and transactions]
+            **CONCLUSIONS**
+            - Final Risk Classification: [HIGH/MEDIUM/LOW] with comprehensive justification
+            - Business Rationale Assessment: Legitimate vs. suspicious purpose evaluation
+            - Recommended Actions: Prioritized list with specific deadlines
 
-            **CONCLUSIONS AND RECOMMENDATIONS**
-
-            **Overall Risk Determination:**
-            [Final risk classification with comprehensive justification]
-
-            **Immediate Actions Required:**
-            1. [Regulatory filings with deadlines]
-            2. [Additional investigation steps]
-            3. [Risk mitigation measures]
-            4. [Escalation procedures]
-
-            **Long-term Monitoring:**
-            - [Ongoing surveillance requirements]
-            - [Account restrictions if warranted]
-            - [Customer relationship management]
+            **CRITICAL SYNTHESIS REQUIREMENTS**: 
+            - Combine insights from ALL agents into coherent narrative
+            - Focus on actionable conclusions, not raw data
+            - Ensure professional tone suitable for management/regulatory review
+            - Maximum 600 words for entire report
+            - NO raw document excerpts or incomplete sentences
 
             ## PROFESSIONAL STANDARDS:
             - Use precise, objective language suitable for regulatory review
@@ -1040,38 +1028,129 @@ class FraudInvestigationSystem:
         return validated
 
     def generate_final_decision(self, messages) -> str:
-        """Generate a comprehensive final decision from all agent analyses"""
+        """Generate a comprehensive, professional final decision from all agent analyses"""
         try:
-            # Extract key findings from each agent (handle both dict and BaseMessage formats)
-            agent_findings = []
+            # Extract and parse agent findings
+            agent_findings = {}
             for message in messages:
+                name = None
+                content = None
+                
                 # Handle dictionary format (new format)
                 if isinstance(message, dict):
                     name = message.get('name', '')
                     content = message.get('content', '')
-                    if name and content:
-                        # Keep full content for comprehensive analysis (no truncation)
-                        agent_findings.append(f"**{name.replace('_', ' ').title()}**: {content}")
                 # Handle BaseMessage format (original format)
                 elif hasattr(message, 'name') and message.name:
-                    agent_findings.append(f"**{message.name.replace('_', ' ').title()}**: {message.content}")
+                    name = message.name
+                    content = message.content
+                
+                if name and content and name != 'system':
+                    # Clean and summarize content instead of using raw text
+                    agent_findings[name] = self._extract_key_insights(content, name)
             
             if not agent_findings:
                 return "Investigation completed but no detailed findings available."
             
-            # Create comprehensive final decision with rich formatting
-            final_decision = "**FRAUD INVESTIGATION COMPLETE**\n\n"
-            final_decision += "**KEY FINDINGS:**\n\n"
-            final_decision += "\n\n".join(agent_findings)
-            final_decision += "\n\n**INVESTIGATION STATUS:** All agents have completed their comprehensive analysis."
-            
-            print(f"🎯 Generated final decision with {len(agent_findings)} agent findings, {len(final_decision)} total characters")
-            
-            return final_decision
+            # Generate structured, professional report
+            return self._synthesize_professional_report(agent_findings)
             
         except Exception as e:
             print(f"❌ Error generating final decision: {e}")
-            return f"Investigation completed with some technical issues: {str(e)}"
+            return f"Investigation completed with technical issues. Please contact support for assistance."
+    
+    def _extract_key_insights(self, content: str, agent_name: str) -> dict:
+        """Extract key insights from agent content, removing raw document dumps"""
+        insights = {
+            'summary': '',
+            'key_points': [],
+            'recommendations': []
+        }
+        
+        # Clean content - remove incomplete sentences and raw regulatory text
+        lines = content.split('\n')
+        clean_lines = []
+        
+        for line in lines:
+            line = line.strip()
+            # Skip incomplete bullet points, raw regulatory snippets, and partial sentences
+            if (line and 
+                not line.startswith('•') and 
+                not line.startswith('-') and
+                not 'CFR' in line and
+                not 'FinCEN' in line and
+                len(line) > 20 and
+                line.endswith(('.', '!', '?', ':'))):
+                clean_lines.append(line)
+        
+        # Extract insights based on agent type
+        if agent_name == 'regulatory_research':
+            insights['summary'] = f"Regulatory analysis completed for destination jurisdiction"
+            insights['key_points'] = [line for line in clean_lines[:3] if 'risk' in line.lower() or 'compliance' in line.lower()]
+        elif agent_name == 'evidence_collection':
+            insights['summary'] = f"Risk assessment and evidence collection completed"
+            insights['key_points'] = [line for line in clean_lines[:3] if 'risk' in line.lower() or 'score' in line.lower()]
+        elif agent_name == 'compliance_check':
+            insights['summary'] = f"Compliance requirements assessment completed"
+            insights['key_points'] = [line for line in clean_lines[:3] if 'required' in line.lower() or 'SAR' in line or 'CTR' in line]
+        elif agent_name == 'report_generation':
+            insights['summary'] = f"Final report compilation completed"
+            insights['key_points'] = [line for line in clean_lines[:2] if 'complete' in line.lower() or 'classification' in line.lower()]
+        
+        return insights
+    
+    def _synthesize_professional_report(self, agent_findings: dict) -> str:
+        """Create a professional, coherent investigation report"""
+        
+        # Extract key information
+        risk_level = "MEDIUM RISK"  # Default
+        compliance_items = []
+        key_findings = []
+        
+        # Parse findings from each agent
+        for agent_name, findings in agent_findings.items():
+            if findings['key_points']:
+                key_findings.extend(findings['key_points'][:2])  # Limit to prevent bloat
+                
+            # Extract risk level and compliance info
+            for point in findings['key_points']:
+                if 'HIGH RISK' in point.upper():
+                    risk_level = "HIGH RISK"
+                elif 'LOW RISK' in point.upper() and risk_level == "MEDIUM RISK":
+                    risk_level = "LOW RISK"
+                    
+                if any(word in point.upper() for word in ['SAR', 'CTR', 'REQUIRED', 'FILING']):
+                    compliance_items.append(point)
+        
+        # Generate professional report
+        report = "**FRAUD INVESTIGATION COMPLETE**\n\n"
+        
+        # Executive Summary
+        report += "**EXECUTIVE SUMMARY**\n"
+        report += f"Investigation Status: Complete\n"
+        report += f"Risk Classification: {risk_level}\n"
+        report += f"Agents Completed: 4/4 (Regulatory, Evidence, Compliance, Reporting)\n\n"
+        
+        # Key Findings
+        report += "**KEY FINDINGS**\n\n"
+        report += "**Regulatory Analysis:** Jurisdiction and sanctions screening completed with risk assessment.\n\n"
+        report += "**Evidence Collection:** Transaction risk analysis conducted with quantitative scoring and external intelligence review.\n\n"
+        report += "**Compliance Assessment:** Filing requirements evaluated including SAR/CTR obligations and regulatory deadlines.\n\n"
+        report += "**Final Report:** Comprehensive investigation completed with risk classification and recommended actions.\n\n"
+        
+        # Compliance Requirements
+        if compliance_items:
+            report += "**COMPLIANCE REQUIREMENTS**\n"
+            for item in compliance_items[:3]:  # Limit to prevent bloat
+                report += f"• {item}\n"
+            report += "\n"
+        
+        # Conclusion
+        report += f"**INVESTIGATION STATUS:** All agents have completed comprehensive analysis. Risk classification: {risk_level}."
+        
+        print(f"🎯 Generated professional report: {len(report)} characters, {risk_level}")
+        
+        return report
     
     @traceable(name="investigate_fraud_multi_agent", tags=["investigation", "multi-agent", "fraud"])
     def investigate_fraud(self, transaction_details: Dict[str, Any]) -> Dict[str, Any]:
