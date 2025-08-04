@@ -1485,8 +1485,10 @@ class FraudInvestigationSystem:
                     amount = transaction_details.get('amount', 0)
                     query = f"suspicious activity report requirements {country} ${amount:,}"
                     logger.info(f"🔍 [DEBUG] Vector search query: {query}")
-                    results = vector_store.search(query, k=3)
-                    logger.info(f"🔍 [DEBUG] Vector search returned {len(results)} results")
+                    # FORCE BYPASS CACHE BY ADDING TIMESTAMP
+                    query_with_timestamp = f"{query} {datetime.now().isoformat()}"
+                    results = vector_store.search(query_with_timestamp, k=3)
+                    logger.info(f"🔍 [DEBUG] Vector search returned {len(results)} results (cache bypassed)")
                     
                     # Log raw content to trace where fragments come from
                     for i, r in enumerate(results):
