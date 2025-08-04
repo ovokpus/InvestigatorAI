@@ -516,6 +516,7 @@ function DetailedResultsViewer({ results }: DetailedResultsViewerProps) {
 
 export default function InvestigationResults({ investigation, onNewInvestigation }: InvestigationResultsProps) {
   const [copySuccess, setCopySuccess] = useState(false);
+  const [downloadSuccess, setDownloadSuccess] = useState(false);
 
   const copyToClipboard = async (text: string) => {
     try {
@@ -546,6 +547,137 @@ export default function InvestigationResults({ investigation, onNewInvestigation
       document.body.removeChild(textArea);
     }
   };
+
+  const downloadReport = () => {
+    try {
+      // Create comprehensive report content
+      const reportContent = generateReportContent(investigation);
+      
+      // Create blob and download
+      const blob = new Blob([reportContent], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      
+      // Create download link
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Investigation_Report_${investigation.investigation_id}_${new Date().toISOString().slice(0, 10)}.txt`;
+      
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Cleanup
+      URL.revokeObjectURL(url);
+      
+      // Show success feedback
+      setDownloadSuccess(true);
+      setTimeout(() => setDownloadSuccess(false), 2000);
+    } catch (err) {
+      console.error('Failed to download report: ', err);
+    }
+  };
+
+  const generateReportContent = (investigation: Investigation): string => {
+    const timestamp = new Date().toISOString();
+    const transactionDetails = investigation.transaction_details;
+    
+    let content = `
+================================================================================
+                        FRAUD INVESTIGATION REPORT
+================================================================================
+
+Report Generated: ${timestamp}
+Investigation ID: ${investigation.investigation_id}
+Status: ${investigation.status}
+
+================================================================================
+                           EXECUTIVE SUMMARY
+================================================================================
+
+Investigation Status: ${investigation.all_agents_finished ? 'COMPLETE' : 'IN PROGRESS'}
+Agents Completed: ${investigation.agents_completed}/4
+Total Messages Processed: ${investigation.total_messages}
+Risk Assessment: ${investigation.final_decision.includes('HIGH RISK') ? 'HIGH RISK' : 
+                   investigation.final_decision.includes('MEDIUM RISK') ? 'MEDIUM RISK' : 
+                   investigation.final_decision.includes('LOW RISK') ? 'LOW RISK' : 'PENDING ASSESSMENT'}
+
+================================================================================
+                         TRANSACTION DETAILS
+================================================================================
+
+Amount: ${transactionDetails?.currency || 'USD'} ${(transactionDetails?.amount || 0).toLocaleString()}
+Customer Name: ${transactionDetails?.customer_name || 'N/A'}
+Destination Country: ${transactionDetails?.country_to || 'N/A'}
+Account Type: ${transactionDetails?.account_type || 'N/A'}
+Risk Rating: ${transactionDetails?.risk_rating || 'N/A'}
+
+Transaction Description:
+${transactionDetails?.description || 'N/A'}
+
+================================================================================
+                     DETAILED INVESTIGATION FINDINGS
+================================================================================
+
+${investigation.final_decision}
+
+================================================================================
+                           TECHNICAL DETAILS
+================================================================================
+
+Investigation Completion: ${investigation.all_agents_finished ? 'All agents completed successfully' : 'Investigation in progress'}
+Agent Completion Status: ${investigation.agents_completed} out of 4 agents completed
+Message Processing: ${investigation.total_messages} messages processed during investigation
+
+${investigation.error ? `
+================================================================================
+                              ERROR DETAILS
+================================================================================
+
+${investigation.error}
+` : ''}
+
+================================================================================
+                         ADDITIONAL DATA
+================================================================================
+
+`;
+
+    // Add detailed agent messages if available
+    if (investigation.full_results?.messages) {
+      content += `
+Agent Communication Log:
+------------------------
+
+`;
+      investigation.full_results.messages.forEach((message: InvestigationMessage, index: number) => {
+        content += `Message ${index + 1} (${message.type}):
+${message.content}
+
+---
+
+`;
+      });
+    }
+
+    content += `
+================================================================================
+                            REPORT FOOTER
+================================================================================
+
+This report was generated by InvestigatorAI - Advanced Fraud Detection System
+Generated on: ${timestamp}
+Investigation ID: ${investigation.investigation_id}
+
+WARNING: This report contains sensitive information and should be handled according 
+to your organization's data protection and compliance policies.
+
+================================================================================
+`;
+
+    return content;
+  };
+
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'completed':
@@ -582,12 +714,26 @@ export default function InvestigationResults({ investigation, onNewInvestigation
             Investigation ID: {investigation.investigation_id}
           </p>
         </div>
-        <button
-          onClick={onNewInvestigation}
-          className="btn-secondary px-4 py-2 rounded-lg font-medium"
-        >
-          New Investigation
-        </button>
+        <div className="flex space-x-3">
+          <button
+            onClick={downloadReport}
+            className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2 ${
+              downloadSuccess 
+                ? 'bg-green-600 text-white' 
+                : 'bg-blue-600 hover:bg-blue-700 text-white hover:shadow-md'
+            }`}
+            title="Download full investigation report as text file"
+          >
+            <span>{downloadSuccess ? '✅' : '📥'}</span>
+            <span>{downloadSuccess ? 'Downloaded!' : 'Download Report'}</span>
+          </button>
+          <button
+            onClick={onNewInvestigation}
+            className="btn-secondary px-4 py-2 rounded-lg font-medium"
+          >
+            New Investigation
+          </button>
+        </div>
       </div>
 
       {/* Status Overview */}
@@ -631,18 +777,32 @@ export default function InvestigationResults({ investigation, onNewInvestigation
           <div className="mt-4 p-6 bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-blue-950 rounded-lg border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between mb-4">
               <h4 className="text-lg font-bold text-gray-800 dark:text-gray-200">📊 Investigation Report</h4>
-              <button
-                onClick={() => copyToClipboard(investigation.final_decision)}
-                className={`px-3 py-1 text-sm font-medium rounded-md transition-all duration-200 flex items-center space-x-2 ${
-                  copySuccess 
-                    ? 'bg-green-600 text-white' 
-                    : 'bg-blue-600 hover:bg-blue-700 text-white hover:shadow-md'
-                }`}
-                title="Copy report to clipboard"
-              >
-                <span>{copySuccess ? '✅' : '📋'}</span>
-                <span>{copySuccess ? 'Copied!' : 'Copy'}</span>
-              </button>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => copyToClipboard(investigation.final_decision)}
+                  className={`px-3 py-1 text-sm font-medium rounded-md transition-all duration-200 flex items-center space-x-2 ${
+                    copySuccess 
+                      ? 'bg-green-600 text-white' 
+                      : 'bg-gray-600 hover:bg-gray-700 text-white hover:shadow-md'
+                  }`}
+                  title="Copy report to clipboard"
+                >
+                  <span>{copySuccess ? '✅' : '📋'}</span>
+                  <span>{copySuccess ? 'Copied!' : 'Copy'}</span>
+                </button>
+                <button
+                  onClick={downloadReport}
+                  className={`px-3 py-1 text-sm font-medium rounded-md transition-all duration-200 flex items-center space-x-2 ${
+                    downloadSuccess 
+                      ? 'bg-green-600 text-white' 
+                      : 'bg-blue-600 hover:bg-blue-700 text-white hover:shadow-md'
+                  }`}
+                  title="Download full investigation report as text file"
+                >
+                  <span>{downloadSuccess ? '✅' : '📥'}</span>
+                  <span>{downloadSuccess ? 'Downloaded!' : 'Download'}</span>
+                </button>
+              </div>
             </div>
             <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-600 max-w-none overflow-auto">
               {investigation.final_decision.includes('**FRAUD INVESTIGATION COMPLETE**') ? (
