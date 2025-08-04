@@ -3,10 +3,13 @@ import os
 import requests
 import urllib.parse
 import xml.etree.ElementTree as ET
+import logging
 from typing import Dict, Any
 from datetime import datetime
 
 from ..core.config import Settings
+
+logger = logging.getLogger(__name__)
 
 class ExternalAPIService:
     """Service for handling external API calls"""
@@ -39,9 +42,12 @@ class ExternalAPIService:
     
     def search_web(self, query: str, max_results: int = 3) -> str:
         """Search web using Tavily API"""
+        logger.info(f"🌐 Tavily Search initiated - Query: '{query}', Max results: {max_results}")
+        
         try:
             api_key = self.settings.tavily_search_api_key
             if not api_key:
+                logger.warning("❌ Tavily API key not available")
                 return "Tavily API key not available"
             
             url = "https://api.tavily.com/search"
@@ -52,26 +58,44 @@ class ExternalAPIService:
                 "search_depth": "basic"
             }
             
-            response = requests.post(url, json=payload)
+            logger.info(f"🔍 Calling Tavily API: {url}")
+            start_time = datetime.now()
+            
+            response = requests.post(url, json=payload, timeout=30)
+            
+            end_time = datetime.now()
+            latency_ms = (end_time - start_time).total_seconds() * 1000
             
             if response.status_code == 200:
                 data = response.json()
                 results = data.get('results', [])
+                
+                logger.info(f"✅ Tavily API success - Retrieved {len(results)} results in {latency_ms:.1f}ms")
                 
                 if results:
                     formatted_results = []
                     for i, result in enumerate(results, 1):
                         title = result.get('title', 'No title')
                         content = result.get('content', 'No content')  # Show full content
-                        formatted_results.append(f"{i}. {title}\n   {content}")
+                        url_result = result.get('url', 'No URL')
+                        formatted_results.append(f"{i}. {title}\n   {content}\n   Source: {url_result}")
+                        logger.debug(f"   Result {i}: {title[:50]}...")
                     
-                    return "\n\n".join(formatted_results)
+                    result_text = "\n\n".join(formatted_results)
+                    logger.info(f"📝 Tavily search completed - {len(results)} results formatted")
+                    return result_text
                 else:
+                    logger.warning(f"🔍 Tavily API returned no results for query: {query}")
                     return f"No results found for query: {query}"
             else:
+                logger.error(f"❌ Tavily API error - Status: {response.status_code}, Response: {response.text[:200]}")
                 return f"Tavily API error: {response.status_code}"
                 
+        except requests.exceptions.Timeout:
+            logger.error(f"⏰ Tavily API timeout after 30s for query: {query}")
+            return f"Tavily API timeout for query: {query}"
         except Exception as e:
+            logger.error(f"❌ Tavily search failed for query '{query}': {e}")
             return f"Web search failed: {e}"
     
     def search_arxiv(self, query: str, max_results: int = 2) -> str:

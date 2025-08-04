@@ -1,5 +1,6 @@
 """Multi-agent system for fraud investigation using LangGraph"""
 import uuid
+import logging
 from datetime import datetime
 from typing import Dict, Any, List, AsyncGenerator
 import openai
@@ -11,6 +12,8 @@ from typing import List, Dict, Any, Optional
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.agents import AgentExecutor, create_openai_tools_agent
 from langgraph.graph import END, StateGraph
+
+logger = logging.getLogger(__name__)
 
 # LangSmith monitoring
 try:
@@ -35,17 +38,29 @@ class FraudInvestigationSystem:
     """Multi-agent fraud investigation system using LangGraph"""
     
     def __init__(self, llm: ChatOpenAI, external_api_service: ExternalAPIService):
+        logger.info("🚀 Initializing FraudInvestigationSystem")
+        logger.info(f"   🤖 LLM Model: {llm.model_name if hasattr(llm, 'model_name') else 'Unknown'}")
+        logger.info(f"   🔗 External API Service: {type(external_api_service).__name__}")
+        
         self.llm = llm
         self.external_api_service = external_api_service
         
         # Initialize tools with dependencies
+        logger.info("🔧 Initializing agent tools...")
         initialize_tools(external_api_service)
+        logger.info("   ✅ Tools initialized successfully")
         
         # Create agents
+        logger.info("🤖 Creating specialized agents...")
         self.agents = self._create_agents()
+        logger.info(f"   ✅ Created {len(self.agents)} agents: {list(self.agents.keys())}")
         
         # Build workflow
+        logger.info("🔄 Building LangGraph workflow...")
         self.investigation_graph = self._build_workflow()
+        logger.info("   ✅ Workflow graph built successfully")
+        
+        logger.info("✅ FraudInvestigationSystem initialization complete")
     
     def _create_agent(self, llm: ChatOpenAI, tools: list, system_prompt: str) -> AgentExecutor:
         """Create a function calling agent"""
@@ -1061,21 +1076,55 @@ class FraudInvestigationSystem:
     @traceable(name="investigate_fraud_multi_agent", tags=["investigation", "multi-agent", "fraud"])
     def investigate_fraud(self, transaction_details: Dict[str, Any]) -> Dict[str, Any]:
         """Run a fraud investigation using the LangGraph multi-agent system"""
+        investigation_id = transaction_details.get("investigation_id", f"INV_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
+        amount = transaction_details.get("amount", "N/A")
+        currency = transaction_details.get("currency", "N/A")
+        customer_name = transaction_details.get("customer_name", "N/A")
+        country_to = transaction_details.get("country_to", "N/A")
+        
+        logger.info(f"🔍 Multi-Agent Investigation STARTED - ID: {investigation_id}")
+        logger.info(f"   💰 Transaction: {amount} {currency}")
+        logger.info(f"   👤 Customer: {customer_name}")
+        logger.info(f"   🌍 Destination: {country_to}")
+        
+        start_time = datetime.now()
+        
         try:
             # Create investigation state
+            logger.info(f"📋 Creating investigation state for {investigation_id}")
             investigation_state = self.create_investigation_state(transaction_details)
+            logger.debug(f"   State created with keys: {list(investigation_state.keys())}")
             
             # Run the investigation workflow
+            logger.info(f"🔄 Starting LangGraph workflow for {investigation_id}")
+            workflow_start = datetime.now()
+            
             final_state = self.investigation_graph.invoke(investigation_state)
+            
+            workflow_end = datetime.now()
+            workflow_duration = (workflow_end - workflow_start).total_seconds()
             
             # Calculate summary metrics
             agents_completed = len(final_state.get("agents_completed", []))
             total_messages = len(final_state.get("messages", []))
             all_agents_finished = agents_completed >= 4
             
+            total_duration = (datetime.now() - start_time).total_seconds()
+            
+            logger.info(f"✅ Multi-Agent Investigation COMPLETED - ID: {investigation_id}")
+            logger.info(f"   ⏱️  Total Duration: {total_duration:.2f}s (Workflow: {workflow_duration:.2f}s)")
+            logger.info(f"   🤖 Agents Completed: {agents_completed}/4")
+            logger.info(f"   💬 Total Messages: {total_messages}")
+            logger.info(f"   🏁 All Agents Finished: {all_agents_finished}")
+            logger.info(f"   📊 Final Status: {final_state.get('investigation_status', 'Unknown')}")
+            logger.info(f"   ⚖️  Final Decision: {final_state.get('final_decision', 'Pending')}")
+            
+            if agents_completed < 4:
+                logger.warning(f"⚠️  Investigation {investigation_id} completed with only {agents_completed}/4 agents")
+            
             # Return investigation results
             return {
-                "investigation_id": final_state.get("investigation_id", "Unknown"),
+                "investigation_id": final_state.get("investigation_id", investigation_id),
                 "status": final_state.get("investigation_status", "Unknown"),
                 "final_decision": final_state.get("final_decision", "Pending"),
                 "agents_completed": agents_completed,
@@ -1083,41 +1132,75 @@ class FraudInvestigationSystem:
                 "transaction_details": transaction_details,
                 "all_agents_finished": all_agents_finished,
                 "full_results": self._serialize_state(final_state),
-                "ragas_validated_messages": self.validate_ragas_sequence(final_state.get("messages", []))
+                "ragas_validated_messages": self.validate_ragas_sequence(final_state.get("messages", [])),
+                "performance": {
+                    "total_duration_s": total_duration,
+                    "workflow_duration_s": workflow_duration
+                }
             }
             
         except openai.OpenAIError as e:
+            error_type = "OpenAI API Error"
             error_message = f"AI service error: {str(e)}"
+            
             if "max_tokens" in str(e).lower():
+                error_type = "Token Limit Error"
                 error_message = "Investigation analysis too complex. Please try with simpler transaction details or contact support for assistance."
             elif "rate limit" in str(e).lower():
+                error_type = "Rate Limit Error"
                 error_message = "AI service temporarily busy. Please wait a moment and try again."
             
+            duration = (datetime.now() - start_time).total_seconds()
+            logger.error(f"❌ Multi-Agent Investigation FAILED - ID: {investigation_id}")
+            logger.error(f"   🚨 Error Type: {error_type}")
+            logger.error(f"   💥 Error Message: {error_message}")
+            logger.error(f"   ⏱️  Duration before failure: {duration:.2f}s")
+            
             return {
-                "investigation_id": f"ERROR_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+                "investigation_id": f"ERROR_{investigation_id}_{datetime.now().strftime('%H%M%S')}",
                 "status": "failed",
                 "final_decision": "error - " + error_message,
                 "agents_completed": 0,
                 "total_messages": 0,
                 "transaction_details": transaction_details,
                 "all_agents_finished": False,
-                "error": error_message
+                "error": error_message,
+                "error_type": error_type,
+                "performance": {
+                    "total_duration_s": duration,
+                    "workflow_duration_s": 0
+                }
             }
             
         except Exception as e:
+            error_type = "General Error"
             error_message = str(e)
+            
             if "max_tokens" in error_message.lower() or "token limit" in error_message.lower():
+                error_type = "Token Limit Error"
                 error_message = "Investigation analysis exceeded maximum length. Please try with a shorter transaction description."
             
+            duration = (datetime.now() - start_time).total_seconds()
+            logger.error(f"❌ Multi-Agent Investigation FAILED - ID: {investigation_id}")
+            logger.error(f"   🚨 Error Type: {error_type}")
+            logger.error(f"   💥 Error Details: {error_message}")
+            logger.error(f"   ⏱️  Duration before failure: {duration:.2f}s")
+            logger.exception(f"   🔍 Full exception details:")
+            
             return {
-                "investigation_id": f"ERROR_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+                "investigation_id": f"ERROR_{investigation_id}_{datetime.now().strftime('%H%M%S')}",
                 "status": "failed", 
                 "final_decision": "error - " + error_message,
                 "agents_completed": 0,
                 "total_messages": 0,
                 "transaction_details": transaction_details,
                 "all_agents_finished": False,
-                "error": error_message
+                "error": error_message,
+                "error_type": error_type,
+                "performance": {
+                    "total_duration_s": duration,
+                    "workflow_duration_s": 0
+                }
             }
     
     @traceable(name="investigate_fraud_stream_multi_agent", tags=["investigation", "multi-agent", "fraud", "stream"])

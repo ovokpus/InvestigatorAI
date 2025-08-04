@@ -1,10 +1,13 @@
 """LangChain tools for InvestigatorAI agents"""
 from langchain_core.tools import tool
 from typing import Optional
+import logging
 
 from ..services.vector_store import VectorStoreManager
 from ..services.external_apis import ExternalAPIService, RiskCalculator, ComplianceChecker
 from ..core.config import get_settings
+
+logger = logging.getLogger(__name__)
 
 # Global instances for tools
 _external_api_service: Optional[ExternalAPIService] = None
@@ -80,10 +83,17 @@ def check_compliance_requirements(amount: float, risk_score: float, country_to: 
 @tool
 def search_web_intelligence(query: str, max_results: int = 2) -> str:
     """Search the web using Tavily for current fraud intelligence and news."""
+    logger.info(f"🔧 Tool called: search_web_intelligence - Query: '{query}', Max results: {max_results}")
+    
     if not _external_api_service:
+        logger.error("❌ External API service not initialized for web intelligence search")
         return "External API service not initialized"
     
-    return _external_api_service.search_web(query, max_results)
+    logger.info(f"📡 Forwarding to Tavily API service...")
+    result = _external_api_service.search_web(query, max_results)
+    logger.info(f"✅ Web intelligence search completed for query: '{query}'")
+    
+    return result
 
 # Tool groups for different agent types
 REGULATORY_TOOLS = [search_regulatory_documents, search_fraud_research, search_web_intelligence]

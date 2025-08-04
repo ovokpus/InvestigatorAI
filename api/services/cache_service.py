@@ -2,6 +2,7 @@
 import json
 import hashlib
 import redis
+import logging
 from typing import Any, Optional, Dict, List
 from datetime import datetime, timedelta
 import asyncio
@@ -9,16 +10,24 @@ from functools import wraps
 
 from ..core.config import Settings
 
+logger = logging.getLogger(__name__)
+
 class CacheService:
     """Redis-based caching service for investigation data"""
     
     def __init__(self, settings: Settings):
+        logger.info("🗄️  Initializing CacheService")
+        logger.info(f"   🎯 Redis Host: {settings.redis_host}:{settings.redis_port}")
+        logger.info(f"   📂 Database: {settings.redis_db}")
+        logger.info(f"   ⚡ Cache Enabled: {settings.cache_enabled}")
+        
         self.settings = settings
         self.redis_client = None
         self._connect()
     
     def _connect(self):
         """Connect to Redis server"""
+        logger.info(f"🔗 Connecting to Redis cache...")
         try:
             self.redis_client = redis.Redis(
                 host=self.settings.redis_host,
@@ -30,11 +39,17 @@ class CacheService:
                 retry_on_timeout=True,
                 health_check_interval=30
             )
+            
             # Test connection
-            self.redis_client.ping()
-            print(f"✅ Connected to Redis at {self.settings.redis_host}:{self.settings.redis_port}")
+            logger.debug("🔍 Testing Redis connection...")
+            ping_response = self.redis_client.ping()
+            logger.info(f"✅ Connected to Redis successfully - Response: {ping_response}")
+            logger.info(f"   🎯 Redis Server: {self.settings.redis_host}:{self.settings.redis_port}")
+            logger.info(f"   💾 Database: {self.settings.redis_db}")
+            
         except Exception as e:
-            print(f"⚠️ Redis connection failed: {e}. Caching disabled.")
+            logger.error(f"❌ Redis connection failed: {e}")
+            logger.warning("   ⚠️  Cache service disabled - running without caching")
             self.redis_client = None
     
     def _generate_key(self, prefix: str, data: Dict[str, Any]) -> str:
