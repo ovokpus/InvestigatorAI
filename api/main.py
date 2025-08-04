@@ -220,7 +220,7 @@ async def health_check(
     )
     
     # Add LangSmith status to response (this will require updating the schema)
-    response_dict = response.model_dump()
+    response_dict = response.model_dump(mode='json')  # Serialize datetime to ISO format
     response_dict["langsmith"] = langsmith_status
     
     return JSONResponse(content=response_dict)
