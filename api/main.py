@@ -31,6 +31,7 @@ from api.services.vector_store import VectorStoreManager
 from api.services.external_apis import ExternalAPIService
 from api.services.cache_service import get_cache_service
 from api.agents.multi_agent_system import FraudInvestigationSystem
+from api.research_endpoints import research_router, initialize_research_services
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -143,6 +144,11 @@ async def lifespan(app: FastAPI):
         app_state["fraud_investigation_system"] = fraud_investigation_system
         logger.info("✅ Fraud investigation system initialized")
         
+        # Initialize enhanced research services
+        logger.info("🔬 Initializing enhanced research services...")
+        initialize_research_services(llm, settings)
+        logger.info("✅ Enhanced research services initialized")
+        
         logger.info("🎉 InvestigatorAI API ready!")
         
     except Exception as e:
@@ -161,6 +167,9 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan
 )
+
+# Include research endpoints
+app.include_router(research_router)
 
 # Add CORS middleware
 app.add_middleware(
