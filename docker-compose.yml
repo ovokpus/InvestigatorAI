@@ -116,6 +116,13 @@ services:
       - CACHE_ENABLED=true
       - DEBUG=false
       - LOG_LEVEL=INFO
+      
+      # Migration 2.0 Settings - Security & Performance
+      - ALLOWED_ORIGINS=http://localhost:3000,http://frontend:3000
+      - RATE_LIMIT_REQUESTS=5
+      - RATE_LIMIT_WINDOW=60
+      - MAX_MEMORY_MB=1024
+      - CLEANUP_THRESHOLD=0.8
     volumes:
       - ./data:/app/data:ro
     depends_on:

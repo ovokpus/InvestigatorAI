@@ -56,13 +56,16 @@ dependencies = [
     "rapidfuzz==3.1.0",
     "rank_bm25==0.2.2",
     "langchain-experimental==0.3.1",
-    "langchain-cohere==0.3.1"
+    "langchain-cohere==0.3.1",
+    # Migration dependencies (5-hour migration)
+    "psutil>=5.9.0",  # Memory monitoring for MemoryOptimizer
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
+    "pytest-asyncio>=0.21.0",  # For async tests in migration
     "black>=22.0.0",
     "flake8>=5.0.0",
     "mypy>=1.0.0",

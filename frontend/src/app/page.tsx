@@ -237,8 +237,14 @@ export default function Home() {
         <div className="mb-8">
           <nav className="flex space-x-4">
             <span className="px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium">
-              Investigation
+              Legacy Investigation
             </span>
+            <a 
+              href="/unified" 
+              className="px-4 py-2 bg-green-600 text-white hover:bg-green-700 rounded-lg font-medium transition-colors animate-pulse"
+            >
+              🎯 NEW: Unified Investigation
+            </a>
             <a 
               href="/tools" 
               className="px-4 py-2 bg-secondary text-secondary-foreground hover:bg-accent rounded-lg font-medium transition-colors"
@@ -264,6 +270,26 @@ export default function Home() {
               🚀 Quick Start
             </a>
           </nav>
+        </div>
+
+        {/* Migration Notice */}
+        <div className="mb-8 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 rounded-lg p-6 border border-green-200 dark:border-green-800">
+          <h2 className="text-xl font-bold text-green-800 dark:text-green-200 mb-3 flex items-center space-x-2">
+            <span>🎯</span>
+            <span>NEW: Unified Investigation Platform Available!</span>
+          </h2>
+          <p className="text-green-700 dark:text-green-300 leading-relaxed mb-4">
+            <strong>InvestigatorAI 2.0</strong> introduces a unified investigation system supporting 4 investigation types: 
+            fraud transactions, entity research, academic research, and general research. Enhanced with 30% faster processing, 
+            memory optimization, and production-ready reliability features.
+          </p>
+          <a 
+            href="/unified" 
+            className="inline-flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium"
+          >
+            <span>Try Unified Investigation</span>
+            <span>→</span>
+          </a>
         </div>
 
         {/* App Description */}

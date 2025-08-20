@@ -5,18 +5,77 @@ import requests
 import urllib.parse
 import xml.etree.ElementTree as ET
 import logging
-from typing import Dict, Any
+import time
+from typing import Dict, Any, Callable
 from datetime import datetime
+from enum import Enum
 
 from ..core.config import Settings
 
 logger = logging.getLogger(__name__)
 
+
+class CircuitBreakerState(Enum):
+    CLOSED = "closed"      # Normal operation
+    OPEN = "open"          # Failing, rejecting requests
+    HALF_OPEN = "half_open"  # Testing if service recovered
+
+
+class CircuitBreaker:
+    """Simple circuit breaker for external API reliability"""
+    
+    def __init__(self, failure_threshold: int = 3, timeout_seconds: int = 60):
+        self.failure_threshold = failure_threshold
+        self.timeout_seconds = timeout_seconds
+        self.failure_count = 0
+        self.last_failure_time = None
+        self.state = CircuitBreakerState.CLOSED
+    
+    def call(self, func: Callable, *args, **kwargs):
+        """Execute function with circuit breaker protection"""
+        if self.state == CircuitBreakerState.OPEN:
+            if time.time() - self.last_failure_time > self.timeout_seconds:
+                self.state = CircuitBreakerState.HALF_OPEN
+                logger.info(f"🔄 Circuit breaker for {func.__name__} entering HALF_OPEN state")
+            else:
+                raise Exception(f"Circuit breaker OPEN for {func.__name__}. Service unavailable.")
+        
+        try:
+            result = func(*args, **kwargs)
+            if self.state == CircuitBreakerState.HALF_OPEN:
+                self.reset()
+                logger.info(f"✅ Circuit breaker for {func.__name__} reset to CLOSED")
+            return result
+            
+        except Exception as e:
+            self.record_failure()
+            logger.warning(f"⚠️ Circuit breaker recorded failure for {func.__name__}: {e}")
+            raise
+    
+    def record_failure(self):
+        """Record a failure and potentially open the circuit"""
+        self.failure_count += 1
+        self.last_failure_time = time.time()
+        
+        if self.failure_count >= self.failure_threshold:
+            self.state = CircuitBreakerState.OPEN
+            logger.error(f"🚨 Circuit breaker OPENED after {self.failure_count} failures")
+    
+    def reset(self):
+        """Reset the circuit breaker to normal operation"""
+        self.failure_count = 0
+        self.last_failure_time = None
+        self.state = CircuitBreakerState.CLOSED
+
 class ExternalAPIService:
-    """Service for handling external API calls"""
+    """Service for handling external API calls with circuit breaker protection"""
     
     def __init__(self, settings: Settings):
         self.settings = settings
+        # Initialize circuit breakers for each external service
+        self.tavily_circuit_breaker = CircuitBreaker(failure_threshold=3, timeout_seconds=60)
+        self.arxiv_circuit_breaker = CircuitBreaker(failure_threshold=3, timeout_seconds=60)
+        self.exchange_rate_circuit_breaker = CircuitBreaker(failure_threshold=2, timeout_seconds=30)
     
     def get_exchange_rate(self, from_currency: str, to_currency: str = "USD") -> str:
         """Get exchange rate from local JSON configuration file"""
@@ -95,9 +154,19 @@ class ExternalAPIService:
             return f"Exchange rate lookup failed: {e}"
     
     def search_web(self, query: str, max_results: int = 7) -> str:
-        """Search web using Tavily API"""
+        """Search web using Tavily API with circuit breaker protection"""
         logger.info(f"🌐 Tavily Search initiated - Query: '{query}', Max results: {max_results}")
         
+        try:
+            # Use circuit breaker to protect against repeated failures
+            return self.tavily_circuit_breaker.call(self._search_web_internal, query, max_results)
+        except Exception as e:
+            logger.warning(f"⚠️ Tavily search failed with circuit breaker: {e}")
+            # Fallback response when Tavily is unavailable
+            return self._web_search_fallback(query)
+    
+    def _search_web_internal(self, query: str, max_results: int = 7) -> str:
+        """Internal Tavily search implementation"""
         try:
             api_key = self.settings.tavily_search_api_key
             if not api_key:
@@ -236,6 +305,47 @@ class RiskCalculator:
             
         except Exception as e:
             return f"Risk calculation failed: {e}"
+    
+    def _web_search_fallback(self, query: str) -> str:
+        """Fallback response when Tavily API is unavailable"""
+        logger.info(f"🔄 Using web search fallback for query: '{query}'")
+        
+        # Provide generic guidance based on common fraud investigation queries
+        query_lower = query.lower()
+        
+        if any(term in query_lower for term in ['sanctions', 'ofac', 'embargo']):
+            return """Web intelligence temporarily unavailable. 
+            
+Fallback guidance for sanctions screening:
+• Check OFAC Specially Designated Nationals (SDN) list
+• Review current sanctions programs
+• Verify entity against consolidated screening lists
+• Document screening results for compliance
+
+Note: This is fallback guidance. Verify current sanctions status through official channels."""
+        
+        elif any(term in query_lower for term in ['suspicious', 'fraud', 'money laundering']):
+            return """Web intelligence temporarily unavailable.
+            
+Fallback guidance for fraud investigation:
+• Review transaction patterns for unusual activity
+• Check customer due diligence records
+• Assess business rationale for transaction
+• Consider enhanced monitoring requirements
+
+Note: This is fallback guidance. Conduct thorough investigation when web intelligence becomes available."""
+        
+        else:
+            return f"""Web intelligence temporarily unavailable for query: '{query}'
+
+Recommended actions:
+• Retry search in a few minutes
+• Use alternative intelligence sources
+• Document unavailability in investigation notes
+• Proceed with available information sources
+
+Investigation can continue with internal data and document analysis."""
+
 
 class ComplianceChecker:
     """Service for checking compliance requirements"""

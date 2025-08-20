@@ -105,6 +105,13 @@ class ResearchSectionRequest(BaseModel):
     queries: Optional[List[str]] = Field(default=None, description="Specific search queries")
 
 
+class MultiSourceSearchRequest(BaseModel):
+    """Request model for multi-source search"""
+    queries: List[str] = Field(..., description="Search queries to execute")
+    search_apis: Optional[List[str]] = Field(default=["tavily", "arxiv"], description="APIs to search with")
+    max_results: Optional[int] = Field(default=5, description="Maximum results per query", ge=1, le=20)
+
+
 class ResearchPlanRequest(BaseModel):
     """Request model for research plan generation"""
     topic: str = Field(..., description="Research topic")
@@ -235,3 +242,51 @@ class ResearchSessionListResponse(BaseModel):
     total_count: int = 0
     page: int = 1
     page_size: int = 20
+
+
+# Unified Investigation Models (NEW - Architecture Simplification)
+class UnifiedInvestigationRequest(BaseModel):
+    """Unified request model supporting all investigation types"""
+    
+    investigation_type: Literal["fraud_transaction", "entity_research", "academic_research", "general_research"] = Field(
+        ..., description="Type of investigation to perform"
+    )
+    
+    # Fraud investigation fields
+    amount: Optional[float] = Field(None, description="Transaction amount")
+    currency: Optional[str] = Field("USD", description="Currency code")
+    description: Optional[str] = Field(None, description="Transaction description")
+    customer_name: Optional[str] = Field(None, description="Customer name")
+    account_type: Optional[str] = Field(None, description="Account type")
+    risk_rating: Optional[str] = Field(None, description="Customer risk rating")
+    country_to: Optional[str] = Field(None, description="Destination country")
+    
+    # Research investigation fields
+    topic: Optional[str] = Field(None, description="Research topic")
+    entity_name: Optional[str] = Field(None, description="Entity to investigate")
+    entity_type: Optional[str] = Field("company", description="Entity type")
+    field: Optional[str] = Field("general", description="Academic field")
+    context: Optional[str] = Field("", description="Additional context")
+    include_market_analysis: bool = Field(False, description="Include market analysis")
+    
+    # Common fields
+    priority: str = Field("normal", description="Investigation priority")
+    metadata: Optional[Dict[str, Any]] = Field(None, description="Additional metadata")
+
+
+class UnifiedInvestigationResponse(BaseModel):
+    """Unified response model for all investigation types"""
+    
+    investigation_id: str
+    investigation_type: str
+    status: str
+    duration_seconds: float
+    
+    # Results (one will be populated)
+    fraud_result: Optional[Dict[str, Any]] = None
+    research_result: Optional[Dict[str, Any]] = None
+    
+    # Common metadata
+    agents_used: List[str] = Field(default_factory=list)
+    error_message: Optional[str] = None
+    performance_metrics: Optional[Dict[str, Any]] = None

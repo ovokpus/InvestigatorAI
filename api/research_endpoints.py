@@ -17,7 +17,7 @@ from langsmith import traceable
 from .models.schemas import (
     ResearchRequest, ResearchResponse, ResearchPlanRequest, ResearchPlanResponse,
     ResearchStatusResponse, ResearchSessionListResponse, EntityInvestigationResponse,
-    AcademicResearchResponse, SearchResponse, ResearchStatus
+    AcademicResearchResponse, SearchResponse, ResearchStatus, MultiSourceSearchRequest
 )
 from .services.multi_source_research import MultiSourceResearchService
 from .services.iterative_research import IterativeResearchAgent, ResearchPlanner
@@ -386,20 +386,18 @@ async def cancel_research_session(
 @research_router.post("/multi-source-search", response_model=List[SearchResponse])
 @traceable(name="multi_source_search", tags=["research", "search"])
 async def multi_source_search(
-    queries: List[str],
-    sources: List[str] = ["tavily", "arxiv"],
-    max_results: int = 5,
+    request: MultiSourceSearchRequest,
     services: Dict = Depends(get_research_services)
 ) -> List[SearchResponse]:
     """Perform multi-source search with specified queries"""
-    logger.info(f"🔍 Multi-source search: {len(queries)} queries across {sources}")
+    logger.info(f"🔍 Multi-source search: {len(request.queries)} queries across {request.search_apis}")
     
     try:
         multi_source_service = services["multi_source_service"]
         
         # Perform search
         search_responses = await multi_source_service.search_multiple_sources(
-            queries, sources, {"max_results": max_results}
+            request.queries, request.search_apis, {"max_results": request.max_results}
         )
         
         # Convert to response format

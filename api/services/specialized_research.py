@@ -17,7 +17,7 @@ from langchain_openai import ChatOpenAI
 from langsmith import traceable
 
 from .multi_source_research import MultiSourceResearchService, SearchResponse
-from .iterative_research import IterativeResearchAgent, ResearchSection, ResearchPlan
+from .iterative_research import IterativeResearchAgent, ResearchSection, ResearchPlan, ResearchPlanner
 from ..core.config import Settings
 
 logger = logging.getLogger(__name__)
@@ -490,6 +490,7 @@ class EnhancedInvestigatorAI:
         self.financial_agent = FinancialResearchAgent(llm, research_service, settings)
         self.academic_agent = AcademicResearchAgent(llm, research_service, settings)
         self.iterative_agent = IterativeResearchAgent(llm, research_service, settings)
+        self.research_planner = ResearchPlanner(llm)
         
         logger.info("🚀 Initialized EnhancedInvestigatorAI with specialized agents")
     
@@ -505,7 +506,7 @@ class EnhancedInvestigatorAI:
         else:
             # Use general iterative research for other types
             topic = investigation_request.get("topic", "")
-            research_plan = await self.iterative_agent.generate_research_plan(topic)
+            research_plan = await self.research_planner.generate_research_plan(topic)
             
             sections = await self.iterative_agent.research_multiple_sections(
                 topic, research_plan.sections
