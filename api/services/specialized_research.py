@@ -505,7 +505,7 @@ class EnhancedInvestigatorAI:
         else:
             # Use general iterative research for other types
             topic = investigation_request.get("topic", "")
-            research_plan = await self.iterative_agent.research_planner.generate_research_plan(topic)
+            research_plan = await self.iterative_agent.generate_research_plan(topic)
             
             sections = await self.iterative_agent.research_multiple_sections(
                 topic, research_plan.sections
