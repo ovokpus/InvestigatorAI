@@ -82,12 +82,10 @@ export default function ToolsPage() {
           <div className="grid md:grid-cols-3 gap-4">
             <div className="bg-white/50 dark:bg-gray-900/20 p-4 rounded-lg">
               <h3 className="font-semibold text-purple-800 dark:text-purple-200 mb-2">Multi-Source Search</h3>
-              <ul className="space-y-1 text-sm text-purple-700 dark:text-purple-300">
-                <li>• Tavily (Real-time Web & News)</li>
-                <li>• ArXiv (Regulatory Research)</li>
-                <li className="text-gray-500">• Perplexity (Coming Soon)</li>
-                <li className="text-gray-500">• Exa (Coming Soon)</li>
-              </ul>
+                                <ul className="space-y-1 text-sm text-purple-700 dark:text-purple-300">
+                    <li>• Tavily (Real-time Web & News)</li>
+                    <li>• ArXiv (Regulatory Research)</li>
+                  </ul>
               <p className="text-xs text-purple-600 dark:text-purple-400 mt-2 italic">
                 Focused on fraud investigation & compliance research
               </p>
