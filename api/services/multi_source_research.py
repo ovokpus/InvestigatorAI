@@ -25,12 +25,13 @@ logger = logging.getLogger(__name__)
 
 
 class SearchAPI(Enum):
-    """Supported search APIs"""
+    """Currently implemented search APIs"""
     TAVILY = "tavily"
     ARXIV = "arxiv"
-    PUBMED = "pubmed"
-    EXA = "exa"
-    PERPLEXITY = "perplexity"
+    # TODO: Implement these additional APIs if needed for specific use cases
+    # PUBMED = "pubmed"  # Only useful for healthcare fraud
+    # EXA = "exa"        # Expensive neural search, unclear benefit over Tavily
+    # PERPLEXITY = "perplexity"  # Expensive AI search, overlaps with GPT-4 + Tavily
 
 
 @dataclass
@@ -71,13 +72,14 @@ class MultiSourceResearchService:
         self.settings = settings
         logger.info("🔬 Initializing MultiSourceResearchService")
         
-        # API parameters for different sources
+        # API parameters for implemented sources only
         self.search_api_params = {
-            "tavily": [],
+            "tavily": ["max_results", "search_depth", "include_raw_content", "topic"],
             "arxiv": ["max_results", "get_full_documents", "load_all_available_meta"],
-            "pubmed": ["top_k_results", "email", "api_key", "doc_content_chars_max"],
-            "exa": ["max_characters", "num_results", "include_domains", "exclude_domains", "subpages"],
-            "perplexity": []
+            # Future API parameters (when implemented):
+            # "pubmed": ["top_k_results", "email", "api_key", "doc_content_chars_max"],
+            # "exa": ["max_characters", "num_results", "include_domains", "exclude_domains"],
+            # "perplexity": ["max_results", "search_recency_filter"]
         }
         
     def get_search_params(self, search_api: str, search_api_config: Optional[Dict[str, Any]]) -> Dict[str, Any]:

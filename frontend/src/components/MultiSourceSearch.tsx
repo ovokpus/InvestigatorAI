@@ -27,11 +27,13 @@ export default function MultiSourceSearch() {
   const [error, setError] = useState<string>('');
 
   const availableAPIs = [
-    { id: 'tavily', name: 'Tavily (Web Search)', description: 'Real-time web search and news' },
-    { id: 'perplexity', name: 'Perplexity', description: 'AI-powered research assistant' },
-    { id: 'exa', name: 'Exa', description: 'Neural web search' },
-    { id: 'arxiv', name: 'ArXiv', description: 'Academic papers and preprints' },
-    { id: 'pubmed', name: 'PubMed', description: 'Medical and life science literature' }
+    { id: 'tavily', name: 'Tavily (Web Search)', description: 'Real-time web search and current events' },
+    { id: 'arxiv', name: 'ArXiv', description: 'Academic papers and research (for regulatory research)' },
+    // Note: PubMed removed - not relevant for fraud/financial investigations
+    // { id: 'pubmed', name: 'PubMed', description: 'Medical literature (use only for healthcare fraud)' },
+    // TODO: Implement these for enhanced capabilities
+    // { id: 'perplexity', name: 'Perplexity', description: 'AI-powered research assistant' },
+    // { id: 'exa', name: 'Exa', description: 'Neural web search' },
   ];
 
   const addQuery = () => {

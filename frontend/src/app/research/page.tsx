@@ -60,7 +60,7 @@ export default function EnhancedResearchPage() {
           <div className="mt-4 flex space-x-6 text-sm">
             <div className="flex items-center space-x-2">
               <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-              <span className="text-purple-600 dark:text-purple-400">Multi-Source Search (5 APIs)</span>
+              <span className="text-purple-600 dark:text-purple-400">Multi-Source Search (2 Active APIs)</span>
             </div>
             <div className="flex items-center space-x-2">
               <span className="w-2 h-2 bg-blue-500 rounded-full"></span>

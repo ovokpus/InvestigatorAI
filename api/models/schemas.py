@@ -88,12 +88,13 @@ class ResearchStatus(str, Enum):
 
 
 class SearchAPIType(str, Enum):
-    """Supported search APIs"""
-    TAVILY = "tavily"
-    ARXIV = "arxiv"
-    PUBMED = "pubmed"
-    EXA = "exa"
-    PERPLEXITY = "perplexity"
+    """Currently implemented search APIs for fraud investigation"""
+    TAVILY = "tavily"    # Real-time web search and news
+    ARXIV = "arxiv"      # Academic/regulatory research papers
+    # Future APIs (not yet implemented):
+    # PUBMED = "pubmed"     # Medical literature (healthcare fraud only)
+    # EXA = "exa"           # Neural search (expensive, unclear benefit)
+    # PERPLEXITY = "perplexity"  # AI search (overlaps with existing capabilities)
 
 
 class ResearchSectionRequest(BaseModel):
