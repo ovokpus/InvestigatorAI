@@ -246,6 +246,12 @@ export default function Home() {
               Tools & Search
             </a>
             <a 
+              href="/research" 
+              className="px-4 py-2 bg-purple-600 text-white hover:bg-purple-700 rounded-lg font-medium transition-colors"
+            >
+              🔬 Enhanced Research
+            </a>
+            <a 
               href="/help" 
               className="px-4 py-2 bg-secondary text-secondary-foreground hover:bg-accent rounded-lg font-medium transition-colors"
             >
