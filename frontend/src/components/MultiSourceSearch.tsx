@@ -248,7 +248,7 @@ export default function MultiSourceSearch() {
                   </div>
                 </div>
                 <p className="text-muted-foreground text-sm mb-2">
-                  Query: "{result.query}"
+                  Query: &quot;{result.query}&quot;
                 </p>
                 <p className="text-contrast">
                   {result.content.length > 300 

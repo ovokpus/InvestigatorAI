@@ -31,6 +31,7 @@ export default function ResearchSessions() {
 
   useEffect(() => {
     loadSessions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage]);
 
   const loadSessions = async () => {
