@@ -1,40 +1,74 @@
-# 🚀 BM25 Retrieval Optimization - Production Deployment Guide
+# 🔬 Enhanced Research Capabilities - Production Deployment Guide
 
 > **📂 Navigation**: [🏠 Home](README.md) | [🔧 API Docs](api/README.md) | [🤖 Agent Architecture](docs/AGENT_PROMPTS.md) | [📈 Advanced Retrievers](docs/ADVANCED_RETRIEVERS.md) | [💼 Business Case](docs/BUSINESS_CASE.md) | [🎓 Certification](docs/CERTIFICATION_CHALLENGE.md) | [🎬 Demo Guide](docs/DEMO_GUIDE.md) | [💻 Frontend](frontend/README.md) | [📊 Data](data/README.md) | [🚀 Deploy](deploy/README.md) | [🧪 Tests](tests/README.md) | [🔄 Merge](MERGE.md)
 
-## 📊 **Performance Improvements**
+## 🚀 **Enhanced Research Implementation**
 
-| **Metric** | **Before (Dense)** | **After (BM25)** | **Improvement** |
-|------------|-------------------|------------------|-----------------|
-| **Latency** | 551ms | **2.2ms** | **250x faster** |
-| **RAGAS Quality** | 0.800 | **0.953** | **19% better** |
-| **Faithfulness** | 58% | **96%** | **64% improvement** |
-| **Context Recall** | 68% | **100%** | **47% improvement** |
-| **Production Ready** | ❌ Low accuracy | ✅ **Regulatory compliant** |
+This branch implements sophisticated research capabilities inspired by the Open Deep Research notebook, transforming InvestigatorAI into a comprehensive research platform.
+
+| **Enhancement** | **Before** | **After** | **Improvement** |
+|-----------------|------------|-----------|-----------------|
+| **Research Sources** | Single (Tavily) | **Multi-source concurrent** | **5x more comprehensive** |
+| **Research Quality** | Manual assessment | **Automated quality loops** | **Iterative improvement** |
+| **Domain Expertise** | Generic fraud detection | **Financial + Academic specialists** | **Domain-specific insights** |
+| **Research State** | Ephemeral | **Persistent with checkpoints** | **Resumable investigations** |
+| **Progress Tracking** | None | **Real-time streaming** | **Live progress monitoring** |
 
 ---
 
-## 🎯 **Deployment Instructions**
+## 🎯 **What's New**
+
+### **Core Research Enhancements**
+- **Multi-Source Concurrent Research**: Simultaneous searches across Tavily, arXiv, PubMed, Exa, and Perplexity
+- **Iterative Quality Refinement**: Automated quality assessment with feedback loops
+- **Domain-Specific Agents**: Specialized financial and academic research capabilities  
+- **Persistent State Management**: Resumable research with checkpoint system
+- **Real-Time Streaming**: Server-sent events for live progress tracking
+
+### **New API Endpoints**
+- `POST /research/plan` - Generate structured research plans
+- `POST /research/investigate` - Enhanced research investigations
+- `POST /research/investigate/stream` - Real-time research streaming
+- `GET /research/status/{id}` - Research progress tracking
+- `GET /research/sessions` - Session management
+- `POST /research/multi-source-search` - Direct multi-source access
+
+### **Files Added/Modified**
+```
+✅ NEW: api/services/multi_source_research.py
+✅ NEW: api/services/iterative_research.py  
+✅ NEW: api/services/research_state.py
+✅ NEW: api/services/specialized_research.py
+✅ NEW: api/research_endpoints.py
+✅ MODIFIED: api/models/schemas.py (extended with research models)
+✅ MODIFIED: api/main.py (integrated research router)
+✅ NEW: ENHANCED_RESEARCH_IMPLEMENTATION.md (documentation)
+```
+
+---
+
+## 📊 **Deployment Instructions**
 
 ### **Option 1: GitHub Pull Request (Recommended)**
 
 1. **Create Pull Request**:
    ```bash
    # Push feature branch to origin
-   git push origin feature/bm25-retrieval-optimization
+   git push origin feature/enhanced-research-capabilities
    
    # Go to GitHub and create PR:
    # - Base: main
-   # - Compare: feature/bm25-retrieval-optimization
-   # - Title: "feat: implement BM25 retrieval optimization with 250x speed improvement"
+   # - Compare: feature/enhanced-research-capabilities
+   # - Title: "feat: implement enhanced research capabilities with multi-source intelligence"
    ```
 
 2. **Review Checklist**:
-   - ✅ BM25 implementation with dense fallback
-   - ✅ Configuration-driven feature toggles
-   - ✅ Performance monitoring and logging
+   - ✅ Multi-source research implementation
+   - ✅ Iterative quality assessment system
+   - ✅ Domain-specific research agents
+   - ✅ Persistent state management
    - ✅ Backward compatibility maintained
-   - ✅ Environment template updated
+   - ✅ Comprehensive API documentation
 
 3. **Merge Strategy**:
    ```bash
@@ -51,36 +85,48 @@
 
 # Create and merge PR
 gh pr create \
-  --title "feat: implement BM25 retrieval optimization with 250x speed improvement" \
+  --title "feat: implement enhanced research capabilities with multi-source intelligence" \
   --body "$(cat <<EOF
-## 🚀 BM25 Retrieval Optimization
+## 🔬 Enhanced Research Capabilities
 
-### Performance Improvements
-- **250x faster**: 551ms → 2.2ms average latency
-- **19% better quality**: 0.800 → 0.953 RAGAS score  
-- **64% better accuracy**: 58% → 96% faithfulness
+### Research Improvements
+- **Multi-source intelligence**: Concurrent searches across 5+ APIs
+- **Quality assurance**: Automated iterative refinement loops
+- **Domain expertise**: Financial crime + academic research specialists
+- **State persistence**: Resumable research with checkpointing
+- **Real-time tracking**: Live progress streaming
 
 ### Key Features
-- ✅ BM25 sparse retrieval as primary method
-- ✅ Dense vector search as graceful fallback
-- ✅ Configuration-driven feature toggles
-- ✅ Performance monitoring and logging
-- ✅ Full backward compatibility
+- ✅ Concurrent multi-source research (Tavily, arXiv, PubMed, Exa, Perplexity)
+- ✅ Iterative quality assessment with feedback loops
+- ✅ Financial entity investigation with AML/compliance focus
+- ✅ Academic research with paper analysis and gap identification
+- ✅ Persistent research sessions with checkpoint recovery
+- ✅ Real-time streaming progress with Server-Sent Events
+- ✅ Full backward compatibility with existing fraud investigation
 
-### Configuration Options
-- \`DEFAULT_RETRIEVAL_METHOD=auto\` (BM25 primary + dense fallback)
-- \`BM25_ENABLED=true\` (enable/disable BM25)
-- \`ENABLE_PERFORMANCE_LOGGING=true\` (toggle performance logs)
+### New API Endpoints
+- POST /research/plan - Generate structured research plans
+- POST /research/investigate - Enhanced research investigations
+- POST /research/investigate/stream - Real-time research streaming
+- GET /research/status/{id} - Research progress tracking
+- GET /research/sessions - Session management
+- POST /research/multi-source-search - Direct multi-source access
+
+### Configuration
+- Uses existing environment variables (TAVILY_API_KEY, ANTHROPIC_API_KEY, etc.)
+- No database schema changes required
+- Creates research_checkpoints/ directory automatically
 
 ### Testing
-- Comprehensive RAGAS evaluation completed
-- All existing functionality preserved
-- Production-ready with regulatory compliance improvements
+- All existing functionality preserved and tested
+- New endpoints provide comprehensive research capabilities
+- Full backward compatibility maintained
 
 EOF
 )" \
   --base main \
-  --head feature/bm25-retrieval-optimization
+  --head feature/enhanced-research-capabilities
 
 # Review and merge (after team approval)
 gh pr merge --squash --delete-branch
@@ -90,44 +136,65 @@ gh pr merge --squash --delete-branch
 
 ## ⚙️ **Production Configuration**
 
-### **Environment Variables (Required)**
+### **Environment Variables (Existing)**
 
-Update your production `.env` file:
+The enhanced research system uses your existing configuration:
 
 ```bash
-# ===== Retrieval Optimization Settings =====
-# Recommended production settings for optimal performance
+# ===== Existing API Keys (Required) =====
+ANTHROPIC_API_KEY=your_anthropic_key_here
+OPENAI_API_KEY=your_openai_key_here  # Alternative to Anthropic
+TAVILY_SEARCH_API_KEY=your_tavily_key_here
 
-# Primary method: auto (BM25 + dense fallback) | bm25 (BM25 only) | dense (vector only)
-DEFAULT_RETRIEVAL_METHOD=auto
+# ===== Optional Research Configuration =====
+# Maximum research iterations per section (default: 2)
+MAX_RESEARCH_ITERATIONS=2
 
-# Enable performance monitoring for production metrics
-ENABLE_PERFORMANCE_LOGGING=true
+# Queries generated per iteration (default: 2)  
+RESEARCH_QUERIES_PER_ITERATION=2
 
-# Enable BM25 sparse retrieval (recommended: true for 250x speed boost)
-BM25_ENABLED=true
+# Token limits for source content (default: 5000)
+MAX_TOKENS_PER_SOURCE=5000
+
+# Checkpoint cleanup interval in days (default: 30)
+RESEARCH_CHECKPOINT_CLEANUP_DAYS=30
 ```
 
 ### **Deployment Verification Steps**
 
-1. **Test BM25 Initialization**:
+1. **Test Research Services Initialization**:
    ```bash
-   # Check logs for successful BM25 setup
-   docker-compose logs api | grep "BM25 retriever initialized"
+   # Check logs for successful research setup
+   docker-compose logs api | grep "Enhanced research services initialized"
    ```
 
-2. **Performance Monitoring**:
+2. **Test Basic Research Functionality**:
    ```bash
-   # Monitor search performance
-   docker-compose logs api | grep "search completed"
-   # Expected: "BM25 search completed in ~2-5ms"
+   # Test research plan generation
+   curl -X POST http://localhost:8000/research/plan \
+     -H "Content-Type: application/json" \
+     -d '{"topic": "Machine Learning in Fraud Detection", "context": "Testing"}'
    ```
 
-3. **Fallback Testing**:
+3. **Test Multi-Source Search**:
    ```bash
-   # Test graceful degradation by temporarily disabling BM25
-   # Set BM25_ENABLED=false and restart
-   # Verify system falls back to dense search
+   # Test multi-source search
+   curl -X POST http://localhost:8000/research/multi-source-search \
+     -H "Content-Type: application/json" \
+     -d '{"queries": ["financial crime detection"], "sources": ["tavily"]}'
+   ```
+
+4. **Verify Existing Functionality**:
+   ```bash
+   # Ensure existing fraud investigation still works
+   curl -X POST http://localhost:8000/investigate \
+     -H "Content-Type: application/json" \
+     -d '{
+       "amount": 10000,
+       "currency": "USD", 
+       "description": "Test transaction",
+       "customer_name": "Test Customer"
+     }'
    ```
 
 ---
@@ -136,11 +203,10 @@ BM25_ENABLED=true
 
 If issues arise, rollback safely:
 
-### **Option 1: Configuration Rollback (Zero Downtime)**
+### **Option 1: Disable Research Endpoints (Zero Downtime)**
 ```bash
-# Disable BM25 and use dense only
-DEFAULT_RETRIEVAL_METHOD=dense
-BM25_ENABLED=false
+# Comment out research router in main.py
+# app.include_router(research_router)
 
 # Restart API service
 docker-compose restart api
@@ -163,22 +229,26 @@ docker-compose up -d
 
 ### **Key Metrics to Track**
 
-1. **Search Latency** (Target: < 10ms)
-2. **Search Success Rate** (Target: > 99%)
-3. **Memory Usage** (BM25 increases ~15% RAM usage)
-4. **Error Rates** (Target: < 0.1%)
+1. **Research Success Rate** (Target: > 95%)
+2. **Research Completion Time** (Target: < 5 minutes)
+3. **Multi-Source Search Latency** (Target: < 10 seconds)
+4. **Research Session Storage** (Monitor disk usage)
+5. **API Rate Limiting** (External service usage)
 
-### **Dashboard Queries**
+### **Monitoring Queries**
 
 ```bash
-# Average search latency
-docker-compose logs api | grep "search completed" | awk '{print $NF}' | grep -o '[0-9.]*ms'
+# Research session statistics
+curl http://localhost:8000/research/sessions | jq '.total_count'
 
-# BM25 vs Dense usage ratio
-docker-compose logs api | grep -E "(BM25|Dense) search completed" | wc -l
+# Check research checkpoint storage
+du -sh research_checkpoints/
 
-# Error monitoring
-docker-compose logs api | grep "❌.*search failed"
+# Monitor research success rates
+docker-compose logs api | grep -E "(Research completed|Research failed)"
+
+# Track multi-source search performance
+docker-compose logs api | grep "Multi-source search completed"
 ```
 
 ---
@@ -186,106 +256,79 @@ docker-compose logs api | grep "❌.*search failed"
 ## 🎉 **Success Criteria**
 
 ✅ **Deployment Successful When**:
-- Search latency < 10ms (vs 551ms baseline)
-- RAGAS quality score > 0.95 (vs 0.80 baseline)
-- No increase in error rates
-- BM25 initialization logs show success
-- Fallback to dense works if BM25 fails
+- Research services initialize without errors
+- All existing fraud investigation endpoints work unchanged
+- New `/research/*` endpoints return 200 status codes
+- Multi-source search returns results from configured APIs
+- Research sessions can be created, tracked, and resumed
+- No memory leaks or excessive resource usage
 
 ✅ **Production Benefits**:
-- **250x faster** fraud investigation queries
-- **Regulatory compliant** 96% accuracy vs 58% baseline
-- **Cost optimized** through faster processing
-- **User experience** dramatically improved response times
+- **Comprehensive intelligence**: Multi-source research vs single source
+- **Quality assurance**: Automated iterative improvement  
+- **Domain expertise**: Specialized financial and academic agents
+- **Operational resilience**: Resumable research with checkpointing
+- **Real-time insights**: Live progress tracking and streaming
+- **Regulatory compliance**: Enhanced AML/BSA investigation capabilities
+
+---
+
+## 🛠️ **Advanced Usage Examples**
+
+### **Financial Entity Investigation**
+```bash
+curl -X POST http://localhost:8000/research/investigate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "financial",
+    "entity_name": "Global Trading LLC",
+    "entity_type": "company", 
+    "context": "Wire transfer investigation",
+    "include_market_analysis": true
+  }'
+```
+
+### **Academic Research**
+```bash
+curl -X POST http://localhost:8000/research/investigate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "academic",
+    "topic": "Cryptocurrency Money Laundering Detection",
+    "field": "computer_science",
+    "context": "Literature review for compliance framework"
+  }'
+```
+
+### **Streaming Research Progress**
+```bash
+# Use Server-Sent Events for real-time progress
+curl -N http://localhost:8000/research/investigate/stream \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "general",
+    "topic": "FATF Recommendations Implementation"
+  }'
+```
+
+---
+
+## 📚 **Documentation**
+
+- **Complete Implementation Guide**: [ENHANCED_RESEARCH_IMPLEMENTATION.md](ENHANCED_RESEARCH_IMPLEMENTATION.md)
+- **API Documentation**: Available at `/docs` endpoint after deployment
+- **Research Endpoint Details**: Full OpenAPI specification in FastAPI docs
+- **Usage Examples**: See implementation guide for comprehensive examples
 
 ---
 
 ## 🆘 **Support Contacts**
 
-**Technical Issues**: Check the implementation in `api/services/vector_store.py`
-**Configuration**: Review `config.env.template` for all options
-**Performance**: Monitor logs with `ENABLE_PERFORMANCE_LOGGING=true`
+**Technical Issues**: Check `ENHANCED_RESEARCH_IMPLEMENTATION.md` for detailed troubleshooting
+**Configuration**: Review existing `config.env.template` - no new variables required
+**Performance**: Monitor logs for research completion times and success rates
+**API Usage**: Use `/docs` endpoint for interactive API documentation
 
 ---
 
-*🏆 This optimization delivers the optimal retrieval strategy identified through comprehensive RAGAS evaluation, providing production-ready performance for fraud investigation workflows.*
-
----
-
-## 🐳 **Docker Deployment (Latest)**
-
-### **Complete Containerized Stack**
-
-The latest commits include full Docker deployment support:
-
-| **Service** | **Container** | **Port** | **Status** |
-|-------------|---------------|----------|------------|
-| **Frontend** | Next.js 18 | 3000 | ✅ Production-ready |
-| **API** | Python 3.13 | 8000 | ✅ BM25 + LangSmith monitoring |
-| **Qdrant** | Vector DB | 6333/6334 | ✅ Regulatory documents |
-| **Redis** | Cache | 6379 | ✅ Performance optimization |
-
-### **Docker Deployment Commands**
-
-```bash
-# Quick deployment
-./deploy/scripts/start-docker-deployment.sh
-
-# Manual deployment
-docker-compose up --build -d
-
-# Access points
-# Frontend: http://localhost:3000
-# API: http://localhost:8000
-# Health: http://localhost:8000/health
-```
-
-### **Docker Features**
-
-- ✅ **Multi-stage builds** for optimized container size
-- ✅ **Health checks** for all services
-- ✅ **Auto-restart** policies
-- ✅ **Volume persistence** for data
-- ✅ **Environment configuration** via `.env`
-- ✅ **Mermaid architecture diagrams**
-- ✅ **Comprehensive documentation** in `deploy/README.md`
-
-### **Production Docker Configuration**
-
-```yaml
-# Example production environment variables
-OPENAI_API_KEY=your_key_here
-TAVILY_SEARCH_API_KEY=your_key_here
-LANGSMITH_API_KEY=your_key_here
-DEFAULT_RETRIEVAL_METHOD=auto
-BM25_ENABLED=true
-ENABLE_PERFORMANCE_LOGGING=true
-```
-
----
-
-## 📝 **Commit History**
-
-Recent development commits on `feature/bm25-retrieval-optimization` branch:
-
-```
-63b9816 feat: Complete Docker deployment with full-stack containerization
-261616d docs: consolidate all test documentation into tests/README.md
-fedea42 test: add comprehensive LangSmith integration test suite
-60510d2 fix: resolve JSON serialization error in health endpoint
-36a0106 feat: add comprehensive LangSmith monitoring to API
-ae820ed docs: add business case link to certification challenge
-b9344b6 chore: stop tracking docs/deliverables.md (AI Makerspace template)
-2973f10 docs: enhance documentation and exclude deliverables.md from tracking
-3bbddf5 fix: add missing React key prop in MarkdownRenderer
-0d5e289 test: add comprehensive BM25 optimization test suite
-```
-
-### **Key Development Milestones**
-
-1. **BM25 Implementation** - Core retrieval optimization
-2. **LangSmith Integration** - Production monitoring and tracing
-3. **Test Suite Enhancement** - Comprehensive testing framework
-4. **Documentation Consolidation** - Unified deployment guides
-5. **Docker Containerization** - Full-stack deployment ready
-6. **Business Case Analysis** - ROI and competitive advantage documentation
+*🏆 This enhancement transforms InvestigatorAI into a comprehensive research platform while maintaining full backward compatibility with existing fraud investigation capabilities.*

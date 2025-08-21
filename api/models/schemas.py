@@ -1,9 +1,10 @@
 """Pydantic models for InvestigatorAI API"""
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, Literal
 from datetime import datetime
 from pydantic import BaseModel, Field
 from typing_extensions import TypedDict
 from langchain_core.messages import BaseMessage
+from enum import Enum
 
 # LangGraph State Management
 class FraudInvestigationState(TypedDict):
@@ -74,3 +75,218 @@ class VectorSearchResult(BaseModel):
     content: str
     metadata: DocumentMetadata
     similarity_score: Optional[float] = None
+
+
+# Enhanced Research System Models
+class ResearchStatus(str, Enum):
+    """Research investigation status"""
+    PENDING = "pending"
+    IN_PROGRESS = "in_progress"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    CANCELLED = "cancelled"
+
+
+class SearchAPIType(str, Enum):
+    """Currently implemented search APIs for fraud investigation"""
+    TAVILY = "tavily"    # Real-time web search and news
+    ARXIV = "arxiv"      # Academic/regulatory research papers
+    # Future APIs (not yet implemented):
+    # PUBMED = "pubmed"     # Medical literature (healthcare fraud only)
+    # EXA = "exa"           # Neural search (expensive, unclear benefit)
+    # PERPLEXITY = "perplexity"  # AI search (overlaps with existing capabilities)
+
+
+class ResearchSectionRequest(BaseModel):
+    """Request model for individual research section"""
+    name: str = Field(..., description="Section name")
+    description: str = Field(..., description="Section description")
+    research: bool = Field(default=True, description="Whether to perform web research")
+    queries: Optional[List[str]] = Field(default=None, description="Specific search queries")
+
+
+class MultiSourceSearchRequest(BaseModel):
+    """Request model for multi-source search"""
+    queries: List[str] = Field(..., description="Search queries to execute")
+    search_apis: Optional[List[str]] = Field(default=["tavily", "arxiv"], description="APIs to search with")
+    max_results: Optional[int] = Field(default=5, description="Maximum results per query", ge=1, le=20)
+
+
+class ResearchPlanRequest(BaseModel):
+    """Request model for research plan generation"""
+    topic: str = Field(..., description="Research topic")
+    context: Optional[str] = Field(default="", description="Additional context")
+    sections: Optional[List[ResearchSectionRequest]] = Field(default=None, description="Custom sections")
+    research_depth: int = Field(default=2, description="Maximum research iterations", ge=1, le=5)
+    query_count: int = Field(default=2, description="Queries per iteration", ge=1, le=10)
+    sources: Optional[List[SearchAPIType]] = Field(default=["tavily", "arxiv"], description="Search sources")
+
+
+class ResearchRequest(BaseModel):
+    """Request model for enhanced research investigation"""
+    type: Literal["financial", "academic", "general"] = Field(default="general", description="Research type")
+    topic: Optional[str] = Field(default=None, description="Research topic")
+    entity_name: Optional[str] = Field(default=None, description="Entity to investigate (for financial research)")
+    entity_type: Optional[str] = Field(default="company", description="Entity type")
+    field: Optional[str] = Field(default="general", description="Academic field (for academic research)")
+    context: Optional[str] = Field(default="", description="Additional context")
+    include_market_analysis: bool = Field(default=False, description="Include market analysis")
+    research_plan: Optional[ResearchPlanRequest] = Field(default=None, description="Custom research plan")
+
+
+class SearchResultResponse(BaseModel):
+    """Individual search result"""
+    title: str
+    url: str
+    content: str
+    score: float = 0.0
+    raw_content: Optional[str] = None
+    source: str = ""
+    query: str = ""
+
+
+class SearchResponse(BaseModel):
+    """Search response containing multiple results"""
+    query: str
+    source: str
+    results: List[SearchResultResponse] = Field(default_factory=list)
+    follow_up_questions: Optional[List[str]] = None
+    answer: Optional[str] = None
+    images: List[str] = Field(default_factory=list)
+    error: Optional[str] = None
+
+
+class ResearchSectionResponse(BaseModel):
+    """Response model for individual research section"""
+    name: str
+    description: str
+    research: bool
+    content: str = ""
+    queries: List[str] = Field(default_factory=list)
+    sources: List[str] = Field(default_factory=list)
+    iteration_count: int = 0
+    quality_score: float = 0.0
+
+
+class ResearchFeedbackResponse(BaseModel):
+    """Feedback from quality assessment"""
+    grade: Literal["pass", "fail"]
+    missing_aspects: List[str] = Field(default_factory=list)
+    follow_up_queries: List[str] = Field(default_factory=list)
+    quality_score: float = 0.0
+    feedback_text: str = ""
+
+
+class ResearchPlanResponse(BaseModel):
+    """Response model for research plan"""
+    topic: str
+    sections: List[ResearchSectionResponse] = Field(default_factory=list)
+    research_depth: int = 2
+    query_count: int = 2
+    created_at: datetime = Field(default_factory=datetime.now)
+
+
+class EntityInvestigationResponse(BaseModel):
+    """Response from entity investigation"""
+    entity_name: str
+    entity_type: str
+    risk_level: str
+    findings: List[str] = Field(default_factory=list)
+    sources: List[str] = Field(default_factory=list)
+    compliance_issues: List[str] = Field(default_factory=list)
+    recommendations: List[str] = Field(default_factory=list)
+    investigation_date: datetime
+    confidence_score: float = 0.0
+
+
+class AcademicResearchResponse(BaseModel):
+    """Response from academic research"""
+    topic: str
+    papers_found: int = 0
+    key_findings: List[str] = Field(default_factory=list)
+    methodologies: List[str] = Field(default_factory=list)
+    future_research: List[str] = Field(default_factory=list)
+    citations: List[str] = Field(default_factory=list)
+    research_gaps: List[str] = Field(default_factory=list)
+
+
+class ResearchStatusResponse(BaseModel):
+    """Response model for research status"""
+    research_id: str
+    topic: str
+    status: ResearchStatus
+    progress_percentage: float = 0.0
+    completed_sections: int = 0
+    total_sections: int = 0
+    created_at: datetime
+    updated_at: datetime
+    error_message: Optional[str] = None
+
+
+class ResearchResponse(BaseModel):
+    """Enhanced research response model"""
+    research_id: str
+    type: Literal["financial", "academic", "general"]
+    status: ResearchStatus
+    result: Optional[Dict[str, Any]] = None
+    financial_result: Optional[EntityInvestigationResponse] = None
+    academic_result: Optional[AcademicResearchResponse] = None
+    general_result: Optional[ResearchPlanResponse] = None
+    timestamp: datetime
+    error: Optional[str] = None
+
+
+class ResearchSessionListResponse(BaseModel):
+    """Response for listing research sessions"""
+    sessions: List[ResearchStatusResponse] = Field(default_factory=list)
+    total_count: int = 0
+    page: int = 1
+    page_size: int = 20
+
+
+# Unified Investigation Models (NEW - Architecture Simplification)
+class UnifiedInvestigationRequest(BaseModel):
+    """Unified request model supporting all investigation types"""
+    
+    investigation_type: Literal["fraud_transaction", "entity_research", "academic_research", "general_research"] = Field(
+        ..., description="Type of investigation to perform"
+    )
+    
+    # Fraud investigation fields
+    amount: Optional[float] = Field(None, description="Transaction amount")
+    currency: Optional[str] = Field("USD", description="Currency code")
+    description: Optional[str] = Field(None, description="Transaction description")
+    customer_name: Optional[str] = Field(None, description="Customer name")
+    account_type: Optional[str] = Field(None, description="Account type")
+    risk_rating: Optional[str] = Field(None, description="Customer risk rating")
+    country_to: Optional[str] = Field(None, description="Destination country")
+    
+    # Research investigation fields
+    topic: Optional[str] = Field(None, description="Research topic")
+    entity_name: Optional[str] = Field(None, description="Entity to investigate")
+    entity_type: Optional[str] = Field("company", description="Entity type")
+    field: Optional[str] = Field("general", description="Academic field")
+    context: Optional[str] = Field("", description="Additional context")
+    include_market_analysis: bool = Field(False, description="Include market analysis")
+    
+    # Common fields
+    priority: str = Field("normal", description="Investigation priority")
+    metadata: Optional[Dict[str, Any]] = Field(None, description="Additional metadata")
+
+
+class UnifiedInvestigationResponse(BaseModel):
+    """Unified response model for all investigation types"""
+    
+    investigation_id: str
+    investigation_type: str
+    status: str
+    duration_seconds: float
+    
+    # Results (one will be populated)
+    fraud_result: Optional[Dict[str, Any]] = None
+    research_result: Optional[Dict[str, Any]] = None
+    
+    # Common metadata
+    agents_used: List[str] = Field(default_factory=list)
+    error_message: Optional[str] = None
+    performance_metrics: Optional[Dict[str, Any]] = None

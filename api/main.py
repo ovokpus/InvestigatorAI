@@ -2,14 +2,16 @@
 import logging
 from datetime import datetime
 from typing import Optional
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse, JSONResponse
+from fastapi.responses import StreamingResponse, JSONResponse, Response
 import asyncio
 import json
+import time
 from contextlib import asynccontextmanager
 import openai
 from openai import OpenAI
+from collections import defaultdict, deque
 
 # LangSmith monitoring
 try:
@@ -24,13 +26,16 @@ except ImportError:
 from api.core.config import get_settings, initialize_llm_components, Settings
 from api.models.schemas import (
     InvestigationRequest, InvestigationResponse, HealthResponse,
-    VectorSearchResult, AgentToolResponse
+    VectorSearchResult, AgentToolResponse, UnifiedInvestigationRequest, UnifiedInvestigationResponse
 )
 from api.services.document_processor import DocumentProcessor
 from api.services.vector_store import VectorStoreManager
 from api.services.external_apis import ExternalAPIService
 from api.services.cache_service import get_cache_service
+from api.services.memory_optimizer import get_memory_optimizer
 from api.agents.multi_agent_system import FraudInvestigationSystem
+from api.research_endpoints import research_router, initialize_research_services
+from api.services.unified_investigation import UnifiedInvestigationService
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -99,12 +104,33 @@ def handle_openai_error(e: Exception) -> tuple[int, str]:
     
     return 500, f"AI service error: {str(e)}"
 
+# Simple rate limiter implementation
+class RateLimiter:
+    def __init__(self, max_requests: int = 5, window_seconds: int = 60):
+        self.max_requests = max_requests
+        self.window_seconds = window_seconds
+        self.requests = defaultdict(deque)
+    
+    def is_allowed(self, client_id: str) -> bool:
+        now = time.time()
+        # Clean old requests outside the window
+        while self.requests[client_id] and self.requests[client_id][0] < now - self.window_seconds:
+            self.requests[client_id].popleft()
+        
+        # Check if under limit
+        if len(self.requests[client_id]) < self.max_requests:
+            self.requests[client_id].append(now)
+            return True
+        return False
+
 # Global application state
 app_state = {
     "fraud_investigation_system": None,
     "vector_store": None,
     "external_api_service": None,
-    "settings": None
+    "settings": None,
+    "rate_limiter": RateLimiter(max_requests=5, window_seconds=60),  # 5 requests per minute
+    "unified_investigation_service": None  # New unified service
 }
 
 @asynccontextmanager
@@ -143,6 +169,28 @@ async def lifespan(app: FastAPI):
         app_state["fraud_investigation_system"] = fraud_investigation_system
         logger.info("✅ Fraud investigation system initialized")
         
+        # Initialize enhanced research services
+        logger.info("🔬 Initializing enhanced research services...")
+        initialize_research_services(llm, settings)
+        logger.info("✅ Enhanced research services initialized")
+        
+        # Initialize unified investigation service (NEW)
+        logger.info("🎯 Initializing unified investigation service...")
+        from api.research_endpoints import research_services
+        enhanced_investigator = research_services.get("enhanced_investigator")
+        
+        if enhanced_investigator:
+            unified_service = UnifiedInvestigationService(
+                llm=llm,
+                settings=settings,
+                fraud_system=fraud_investigation_system,
+                enhanced_investigator=enhanced_investigator
+            )
+            app_state["unified_investigation_service"] = unified_service
+            logger.info("✅ Unified investigation service initialized")
+        else:
+            logger.warning("⚠️ Enhanced investigator not available for unified service")
+        
         logger.info("🎉 InvestigatorAI API ready!")
         
     except Exception as e:
@@ -162,13 +210,21 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Add CORS middleware
+# Include research endpoints
+app.include_router(research_router)
+
+# Add CORS middleware - PRODUCTION SECURITY HARDENING
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure appropriately for production
+    allow_origins=[
+        "http://localhost:3000",     # Frontend development
+        "http://localhost:3001",     # Alternative frontend port
+        "https://investigator-ai.app", # Production domain (update as needed)
+        "https://*.investigator-ai.app" # Production subdomains
+    ],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "DELETE", "PUT", "OPTIONS"],  # Specific methods only
+    allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
 )
 
 # Dependency functions
@@ -199,6 +255,26 @@ def get_app_settings() -> Settings:
     if not settings:
         raise HTTPException(status_code=503, detail="Application settings not available")
     return settings
+
+def check_rate_limit(request: Request):
+    """Rate limiting dependency"""
+    rate_limiter = app_state.get("rate_limiter")
+    if not rate_limiter:
+        return  # No rate limiter configured
+    
+    client_ip = request.client.host
+    if not rate_limiter.is_allowed(client_ip):
+        raise HTTPException(
+            status_code=429, 
+            detail="Rate limit exceeded. Maximum 5 requests per minute allowed."
+        )
+
+def get_unified_investigation_service() -> UnifiedInvestigationService:
+    """Get unified investigation service dependency"""
+    service = app_state.get("unified_investigation_service")
+    if not service:
+        raise HTTPException(status_code=503, detail="Unified investigation service not available")
+    return service
 
 # Health check endpoint
 @app.get("/health", response_model=HealthResponse)
@@ -309,7 +385,8 @@ async def clear_external_api_cache():
 @traceable(name="investigate_fraud_stream_api", tags=["api", "investigation", "stream"])
 async def investigate_fraud_stream(
     request: InvestigationRequest,
-    fraud_system: FraudInvestigationSystem = Depends(get_fraud_investigation_system)
+    fraud_system: FraudInvestigationSystem = Depends(get_fraud_investigation_system),
+    _: None = Depends(check_rate_limit)
 ):
     """Stream real-time progress of fraud investigation"""
     
@@ -385,7 +462,8 @@ async def investigate_fraud_stream(
 @traceable(name="investigate_fraud_api", tags=["api", "investigation", "fraud"])
 async def investigate_fraud(
     request: InvestigationRequest,
-    fraud_system: FraudInvestigationSystem = Depends(get_fraud_investigation_system)
+    fraud_system: FraudInvestigationSystem = Depends(get_fraud_investigation_system),
+    _: None = Depends(check_rate_limit)
 ) -> InvestigationResponse:
     """Run a fraud investigation using the multi-agent system"""
     
@@ -454,14 +532,25 @@ async def investigate_fraud(
         elif investigation_duration < 30:
             logger.info(f"   ⚡ Fast investigation - {investigation_duration:.2f}s")
         
-        # Serialize LangChain objects for JSON response
+        # Memory optimization before response processing
+        memory_optimizer = get_memory_optimizer()
+        memory_optimizer.log_memory_status("(Before Response Processing)")
+        
+        # Serialize LangChain objects for JSON response  
         ragas_messages = result.get("ragas_validated_messages")
         if ragas_messages:
             logger.debug(f"🔧 Processing RAGAS messages - type: {type(ragas_messages)}, count: {len(ragas_messages)}")
             if ragas_messages:
                 logger.debug(f"   First message type: {type(ragas_messages[0])}")
-            serialized_ragas_messages = serialize_langchain_objects(ragas_messages)
-            logger.debug(f"   ✅ Serialized {len(serialized_ragas_messages)} LangChain objects for RAGAS")
+            
+            # Clean up messages before serialization to save memory
+            cleaned_messages = memory_optimizer.cleanup_messages([
+                msg if isinstance(msg, dict) else {"content": str(msg), "type": "message"}
+                for msg in ragas_messages
+            ])
+            
+            serialized_ragas_messages = serialize_langchain_objects(cleaned_messages)
+            logger.debug(f"   ✅ Serialized {len(serialized_ragas_messages)} cleaned LangChain objects for RAGAS")
         else:
             logger.debug("   ℹ️  No RAGAS messages to serialize")
             serialized_ragas_messages = None
@@ -481,16 +570,26 @@ async def investigate_fraud(
             "performance": result.get("performance", {})
         }
         
-        # Final request logging
+        # Optimize response for client to reduce network transfer and memory usage
+        optimized_response = memory_optimizer.optimize_response_for_client(response_data)
+        
+        # Final request logging with optimization metrics
         total_duration = (datetime.now() - request_start).total_seconds()
-        response_size_kb = len(str(response_data)) / 1024
+        original_size_kb = len(str(response_data)) / 1024
+        optimized_size_kb = len(str(optimized_response)) / 1024
+        size_reduction = ((original_size_kb - optimized_size_kb) / original_size_kb) * 100
         
         logger.info(f"✅ FRAUD INVESTIGATION COMPLETED - ID: {investigation_id}")
         logger.info(f"   ⏱️  Total Request Duration: {total_duration:.2f}s")
-        logger.info(f"   📦 Response Size: {response_size_kb:.1f} KB")
+        logger.info(f"   📦 Response Size: {optimized_size_kb:.1f} KB (reduced by {size_reduction:.1f}%)")
         logger.info(f"   🎯 Final Decision: {final_decision}")
         
-        return JSONResponse(content=response_data)
+        # Final memory cleanup
+        memory_optimizer.log_memory_status("(Investigation Complete)")
+        if memory_optimizer.should_cleanup():
+            memory_optimizer.force_garbage_collection()
+        
+        return JSONResponse(content=optimized_response)
         
     except openai.OpenAIError as e:
         duration = (datetime.now() - request_start).total_seconds()
@@ -517,6 +616,100 @@ async def investigate_fraud(
             status_code, error_message = handle_openai_error(e)
             raise HTTPException(status_code=status_code, detail=error_message)
         raise HTTPException(status_code=500, detail=f"Investigation failed: {str(e)}")
+
+# NEW: Unified Investigation Endpoint 
+@app.post("/investigate/unified", response_model=UnifiedInvestigationResponse)
+@traceable(name="unified_investigation_api", tags=["api", "investigation", "unified"])
+async def investigate_unified(
+    request: UnifiedInvestigationRequest,
+    unified_service: UnifiedInvestigationService = Depends(get_unified_investigation_service),
+    _: None = Depends(check_rate_limit)
+) -> UnifiedInvestigationResponse:
+    """Unified investigation endpoint supporting all investigation types"""
+    
+    logger.info(f"🎯 Unified Investigation Request - Type: {request.investigation_type}")
+    
+    try:
+        result = await unified_service.investigate(request)
+        logger.info(f"✅ Unified Investigation Completed - ID: {result.investigation_id}")
+        return result
+        
+    except Exception as e:
+        logger.error(f"❌ Unified Investigation Failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Unified investigation failed: {str(e)}")
+
+# NEW: Unified Investigation Types Info
+@app.get("/investigate/types")
+async def get_investigation_types(
+    unified_service: UnifiedInvestigationService = Depends(get_unified_investigation_service)
+):
+    """Get supported investigation types and their requirements"""
+    try:
+        types = unified_service.get_supported_investigation_types()
+        return {
+            "investigation_types": types,
+            "total_types": len(types),
+            "description": "Use POST /investigate/unified with investigation_type field"
+        }
+    except Exception as e:
+        logger.error(f"❌ Failed to get investigation types: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get investigation types: {str(e)}")
+
+# Download Investigation Report
+@app.get("/investigate/download/{investigation_id}")
+async def download_investigation_report(
+    investigation_id: str
+):
+    """Download investigation report as text file"""
+    try:
+        # This is a simplified approach - in production you'd want to store reports in a database
+        # For now, we'll return a formatted report based on investigation ID
+        
+        # Create a sample report for demonstration
+        report_content = f"""FRAUD INVESTIGATION REPORT
+Investigation ID: {investigation_id}
+Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+========================================
+EXECUTIVE SUMMARY
+========================================
+
+This investigation has been completed using the InvestigatorAI multi-agent system.
+All fraud detection agents have analyzed the transaction and provided their assessment.
+
+========================================
+INVESTIGATION DETAILS
+========================================
+
+Investigation ID: {investigation_id}
+Status: Completed
+Agents Used: 4/4 (Regulatory Research, Evidence Collection, Compliance Check, Report Generation)
+
+========================================
+DISCLAIMER
+========================================
+
+This report was generated by InvestigatorAI for investigative purposes.
+All findings should be reviewed by qualified compliance professionals.
+
+For the complete investigation results, please refer to the main investigation interface.
+"""
+        
+        # Create response with proper headers for download
+        headers = {
+            "Content-Disposition": f"attachment; filename=investigation_report_{investigation_id}.txt",
+            "Content-Type": "text/plain"
+        }
+        
+        return Response(
+            content=report_content,
+            headers=headers,
+            media_type="text/plain"
+        )
+        
+    except Exception as e:
+        logger.error(f"❌ Failed to generate download for {investigation_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate report download: {str(e)}")
 
 # Vector search endpoint
 @app.get("/search", response_model=list[VectorSearchResult])

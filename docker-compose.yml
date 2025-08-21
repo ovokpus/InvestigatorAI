@@ -30,10 +30,11 @@ services:
       QDRANT__SERVICE__GRPC_PORT: 6334
       QDRANT__LOG_LEVEL: INFO
     healthcheck:
-      test: ["CMD-SHELL", "exit 0"]  # Simple health check that always passes
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      test: ["CMD-SHELL", "pidof qdrant > /dev/null || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 2
+      start_period: 10s
     networks:
       - investigator_network
 
@@ -115,6 +116,13 @@ services:
       - CACHE_ENABLED=true
       - DEBUG=false
       - LOG_LEVEL=INFO
+      
+      # Migration 2.0 Settings - Security & Performance
+      - ALLOWED_ORIGINS=http://localhost:3000,http://frontend:3000
+      - RATE_LIMIT_REQUESTS=5
+      - RATE_LIMIT_WINDOW=60
+      - MAX_MEMORY_MB=1024
+      - CLEANUP_THRESHOLD=0.8
     volumes:
       - ./data:/app/data:ro
     depends_on:

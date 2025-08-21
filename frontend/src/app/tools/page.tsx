@@ -27,6 +27,12 @@ export default function ToolsPage() {
             <span className="px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium">
               Tools & Search
             </span>
+            <Link 
+              href="/research" 
+              className="px-4 py-2 bg-purple-600 text-white hover:bg-purple-700 rounded-lg font-medium transition-colors"
+            >
+              🔬 Enhanced Research
+            </Link>
             <a 
               href="/help" 
               className="px-4 py-2 bg-secondary text-secondary-foreground hover:bg-accent rounded-lg font-medium transition-colors"
@@ -52,6 +58,61 @@ export default function ToolsPage() {
         <div className="grid lg:grid-cols-2 gap-8">
           <DocumentSearch />
           <ExchangeRate />
+        </div>
+
+        {/* Enhanced Research Capabilities */}
+        <div className="mt-8 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/20 dark:to-indigo-950/20 rounded-lg p-6 border border-purple-200 dark:border-purple-800">
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <h2 className="text-2xl font-bold text-purple-800 dark:text-purple-200 mb-2">
+                🔬 New: Enhanced Research Capabilities
+              </h2>
+              <p className="text-purple-700 dark:text-purple-300">
+                Sophisticated research workflows with multi-source intelligence and quality assessment
+              </p>
+            </div>
+            <Link 
+              href="/research"
+              className="bg-purple-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-purple-700 transition-colors"
+            >
+              Try Enhanced Research →
+            </Link>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-4">
+            <div className="bg-white/50 dark:bg-gray-900/20 p-4 rounded-lg">
+              <h3 className="font-semibold text-purple-800 dark:text-purple-200 mb-2">Multi-Source Search</h3>
+                                <ul className="space-y-1 text-sm text-purple-700 dark:text-purple-300">
+                    <li>• Tavily (Real-time Web & News)</li>
+                    <li>• ArXiv (Regulatory Research)</li>
+                  </ul>
+              <p className="text-xs text-purple-600 dark:text-purple-400 mt-2 italic">
+                Focused on fraud investigation & compliance research
+              </p>
+            </div>
+            
+            <div className="bg-white/50 dark:bg-gray-900/20 p-4 rounded-lg">
+              <h3 className="font-semibold text-purple-800 dark:text-purple-200 mb-2">Research Planning</h3>
+              <ul className="space-y-1 text-sm text-purple-700 dark:text-purple-300">
+                <li>• Dynamic section generation</li>
+                <li>• Quality assessment criteria</li>
+                <li>• Iterative refinement</li>
+                <li>• Progress tracking</li>
+                <li>• Resumable sessions</li>
+              </ul>
+            </div>
+            
+            <div className="bg-white/50 dark:bg-gray-900/20 p-4 rounded-lg">
+              <h3 className="font-semibold text-purple-800 dark:text-purple-200 mb-2">Specialized Agents</h3>
+              <ul className="space-y-1 text-sm text-purple-700 dark:text-purple-300">
+                <li>• Financial compliance research</li>
+                <li>• Academic investigation</li>
+                <li>• AML/sanctions analysis</li>
+                <li>• Domain-specific expertise</li>
+                <li>• Regulatory intelligence</li>
+              </ul>
+            </div>
+          </div>
         </div>
 
         <div className="mt-8 bg-card p-6 rounded-lg shadow-lg">
