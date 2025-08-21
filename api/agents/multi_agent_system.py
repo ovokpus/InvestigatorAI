@@ -482,10 +482,11 @@ class FraudInvestigationSystem:
         
         if all_completed:
             # Generate a comprehensive final decision from all agent messages
-            final_decision = self.generate_final_decision(state["messages"])
+            final_decision_result = self.generate_final_decision_with_report(state["messages"])
             state_update.update({
                 "investigation_status": "completed",
-                "final_decision": final_decision
+                "final_decision": final_decision_result["decision"],
+                "investigation_report": final_decision_result["report"]
             })
         
         return state_update
