@@ -90,6 +90,33 @@ class MessageProcessor:
                 serialized_state[key] = str(value)
         return serialized_state
     
+    def extract_final_report(self, messages: List[BaseMessage]) -> str:
+        """Extract the comprehensive final report from Report Generation Agent"""
+        print(f"📊 Final report extraction: Processing {len(messages)} messages")
+        
+        for msg in messages:
+            if isinstance(msg, ToolMessage) and hasattr(msg, 'name'):
+                agent_name = getattr(msg, 'name', '')
+                content = getattr(msg, 'content', '')
+                
+                # Look for Report Generation Agent's comprehensive report
+                if (agent_name == 'report_generation' and 
+                    ('# Comprehensive Investigation Report' in content or 
+                     'EXECUTIVE SUMMARY' in content or
+                     'DETAILED INVESTIGATION ANALYSIS' in content)):
+                    
+                    # Extract the report content after the completion marker
+                    if '✅ Report Generation completed:' in content:
+                        report_content = content.split('✅ Report Generation completed:', 1)[1].strip()
+                    else:
+                        report_content = content
+                    
+                    print(f"📊 Found final report from {agent_name} ({len(report_content)} chars)")
+                    return report_content
+        
+        print("❌ No comprehensive final report found")
+        return ""
+    
     def extract_frontend_messages(self, messages: List[BaseMessage]) -> List[BaseMessage]:
         """Extract detailed agent messages for frontend display - ONLY ToolMessages with detailed content"""
         print(f"🎯 Frontend extraction: Processing {len(messages)} messages")

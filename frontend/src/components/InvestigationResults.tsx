@@ -298,6 +298,8 @@ interface Investigation {
   all_agents_finished: boolean;
   error?: string;
   full_results?: FullResults;
+  final_report?: string;
+  final_report_available?: boolean;
 }
 
 interface InvestigationResultsProps {
@@ -923,6 +925,43 @@ to your organization's data protection and compliance policies.
           </div>
         </div>
       </div>
+
+      {/* Comprehensive Final Report - Prominent Display */}
+      {investigation.final_report_available && investigation.final_report && (
+        <div className="bg-card p-6 rounded-lg shadow-lg border-2 border-blue-200">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-bold text-contrast flex items-center space-x-3">
+              <span className="text-2xl">📊</span>
+              <span>Comprehensive Investigation Report</span>
+              <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                DETAILED REASONING
+              </span>
+            </h3>
+            <div className="flex space-x-2">
+              <button
+                onClick={() => copyToClipboard(investigation.final_report || "")}
+                className={`px-3 py-1 text-sm font-medium rounded-md transition-all duration-200 flex items-center space-x-2 ${
+                  copySuccess 
+                    ? 'bg-green-600 text-white' 
+                    : 'bg-gray-600 hover:bg-gray-700 text-white hover:shadow-md'
+                }`}
+                title="Copy comprehensive report to clipboard"
+              >
+                <span>{copySuccess ? '✅' : '📋'}</span>
+                <span>{copySuccess ? 'Copied!' : 'Copy Report'}</span>
+              </button>
+            </div>
+          </div>
+          
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 rounded-lg p-6 border border-blue-200 dark:border-blue-800">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-600 max-w-none overflow-auto">
+              <div className="text-gray-700 dark:text-gray-300 break-words overflow-wrap-anywhere whitespace-pre-wrap font-mono text-sm leading-relaxed">
+                {investigation.final_report}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Transaction Details */}
       <div className="bg-card p-6 rounded-lg shadow-lg">
