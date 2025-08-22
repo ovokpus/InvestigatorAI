@@ -91,33 +91,38 @@ class MessageProcessor:
         return serialized_state
     
     def extract_frontend_messages(self, messages: List[BaseMessage]) -> List[BaseMessage]:
-        """Extract detailed agent messages for frontend display (preserves detailed reasoning)"""
+        """Extract detailed agent messages for frontend display - ONLY ToolMessages with detailed content"""
         print(f"🎯 Frontend extraction: Processing {len(messages)} messages")
         
-        # Keep only substantive agent messages with detailed content
+        # Keep ONLY ToolMessages with detailed agent responses - filter out ALL AIMessages
         frontend_messages = []
         
         for msg in messages:
-            # Keep ToolMessages with substantial content from agents
+            # Keep ONLY ToolMessages with substantial content from agents
             if isinstance(msg, ToolMessage) and hasattr(msg, 'name'):
                 agent_name = getattr(msg, 'name', '')
                 content = getattr(msg, 'content', '')
                 
-                # Keep detailed agent responses (not just tool confirmations)
+                # Keep detailed agent responses (filter out simple tool confirmations)
                 if (agent_name in ['regulatory_research', 'evidence_collection', 'compliance_check', 'report_generation'] 
                     and len(content) > 100  # Substantial content
-                    and ('**' in content or 'analysis' in content.lower() or 'assessment' in content.lower())):
+                    and ('**' in content or 'analysis' in content.lower() or 'assessment' in content.lower() or 'report' in content.lower())):
                     frontend_messages.append(msg)
-                    print(f"✅ Kept {agent_name} message ({len(content)} chars)")
+                    print(f"✅ Kept ToolMessage from {agent_name} ({len(content)} chars)")
+                else:
+                    print(f"❌ Filtered out {agent_name} - insufficient content ({len(content)} chars)")
             
-            # Keep AIMessages from agents with tool calls (shows what tools were used)
-            elif isinstance(msg, AIMessage) and hasattr(msg, 'name'):
-                agent_name = getattr(msg, 'name', '')
-                if ('_executor' in agent_name or agent_name in ['regulatory_research', 'evidence_collection', 'compliance_check', 'report_generation']):
-                    frontend_messages.append(msg)
-                    print(f"✅ Kept {agent_name} tool call")
+            # FILTER OUT all AIMessages (tool call initiations)
+            elif isinstance(msg, AIMessage):
+                agent_name = getattr(msg, 'name', 'unknown')
+                print(f"❌ Filtered out AIMessage from {agent_name} (tool call initiation)")
+            
+            # Filter out other message types
+            else:
+                msg_type = type(msg).__name__
+                print(f"❌ Filtered out {msg_type} message")
         
-        print(f"🎯 Frontend messages: {len(messages)} → {len(frontend_messages)} detailed messages")
+        print(f"🎯 Frontend messages: {len(messages)} → {len(frontend_messages)} ToolMessages with detailed content")
         return frontend_messages
 
     def validate_ragas_sequence(self, messages: List[BaseMessage]) -> List[BaseMessage]:
