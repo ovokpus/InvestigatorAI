@@ -112,13 +112,20 @@ class FraudInvestigationSystem:
         )
     
     def get_next_agent(self, state: FraudInvestigationState) -> str:
-        """Determine next agent to route to"""
+        """Determine next agent to route to - report_generation runs AFTER other three agents"""
         agents_completed = state["agents_completed"]
-        required_agents = ["regulatory_research", "evidence_collection", "compliance_check", "report_generation"]
         
-        for agent in required_agents:
+        # First three agents can run in any order
+        primary_agents = ["regulatory_research", "evidence_collection", "compliance_check"]
+        
+        # Check if any primary agents still need to run
+        for agent in primary_agents:
             if agent not in agents_completed:
                 return agent
+        
+        # All primary agents done - now run report generation if not completed
+        if "report_generation" not in agents_completed:
+            return "report_generation"
         
         return "FINISH"
     
@@ -163,14 +170,11 @@ class FraudInvestigationSystem:
                 "messages": state["messages"] + [completion_message]
             }
         
-        # Determine which agents still need to run
-        pending_agents = [agent for agent in required_agents if agent not in agents_completed]
+        # Use the improved sequencing logic
+        next_agent = self.get_next_agent(state)
         
-        if not pending_agents:
+        if next_agent == "FINISH":
             return {"next": "FINISH", "investigation_status": "completed"}
-            
-        # Route to the next agent (one at a time)
-        next_agent = pending_agents[0]
         
         # Create tool call for the next agent
         tool_call = {
