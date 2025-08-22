@@ -816,89 +816,74 @@ to your organization's data protection and compliance policies.
                     const transactionDetails = investigation.transaction_details;
                     
                     return `
-================================================================================
-                        FRAUD INVESTIGATION REPORT
-================================================================================
+                            ================================================================================
+                                                    FRAUD INVESTIGATION REPORT
+                            ================================================================================
 
-Report Generated: ${timestamp}
-Investigation ID: ${investigation.investigation_id}
-Status: ${investigation.status}
+                            Report Generated: ${timestamp}
+                            Investigation ID: ${investigation.investigation_id}
+                            Status: ${investigation.status}
 
-================================================================================
-                           EXECUTIVE SUMMARY
-================================================================================
+                            ================================================================================
+                                                      EXECUTIVE SUMMARY
+                            ================================================================================
 
-Investigation Status: ${investigation.all_agents_finished ? 'COMPLETE' : 'IN PROGRESS'}
-Agents Completed: ${investigation.agents_completed}/4
-Total Messages Processed: ${investigation.total_messages}
-Risk Assessment: ${investigation.final_decision.includes('HIGH RISK') ? 'HIGH RISK' : 
-                   investigation.final_decision.includes('MEDIUM RISK') ? 'MEDIUM RISK' : 
-                   investigation.final_decision.includes('LOW RISK') ? 'LOW RISK' : 'PENDING ASSESSMENT'}
+                            Investigation Status: ${investigation.all_agents_finished ? 'COMPLETE' : 'IN PROGRESS'}
+                            Agents Completed: ${investigation.agents_completed}/4
+                            Total Messages Processed: ${investigation.total_messages}
+                            Risk Assessment: ${investigation.final_decision.includes('HIGH RISK') ? 'HIGH RISK' : 
+                                              investigation.final_decision.includes('MEDIUM RISK') ? 'MEDIUM RISK' : 
+                                              investigation.final_decision.includes('LOW RISK') ? 'LOW RISK' : 'PENDING ASSESSMENT'}
 
-================================================================================
-                         TRANSACTION DETAILS
-================================================================================
+                            ================================================================================
+                                                    TRANSACTION DETAILS
+                            ================================================================================
 
-Amount: ${transactionDetails?.currency || 'USD'} ${(transactionDetails?.amount || 0).toLocaleString()}
-Customer Name: ${transactionDetails?.customer_name || 'N/A'}
-Destination Country: ${transactionDetails?.country_to || 'N/A'}
-Account Type: ${transactionDetails?.account_type || 'N/A'}
-Risk Rating: ${transactionDetails?.risk_rating || 'N/A'}
+                            Amount: ${transactionDetails?.currency || 'USD'} ${(transactionDetails?.amount || 0).toLocaleString()}
+                            Customer Name: ${transactionDetails?.customer_name || 'N/A'}
+                            Destination Country: ${transactionDetails?.country_to || 'N/A'}
+                            Account Type: ${transactionDetails?.account_type || 'N/A'}
+                            Risk Rating: ${transactionDetails?.risk_rating || 'N/A'}
 
-Transaction Description:
-${transactionDetails?.description || 'N/A'}
+                            Transaction Description:
+                            ${transactionDetails?.description || 'N/A'}
 
-================================================================================
-                     DETAILED INVESTIGATION FINDINGS
-================================================================================
+                            ================================================================================
+                                                DETAILED INVESTIGATION FINDINGS
+                            ================================================================================
 
-${investigation.final_decision}
+                            ${investigation.final_decision}
 
-================================================================================
-                           TECHNICAL DETAILS
-================================================================================
+                            ================================================================================
+                                                      TECHNICAL DETAILS
+                            ================================================================================
 
-Investigation Completion: ${investigation.all_agents_finished ? 'All agents completed successfully' : 'Investigation in progress'}
-Agent Completion Status: ${investigation.agents_completed} out of 4 agents completed
-Message Processing: ${investigation.total_messages} messages processed during investigation
+                            Investigation Completion: ${investigation.all_agents_finished ? 'All agents completed successfully' : 'Investigation in progress'}
+                            Agent Completion Status: ${investigation.agents_completed} out of 4 agents completed
+                            Message Processing: ${investigation.total_messages} messages processed during investigation
 
-${investigation.error ? `
-================================================================================
-                              ERROR DETAILS
-================================================================================
+                            ${investigation.error ? `
+                            ================================================================================
+                                                          ERROR DETAILS
+                            ================================================================================
 
-${investigation.error}
-` : ''}
+                            ${investigation.error}
+                            ` : ''}
 
-================================================================================
-                         ADDITIONAL DATA
-================================================================================
+                            ================================================================================
+                                                        REPORT FOOTER
+                            ================================================================================
 
-${investigation.full_results?.messages ? `
-Agent Communication Log:
-------------------------
+                            This report was generated by InvestigatorAI - Advanced Fraud Detection System
+                            Generated on: ${timestamp}
+                            Investigation ID: ${investigation.investigation_id}
 
-${investigation.full_results.messages.map((message: InvestigationMessage, index: number) => `Message ${index + 1} (${message.type}):
-${message.content}
+                            WARNING: This report contains sensitive information and should be handled according 
+                            to your organization's data protection and compliance policies.
 
----
-
-`).join('')}` : ''}
-
-================================================================================
-                            REPORT FOOTER
-================================================================================
-
-This report was generated by InvestigatorAI - Advanced Fraud Detection System
-Generated on: ${timestamp}
-Investigation ID: ${investigation.investigation_id}
-
-WARNING: This report contains sensitive information and should be handled according 
-to your organization's data protection and compliance policies.
-
-================================================================================
-`;
-                  })()}
+                            ================================================================================
+                            `;
+                                              })()}
                 </div>
               )}
             </div>

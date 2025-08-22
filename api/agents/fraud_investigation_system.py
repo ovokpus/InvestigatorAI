@@ -454,6 +454,7 @@ class FraudInvestigationSystem:
                 "transaction_details": transaction_details,
                 "all_agents_finished": all_agents_finished,
                 "full_results": self._create_frontend_results(final_state),
+                "final_report": self.message_processor.extract_final_report(final_state.get("messages", [])),
                 "ragas_validated_messages": self.message_processor.validate_ragas_sequence(final_state.get("messages", [])),
                 "performance": {
                     "total_duration_s": total_duration,
@@ -612,7 +613,9 @@ class FraudInvestigationSystem:
             "transaction_details": transaction_details,
             "all_agents_finished": True,
             "full_results": frontend_results,  # Contains detailed reasoning for frontend
-            "detailed_reasoning_available": frontend_results.get("detailed_reasoning_available", False)
+            "final_report": frontend_results.get("final_report", ""),  # Comprehensive final report for prominent display
+            "detailed_reasoning_available": frontend_results.get("detailed_reasoning_available", False),
+            "final_report_available": frontend_results.get("final_report_available", False)
         }
         
         yield {
