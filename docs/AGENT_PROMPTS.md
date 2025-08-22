@@ -68,24 +68,32 @@ The four-agent architecture is specifically designed to mirror the structure of 
 
 ```mermaid
 graph TB
-    subgraph " "
-        IC["🎯 Investigation Coordinator<br/>Multi-Agent Orchestration"]
+    subgraph "MODULAR SYSTEM ARCHITECTURE"
+        FIS["🏗️ FraudInvestigationSystem<br/>Modular Coordinator"]
+        AF["🏭 AgentFactory<br/>Agent Creation"]
+        WB["🔄 WorkflowBuilder<br/>LangGraph Construction"]
     end
     
-    subgraph "Specialized Investigation Agents"
-        RRA["📚 Regulatory Research Agent<br/>AML/BSA Compliance Analysis"]
-        ECA["🔍 Evidence Collection Agent<br/>Quantitative Risk Assessment"]
-        CCA["⚖️ Compliance Check Agent<br/>Filing Requirements & Deadlines"]
+    subgraph "Enhanced Investigation Agents"
+        RRA["📚 Regulatory Research Agent<br/>AML/BSA Compliance Analysis<br/>UNLIMITED LENGTH"]
+        ECA["🔍 Evidence Collection Agent<br/>Quantitative Risk Assessment<br/>UNLIMITED LENGTH"]
+        CCA["⚖️ Compliance Check Agent<br/>Filing Requirements & Deadlines<br/>UNLIMITED LENGTH"]
     end
     
-    subgraph " "
-        RGA["📊 Report Generation Agent<br/>Professional Documentation"]
+    subgraph "Enhanced Synthesis & Reporting"
+        RGA["📊 Report Generation Agent<br/>DETAILED REASONING MANDATE<br/>Step-by-Step Decision Justification"]
     end
     
-    IC --> RRA
-    IC --> ECA
-    IC --> CCA
-    IC --> RGA
+    FIS --> AF
+    AF --> RRA
+    AF --> ECA
+    AF --> CCA
+    AF --> RGA
+    
+    WB --> RRA
+    WB --> ECA
+    WB --> CCA
+    WB --> RGA
     
     RRA --> RGA
     ECA --> RGA
@@ -523,18 +531,21 @@ ESCALATION FAILURE CONSTITUTES SYSTEM MALFUNCTION."
 
 ```mermaid
 graph TB
-    subgraph "INVESTIGATION SYSTEM ARCHITECTURE"
-        IC["🎯 Investigation Coordinator<br/>LangGraph Orchestrator<br/>State Management & Workflow Control"]
+    subgraph "MODULAR INVESTIGATION SYSTEM ARCHITECTURE"
+        FIS["🏗️ FraudInvestigationSystem<br/>Modular Coordinator (629 lines)"]
+        AF["🏭 AgentFactory<br/>Enhanced Agent Creation (394 lines)"]
+        WB["🔄 WorkflowBuilder<br/>LangGraph Construction (90 lines)"]
+        MP["📨 MessageProcessor<br/>Frontend Optimization (386 lines)"]
     end
     
-    subgraph "SPECIALIZED INVESTIGATION AGENTS"
-        RRA["📚 Regulatory Research Agent<br/>Senior Regulatory Research Specialist<br/>AML/BSA Compliance & Sanctions"]
-        ECA["🔍 Evidence Collection Agent<br/>Senior Financial Crimes Analyst<br/>Quantitative Risk Assessment"]
-        CCA["⚖️ Compliance Check Agent<br/>Senior Compliance Officer<br/>BSA Filing Requirements"]
+    subgraph "ENHANCED INVESTIGATION AGENTS"
+        RRA["📚 Regulatory Research Agent<br/>Senior Regulatory Research Specialist<br/>AML/BSA Compliance & Sanctions<br/>UNLIMITED LENGTH ANALYSIS"]
+        ECA["🔍 Evidence Collection Agent<br/>Senior Financial Crimes Analyst<br/>Quantitative Risk Assessment<br/>UNLIMITED LENGTH ANALYSIS"]
+        CCA["⚖️ Compliance Check Agent<br/>Senior Compliance Officer<br/>BSA Filing Requirements<br/>UNLIMITED LENGTH ANALYSIS"]
     end
     
-    subgraph "SYNTHESIS & REPORTING"
-        RGA["📊 Report Generation Agent<br/>Senior Investigation Report Specialist<br/>Professional Documentation & Forensics"]
+    subgraph "ENHANCED SYNTHESIS & REPORTING"
+        RGA["📊 Report Generation Agent<br/>DETAILED REASONING MANDATE<br/>Step-by-Step Decision Justification<br/>Alternative Scenarios & Confidence Levels"]
     end
     
     subgraph "REGULATORY TOOLS" 

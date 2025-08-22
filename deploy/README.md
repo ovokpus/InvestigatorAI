@@ -2,7 +2,7 @@
 
 > **📂 Navigation**: [🏠 Home](../README.md) | [🔧 API Docs](../api/README.md) | [🤖 Agent Architecture](../docs/AGENT_PROMPTS.md) | [📈 Advanced Retrievers](../docs/ADVANCED_RETRIEVERS.md) | [💼 Business Case](../docs/BUSINESS_CASE.md) | [🎓 Certification](../docs/CERTIFICATION_CHALLENGE.md) | [🎬 Demo Guide](../docs/DEMO_GUIDE.md) | [💻 Frontend](../frontend/README.md) | [📊 Data](../data/README.md) | [🚀 Deploy](README.md) | [🧪 Tests](../tests/README.md) | [🔄 Merge](../MERGE.md)
 
-Complete deployment guide for InvestigatorAI fraud investigation system - from infrastructure-only to full application stack.
+Complete deployment guide for **modular** InvestigatorAI fraud investigation system - from infrastructure-only to full application stack with enhanced detailed reasoning capabilities.
 
 ## 📋 Deployment Options
 
