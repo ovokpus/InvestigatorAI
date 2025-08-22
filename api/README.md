@@ -24,9 +24,20 @@
 
 ## 🏗️ Architecture Overview
 
-InvestigatorAI uses a sophisticated **multi-agent architecture** powered by LangGraph and LangChain, designed for professional fraud investigation workflows.
+InvestigatorAI uses a sophisticated **modular multi-agent architecture** powered by LangGraph and LangChain, designed for professional fraud investigation workflows. **Recently modularized** from a 2,117-line monolithic system into 6 specialized, maintainable components.
 
-### Core Components
+### 🏗️ Modular Components (August 2025 Enhancement)
+
+| **Component** | **File** | **Lines** | **Responsibility** |
+|---------------|----------|-----------|-------------------|
+| **FraudInvestigationSystem** | `agents/fraud_investigation_system.py` | 629 | Main coordinator with backward compatibility |
+| **AgentFactory** | `agents/agent_factory.py` | 394 | Agent creation with enhanced prompts |
+| **StreamingHandler** | `agents/streaming_handler.py` | 583 | Real-time investigation streaming |
+| **MessageProcessor** | `agents/message_processor.py` | 386 | Message validation & frontend optimization |
+| **ReportGenerator** | `agents/report_generator.py` | 308 | Report synthesis with detailed reasoning |
+| **WorkflowBuilder** | `agents/workflow_builder.py` | 90 | LangGraph workflow construction |
+
+### Legacy Core Components
 
 ```mermaid
 graph TB
