@@ -418,6 +418,75 @@ function DetailedResultsViewer({ results }: DetailedResultsViewerProps) {
     }
   };
 
+  const renderMarkdownContent = (content: string): JSX.Element => {
+    // Parse markdown formatting and render as rich text
+    const parseMarkdown = (text: string) => {
+      // Split by double asterisks for bold sections
+      const parts = text.split(/(\*\*.*?\*\*)/g);
+      
+      return parts.map((part, index) => {
+        // Handle bold text with code-like styling
+        if (part.startsWith('**') && part.endsWith('**')) {
+          const boldText = part.slice(2, -2);
+          return (
+            <strong key={index} className="font-bold text-cyan-400 bg-gray-800 px-1 py-0.5 rounded text-sm">
+              {boldText}
+            </strong>
+          );
+        }
+        
+        // Handle regular text with line breaks
+        const lines = part.split('\n');
+        return (
+          <span key={index}>
+            {lines.map((line, lineIndex) => (
+              <span key={lineIndex}>
+                {line}
+                {lineIndex < lines.length - 1 && <br />}
+              </span>
+            ))}
+          </span>
+        );
+      });
+    };
+
+    // Handle different content structures
+    if (content.includes('**EXECUTIVE SUMMARY**') || content.includes('**REGULATORY ANALYSIS REPORT**')) {
+      // This is a structured report - render with enhanced formatting
+      const sections = content.split(/(\*\*[A-Z\s]+\*\*:?)/g).filter(Boolean);
+      
+      return (
+        <div className="space-y-4">
+          {sections.map((section, index) => {
+            if (section.match(/^\*\*[A-Z\s]+\*\*:?$/)) {
+              // This is a section header
+              const headerText = section.replace(/\*\*/g, '').replace(':', '');
+              return (
+                <div key={index} className="font-bold text-lg text-cyan-300 bg-gray-800 p-3 rounded border-l-4 border-cyan-400 mb-3">
+                  <span className="text-cyan-400">▶</span> {headerText}
+                </div>
+              );
+            } else {
+              // This is section content
+              return (
+                <div key={index} className="ml-4 space-y-2">
+                  {parseMarkdown(section.trim())}
+                </div>
+              );
+            }
+          })}
+        </div>
+      );
+    } else {
+      // Regular content with markdown formatting
+      return (
+        <div className="space-y-2">
+          {parseMarkdown(content)}
+        </div>
+      );
+    }
+  };
+
   if (!parsedMessages.length) {
     return (
       <div className="text-center p-8 text-muted-foreground">
@@ -447,39 +516,39 @@ function DetailedResultsViewer({ results }: DetailedResultsViewerProps) {
         const agentName = formatAgentName(message.name || 'unknown');
 
         return (
-          <div key={messageIndex} className="border border-border rounded-lg overflow-hidden">
+          <div key={messageIndex} className="border border-cyan-500 rounded-lg overflow-hidden bg-gray-900">
             <div 
-              className="bg-secondary p-4 cursor-pointer flex items-center justify-between hover:bg-accent transition-colors"
+              className="bg-gray-800 p-4 cursor-pointer flex items-center justify-between hover:bg-gray-700 transition-colors border-b border-cyan-500"
               onClick={() => toggleSection(messageIndex)}
             >
               <div className="flex items-center space-x-3">
-                <div className="text-lg">🤖</div>
+                <div className="text-lg text-cyan-400">🤖</div>
                 <div>
-                  <h4 className="font-semibold text-contrast">{agentName}</h4>
-                  <p className="text-sm text-muted-foreground">
+                  <h4 className="font-semibold text-cyan-300 font-mono">{agentName}</h4>
+                  <p className="text-sm text-cyan-500 font-mono">
                     {sections.length} analysis section{sections.length !== 1 ? 's' : ''}
                   </p>
                 </div>
               </div>
-              <div className="text-muted-foreground">
-                {expandedSections[messageIndex] ? '🔽' : '▶️'}
+              <div className="text-cyan-400 font-mono">
+                {expandedSections[messageIndex] ? '▼' : '▶'}
               </div>
             </div>
 
             {expandedSections[messageIndex] && (
-              <div className="p-4 space-y-4">
+              <div className="p-4 space-y-4 bg-gray-900">
                 {sections.map((section, sectionIndex) => (
                   <div 
                     key={sectionIndex} 
-                    className={`border rounded-lg p-4 ${getSectionColor(section.type)}`}
+                    className="border border-gray-700 rounded bg-gray-800 p-4"
                   >
                     <div className="flex items-center space-x-2 mb-3">
-                      <span className="text-lg">{getSectionIcon(section.type)}</span>
-                      <h5 className="font-semibold text-contrast">{section.title}</h5>
+                      <span className="text-lg text-cyan-400">{getSectionIcon(section.type)}</span>
+                      <h5 className="font-semibold text-cyan-300 font-mono">{section.title}</h5>
                     </div>
                     <div className="prose prose-sm max-w-none">
-                      <div className="text-sm text-contrast whitespace-pre-wrap leading-relaxed break-words overflow-wrap-anywhere">
-                        {section.content}
+                      <div className="text-sm text-green-300 leading-relaxed break-words overflow-wrap-anywhere font-mono">
+                        {renderMarkdownContent(section.content)}
                       </div>
                     </div>
                   </div>
@@ -552,8 +621,8 @@ export default function InvestigationResults({ investigation, onNewInvestigation
 
   const downloadReport = () => {
     try {
-      // Use the comprehensive final report from the API or fallback to final_decision
-      const reportContent = investigation.final_report || investigation.final_decision || "Investigation report not available";
+      // Create comprehensive report content
+      const reportContent = generateReportContent(investigation);
       
       // Create blob and download
       const blob = new Blob([reportContent], { type: 'text/plain;charset=utf-8' });
@@ -580,7 +649,7 @@ export default function InvestigationResults({ investigation, onNewInvestigation
     }
   };
 
-
+  
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -620,18 +689,6 @@ export default function InvestigationResults({ investigation, onNewInvestigation
         </div>
         <div className="flex space-x-3">
           <button
-            onClick={downloadReport}
-            className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2 ${
-              downloadSuccess 
-                ? 'bg-green-600 text-white' 
-                : 'bg-blue-600 hover:bg-blue-700 text-white hover:shadow-md'
-            }`}
-            title="Download full investigation report as text file"
-          >
-            <span>{downloadSuccess ? '✅' : '📥'}</span>
-            <span>{downloadSuccess ? 'Downloaded!' : 'Download Report'}</span>
-          </button>
-          <button
             onClick={onNewInvestigation}
             className="btn-secondary px-4 py-2 rounded-lg font-medium"
           >
@@ -639,6 +696,102 @@ export default function InvestigationResults({ investigation, onNewInvestigation
           </button>
         </div>
       </div>
+
+      {/* Detailed Investigation Analysis - TOP PRIORITY DISPLAY */}
+      {investigation.full_results ? (
+        <div className="bg-gray-900 p-6 rounded-lg shadow-lg border-2 border-cyan-500">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-2xl font-bold text-cyan-300 flex items-center space-x-3">
+              <span className="text-3xl">🔍</span>
+              <span>Detailed Investigation Analysis</span>
+              <span className="px-3 py-1 bg-cyan-900 text-cyan-200 text-sm font-medium rounded border border-cyan-400">
+                COMPREHENSIVE REASONING
+              </span>
+            </h3>
+            <div className="flex space-x-3">
+              <button
+                onClick={() => copyToClipboard(
+                  investigation.full_results?.messages?.map((msg: InvestigationMessage) => 
+                    `${msg.name?.toUpperCase() || 'AGENT'} ANALYSIS:\n${msg.content}\n\n${'='.repeat(80)}\n\n`
+                  ).join('') || investigation.final_decision
+                )}
+                className={`px-4 py-2 rounded font-mono text-sm transition-all duration-200 flex items-center space-x-2 border ${
+                  copySuccess 
+                    ? 'bg-green-700 text-green-200 border-green-500' 
+                    : 'bg-gray-800 text-cyan-300 border-cyan-500 hover:bg-gray-700 hover:text-cyan-200'
+                }`}
+                title="Copy detailed analysis to clipboard"
+              >
+                <span>{copySuccess ? '✅' : '📋'}</span>
+                <span>{copySuccess ? 'Copied!' : 'Copy Analysis'}</span>
+              </button>
+              <button
+                onClick={() => {
+                  const detailedContent = investigation.full_results?.messages?.map((msg: InvestigationMessage) => 
+                    `${'='.repeat(80)}\n${msg.name?.toUpperCase() || 'AGENT'} ANALYSIS\n${'='.repeat(80)}\n\n${msg.content}\n\n`
+                  ).join('') || investigation.final_decision;
+                  
+                  const blob = new Blob([detailedContent], { type: 'text/plain;charset=utf-8' });
+                  const url = URL.createObjectURL(blob);
+                  const link = document.createElement('a');
+                  link.href = url;
+                  link.download = `Detailed_Analysis_${investigation.investigation_id}_${new Date().toISOString().slice(0, 10)}.txt`;
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                  URL.revokeObjectURL(url);
+                  setDownloadSuccess(true);
+                  setTimeout(() => setDownloadSuccess(false), 2000);
+                }}
+                className={`px-4 py-2 rounded font-mono text-sm transition-all duration-200 flex items-center space-x-2 border ${
+                  downloadSuccess 
+                    ? 'bg-green-700 text-green-200 border-green-500' 
+                    : 'bg-gray-800 text-cyan-300 border-cyan-500 hover:bg-gray-700 hover:text-cyan-200'
+                }`}
+                title="Download detailed analysis as text file"
+              >
+                <span>{downloadSuccess ? '✅' : '📥'}</span>
+                <span>{downloadSuccess ? 'Downloaded!' : 'Download Analysis'}</span>
+              </button>
+            </div>
+          </div>
+          <DetailedResultsViewer results={investigation.full_results} />
+        </div>
+      ) : (
+        <div className="bg-card p-6 rounded-lg shadow-lg border-2 border-yellow-500">
+          <h3 className="text-xl font-bold mb-4 text-contrast">Investigation Analysis</h3>
+          <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+            <div className="flex items-center space-x-2">
+              <div className="text-yellow-600 dark:text-yellow-400">⚠️</div>
+              <div className="flex-1">
+                <p className="text-yellow-800 dark:text-yellow-200 font-medium">
+                  Investigation completed but detailed analysis is not available.
+                </p>
+                <p className="text-yellow-700 dark:text-yellow-300 text-sm mt-1">
+                  The investigation finished successfully but the detailed analysis data is missing.
+                  Try running a new investigation or check the debug information below.
+                </p>
+                <button 
+                  onClick={onNewInvestigation}
+                  className="mt-3 px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg text-sm font-medium transition-colors"
+                >
+                  🔄 Start New Investigation
+                </button>
+              </div>
+            </div>
+            
+            {/* Debug info */}
+            <details className="mt-4">
+              <summary className="text-yellow-700 dark:text-yellow-300 cursor-pointer text-sm">
+                Show Debug Information
+              </summary>
+              <pre className="mt-2 p-2 bg-yellow-100 dark:bg-yellow-900/40 rounded text-xs overflow-auto">
+                {JSON.stringify(investigation, null, 2)}
+              </pre>
+            </details>
+          </div>
+        </div>
+      )}
 
       {/* Status Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -683,7 +836,7 @@ export default function InvestigationResults({ investigation, onNewInvestigation
               <h4 className="text-lg font-bold text-gray-800 dark:text-gray-200">📊 Investigation Report</h4>
               <div className="flex space-x-2">
                 <button
-                  onClick={() => copyToClipboard(investigation.final_report || investigation.final_decision)}
+                  onClick={() => copyToClipboard(generateReportContent(investigation))}
                   className={`px-3 py-1 text-sm font-medium rounded-md transition-all duration-200 flex items-center space-x-2 ${
                     copySuccess 
                       ? 'bg-green-600 text-white' 
@@ -712,80 +865,68 @@ export default function InvestigationResults({ investigation, onNewInvestigation
               {investigation.final_decision.includes('**FRAUD INVESTIGATION COMPLETE**') ? (
                 <MarkdownRenderer content={investigation.final_decision} />
               ) : (
-                <div className="text-gray-700 dark:text-gray-300 break-words overflow-wrap-anywhere whitespace-pre-wrap">
+                <div className="bg-gray-900 text-green-400 p-6 rounded-lg font-mono text-sm overflow-auto border-2 border-gray-700 shadow-lg">
+                  <div className="whitespace-pre-wrap break-words">
                   {(() => {
                     const timestamp = new Date().toISOString();
                     const transactionDetails = investigation.transaction_details;
                     
                     return `
-                            ================================================================================
-                                                    FRAUD INVESTIGATION REPORT
-                            ================================================================================
+          ================================================================================
+                                  FRAUD INVESTIGATION SUMMARY
+          ================================================================================
 
-                            Report Generated: ${timestamp}
-                            Investigation ID: ${investigation.investigation_id}
-                            Status: ${investigation.status}
+          Report Generated: ${timestamp}
+          Investigation ID: ${investigation.investigation_id}
+          Investigation Status: ${investigation.all_agents_finished ? 'COMPLETE' : 'IN PROGRESS'}
+          Agents Completed: ${investigation.agents_completed}/4
+          Total Messages Processed: ${investigation.total_messages}
+          Risk Assessment: ${investigation.final_decision.includes('HIGH RISK') ? 'HIGH RISK' : 
+                            investigation.final_decision.includes('MEDIUM RISK') ? 'MEDIUM RISK' : 
+                            investigation.final_decision.includes('LOW RISK') ? 'LOW RISK' : 'PENDING ASSESSMENT'}
 
-                            ================================================================================
-                                                      EXECUTIVE SUMMARY
-                            ================================================================================
+          ================================================================================
+                                  TRANSACTION DETAILS
+          ================================================================================
 
-                            Investigation Status: ${investigation.all_agents_finished ? 'COMPLETE' : 'IN PROGRESS'}
-                            Agents Completed: ${investigation.agents_completed}/4
-                            Total Messages Processed: ${investigation.total_messages}
-                            Risk Assessment: ${investigation.final_decision.includes('HIGH RISK') ? 'HIGH RISK' : 
-                                              investigation.final_decision.includes('MEDIUM RISK') ? 'MEDIUM RISK' : 
-                                              investigation.final_decision.includes('LOW RISK') ? 'LOW RISK' : 'PENDING ASSESSMENT'}
+          Amount: ${transactionDetails?.currency || 'USD'} ${(transactionDetails?.amount || 0).toLocaleString()}
+          Customer Name: ${transactionDetails?.customer_name || 'N/A'}
+          Destination Country: ${transactionDetails?.country_to || 'N/A'}
+          Account Type: ${transactionDetails?.account_type || 'N/A'}
+          Risk Rating: ${transactionDetails?.risk_rating || 'N/A'}
+          Transaction Description: ${transactionDetails?.description || 'N/A'}
 
-                            ================================================================================
-                                                    TRANSACTION DETAILS
-                            ================================================================================
+          ================================================================================
+                              INVESTIGATION FINDING
+          ================================================================================
 
-                            Amount: ${transactionDetails?.currency || 'USD'} ${(transactionDetails?.amount || 0).toLocaleString()}
-                            Customer Name: ${transactionDetails?.customer_name || 'N/A'}
-                            Destination Country: ${transactionDetails?.country_to || 'N/A'}
-                            Account Type: ${transactionDetails?.account_type || 'N/A'}
-                            Risk Rating: ${transactionDetails?.risk_rating || 'N/A'}
+          ${investigation.final_decision}
 
-                            Transaction Description:
-                            ${transactionDetails?.description || 'N/A'}
+          ================================================================================
+                                    TECHNICAL DETAILS
+          ================================================================================
 
-                            ================================================================================
-                                                DETAILED INVESTIGATION FINDINGS
-                            ================================================================================
+          Investigation Completion: ${investigation.all_agents_finished ? 'All agents completed successfully' : 'Investigation in progress'}
+          Agent Completion Status: ${investigation.agents_completed} out of 4 agents completed
+          Message Processing: ${investigation.total_messages} messages processed during investigation
+          ${investigation.error ? `
+          ================================================================================
+                                        ERROR DETAILS
+          ================================================================================
 
-                            ${investigation.final_decision}
+          ${investigation.error}
+          ` : 'No Errors Found: Report Generation Successful'}
+          This report was generated by InvestigatorAI - Advanced Fraud Detection System
+          Generated on: ${timestamp}
+          Investigation ID: ${investigation.investigation_id}
 
-                            ================================================================================
-                                                      TECHNICAL DETAILS
-                            ================================================================================
+          WARNING: This report contains sensitive information and should be handled according 
+          to your organization's data protection and compliance policies.
 
-                            Investigation Completion: ${investigation.all_agents_finished ? 'All agents completed successfully' : 'Investigation in progress'}
-                            Agent Completion Status: ${investigation.agents_completed} out of 4 agents completed
-                            Message Processing: ${investigation.total_messages} messages processed during investigation
-
-                            ${investigation.error ? `
-                            ================================================================================
-                                                          ERROR DETAILS
-                            ================================================================================
-
-                            ${investigation.error}
-                            ` : ''}
-
-                            ================================================================================
-                                                        REPORT FOOTER
-                            ================================================================================
-
-                            This report was generated by InvestigatorAI - Advanced Fraud Detection System
-                            Generated on: ${timestamp}
-                            Investigation ID: ${investigation.investigation_id}
-
-                            WARNING: This report contains sensitive information and should be handled according 
-                            to your organization's data protection and compliance policies.
-
-                            ================================================================================
-                            `;
-                                              })()}
+          ================================================================================
+                      `;
+                                               })()}
+                  </div>
                 </div>
               )}
             </div>
@@ -814,7 +955,7 @@ export default function InvestigationResults({ investigation, onNewInvestigation
       </div>
 
       {/* Comprehensive Final Report - Prominent Display */}
-      {investigation.final_report_available && investigation.final_report && (
+      {investigation.final_report && (
         <div className="bg-card p-6 rounded-lg shadow-lg border-2 border-blue-200">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-bold text-contrast flex items-center space-x-3">
@@ -842,8 +983,8 @@ export default function InvestigationResults({ investigation, onNewInvestigation
           
           <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 rounded-lg p-6 border border-blue-200 dark:border-blue-800">
             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-600 max-w-none overflow-auto">
-              <div className="text-gray-700 dark:text-gray-300 break-words overflow-wrap-anywhere whitespace-pre-wrap font-mono text-sm leading-relaxed">
-                {investigation.final_report}
+              <div className="text-gray-700 dark:text-gray-300 break-words overflow-wrap-anywhere leading-relaxed">
+                {renderMarkdownContent(investigation.final_report)}
               </div>
             </div>
           </div>
@@ -908,47 +1049,7 @@ export default function InvestigationResults({ investigation, onNewInvestigation
         </div>
       </div>
 
-      {/* Detailed Investigation Analysis */}
-      {investigation.full_results ? (
-        <div className="bg-card p-6 rounded-lg shadow-lg">
-          <h3 className="text-xl font-bold mb-4 text-contrast">Detailed Investigation Analysis</h3>
-          <DetailedResultsViewer results={investigation.full_results} />
-        </div>
-      ) : (
-        <div className="bg-card p-6 rounded-lg shadow-lg">
-          <h3 className="text-xl font-bold mb-4 text-contrast">Investigation Report</h3>
-          <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-            <div className="flex items-center space-x-2">
-              <div className="text-yellow-600 dark:text-yellow-400">⚠️</div>
-              <div className="flex-1">
-                <p className="text-yellow-800 dark:text-yellow-200 font-medium">
-                  Investigation completed but detailed analysis is not available.
-                </p>
-                <p className="text-yellow-700 dark:text-yellow-300 text-sm mt-1">
-                  The investigation finished successfully but the detailed analysis data is missing.
-                  Try running a new investigation or check the debug information below.
-                </p>
-                <button 
-                  onClick={onNewInvestigation}
-                  className="mt-3 px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg text-sm font-medium transition-colors"
-                >
-                  🔄 Start New Investigation
-                </button>
-              </div>
-            </div>
-            
-            {/* Debug info */}
-            <details className="mt-4">
-              <summary className="text-yellow-700 dark:text-yellow-300 cursor-pointer text-sm">
-                Show Debug Information
-              </summary>
-              <pre className="mt-2 p-2 bg-yellow-100 dark:bg-yellow-900/40 rounded text-xs overflow-auto">
-                {JSON.stringify(investigation, null, 2)}
-              </pre>
-            </details>
-          </div>
-        </div>
-      )}
+
     </div>
   );
 }
