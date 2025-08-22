@@ -236,6 +236,7 @@ class UnifiedInvestigationService:
         yield {
             "type": "progress",
             "investigation_id": investigation_id,
+            "investigation_type": request.investigation_type,
             "step": "routing", 
             "message": f"Routing {request.investigation_type} investigation...",
             "progress": 10
