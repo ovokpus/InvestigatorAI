@@ -120,16 +120,16 @@ class ReportGenerator:
         # Extract insights based on agent type
         if agent_name == 'regulatory_research':
             insights['summary'] = f"Regulatory analysis completed for destination jurisdiction"
-            insights['key_points'] = [line for line in clean_lines[:12] if 'risk' in line.lower() or 'compliance' in line.lower()]
+            insights['key_points'] = [line for line in clean_lines if 'risk' in line.lower() or 'compliance' in line.lower()]
         elif agent_name == 'evidence_collection':
             insights['summary'] = f"Risk assessment and evidence collection completed"
-            insights['key_points'] = [line for line in clean_lines[:12] if 'risk' in line.lower() or 'score' in line.lower()]
+            insights['key_points'] = [line for line in clean_lines if 'risk' in line.lower() or 'score' in line.lower()]
         elif agent_name == 'compliance_check':
             insights['summary'] = f"Compliance requirements assessment completed"
-            insights['key_points'] = [line for line in clean_lines[:12] if 'required' in line.lower() or 'SAR' in line or 'CTR' in line]
+            insights['key_points'] = [line for line in clean_lines if 'required' in line.lower() or 'SAR' in line or 'CTR' in line]
         elif agent_name == 'report_generation':
             insights['summary'] = f"Final report compilation completed"
-            insights['key_points'] = [line for line in clean_lines[:8] if 'complete' in line.lower() or 'classification' in line.lower()]
+            insights['key_points'] = [line for line in clean_lines if 'complete' in line.lower() or 'classification' in line.lower()]
         
         return insights
     
@@ -145,7 +145,7 @@ class ReportGenerator:
         for agent_name, findings in agent_findings.items():
             if findings['key_points']:
                 # Validate each key point before adding
-                validated_points = [self.message_processor.validate_content(point) for point in findings['key_points'][:8]]
+                validated_points = [self.message_processor.validate_content(point) for point in findings['key_points']]
                 validated_points = [point for point in validated_points if point and len(point) > 10]
                 key_findings.extend(validated_points)
                 
@@ -180,7 +180,7 @@ class ReportGenerator:
         # Add validated key findings if available
         if key_findings:
             report += "**DETAILED FINDINGS**\n"
-            for i, finding in enumerate(key_findings[:10], 1):  # Limit to top 10 findings
+            for i, finding in enumerate(key_findings, 1):  # Include ALL findings
                 if self.message_processor._is_valid_sentence(finding):
                     report += f"{i}. {finding}\n"
             report += "\n"
@@ -188,7 +188,7 @@ class ReportGenerator:
         # Compliance Requirements
         if compliance_items:
             report += "**COMPLIANCE REQUIREMENTS**\n"
-            for i, item in enumerate(compliance_items[:10], 1):  # Limit and number
+            for i, item in enumerate(compliance_items, 1):  # Include ALL compliance items
                 if self.message_processor._is_valid_sentence(item):
                     report += f"{i}. {item}\n"
             report += "\n"
@@ -231,7 +231,7 @@ class ReportGenerator:
         for agent_name, findings in agent_findings.items():
             if findings['key_points']:
                 # Validate each key point before adding
-                validated_points = [self.message_processor.validate_content(point) for point in findings['key_points'][:8]]
+                validated_points = [self.message_processor.validate_content(point) for point in findings['key_points']]
                 validated_points = [point for point in validated_points if point and len(point) > 10]
                 key_findings.extend(validated_points)
                 
@@ -283,7 +283,7 @@ class ReportGenerator:
         # Add validated key findings if available
         if key_findings:
             report += "**DETAILED FINDINGS**\n"
-            for i, finding in enumerate(key_findings[:10], 1):  # Limit to top 10 findings
+            for i, finding in enumerate(key_findings, 1):  # Include ALL findings
                 if self.message_processor._is_valid_sentence(finding):
                     report += f"{i}. {finding}\n"
             report += "\n"
@@ -291,7 +291,7 @@ class ReportGenerator:
         # Compliance Requirements
         if compliance_items:
             report += "**COMPLIANCE REQUIREMENTS**\n"
-            for i, item in enumerate(compliance_items[:10], 1):  # Limit and number
+            for i, item in enumerate(compliance_items, 1):  # Include ALL compliance items
                 if self.message_processor._is_valid_sentence(item):
                     report += f"{i}. {item}\n"
             report += "\n"

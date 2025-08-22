@@ -67,7 +67,7 @@ class MessageProcessor:
                 # Fallback for any serialization issues
                 print(f"❌ Message serialization error: {e}, message: {message}")
                 serialized_messages.append({
-                    "content": f"Serialization error for message: {str(message)[:200]}",
+                    "content": f"Serialization error for message: {str(message)}",
                     "type": "message",
                     "name": "unknown",
                     "timestamp": datetime.now().isoformat(),
@@ -294,10 +294,11 @@ class MessageProcessor:
             if not any(word in sentence_lower for word in ['risk', 'compliance', 'analysis', 'assessment', 'investigation', 'transaction']):
                 return False
         
-        # Check word count - should be substantial but not too long
+        # Check word count - should be substantial (removed upper limit for detailed reasoning)
         word_count = len(sentence.split())
-        if word_count < 4 or word_count > 50:
+        if word_count < 4:
             return False
+        # Removed 50-word limit to allow detailed reasoning and comprehensive analysis
         
         return True
     

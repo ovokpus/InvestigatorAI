@@ -106,7 +106,7 @@ class StreamingHandler:
                     
                     # Log raw content to trace where fragments come from
                     for i, r in enumerate(results):
-                        raw_preview = r.content[:500] + "..." if len(r.content) > 500 else r.content
+                        raw_preview = r.content  # Show full content for debugging
                         logger.info(f"🔍 [DEBUG] Raw result {i+1}: {raw_preview}")
                     
                     # Apply the same filtering as the regulatory research tool
@@ -120,10 +120,10 @@ class StreamingHandler:
                         category = r.metadata.content_category if hasattr(r, 'metadata') and hasattr(r.metadata, 'content_category') else 'regulatory'
                         logger.info(f"🔍 [DEBUG] Processing result {i+1} with category: {category}")
                         insights = _extract_regulatory_insights(r.content, category)
-                        logger.info(f"🔍 [DEBUG] Filtered insights {i+1}: {insights[:300]}...")
+                        logger.info(f"🔍 [DEBUG] Filtered insights {i+1}: {insights}")
                         
                         # Avoid duplicates
-                        insight_key = insights[:200]
+                        insight_key = insights[:200]  # Keep short key for deduplication only
                         if insight_key not in seen_insights and len(insights) > 20:
                             seen_insights.add(insight_key)
                             unique_results.append(insights)
@@ -133,7 +133,7 @@ class StreamingHandler:
                     
                     final_result = "\n\n".join(unique_results) if unique_results else "BSA/AML compliance requirements apply to this transaction type."
                     logger.info(f"🔍 [DEBUG] Final document_search result length: {len(final_result)} chars")
-                    logger.info(f"🔍 [DEBUG] Final result preview: {final_result[:600]}...")
+                    logger.info(f"🔍 [DEBUG] Final result preview: {final_result}")
                     return final_result
                 logger.warning("🔍 [DEBUG] Vector database not available for document search")
                 return "Vector database not available for document search"
@@ -199,7 +199,7 @@ class StreamingHandler:
             
             async def run_arxiv_search() -> str:
                 description = transaction_details.get('description', '')
-                query = f"financial fraud detection {description[:150]}"
+                query = f"financial fraud detection {description}"
                 
                 # Check cache first
                 cached_arxiv = cache_service.get_cached_arxiv_research(query)
@@ -270,7 +270,7 @@ class StreamingHandler:
                     return {
                         "agent": "regulatory_research",
                         "status": "completed", 
-                        "analysis": f"Regulatory analysis for {country}: {doc_analysis[:200]}...",
+                        "analysis": f"Regulatory analysis for {country}: {doc_analysis}",
                         "risk_assessment": f"Risk assessment completed for ${amount:,} transaction",
                         "completion_time": datetime.now().isoformat()
                     }
@@ -293,7 +293,7 @@ class StreamingHandler:
                         "status": "completed",
                         "risk_score": risk_data.get('risk_score', 0.5) if risk_data else 0.5,
                         "risk_level": risk_data.get('risk_level', 'MEDIUM') if risk_data else 'MEDIUM',
-                        "intelligence": f"External intelligence: {web_intel[:200]}...",
+                        "intelligence": f"External intelligence: {web_intel}",
                         "completion_time": datetime.now().isoformat()
                     }
                 except Exception as e:
@@ -417,13 +417,13 @@ class StreamingHandler:
             
             # Show validated risk factors and compliance requirements
             if risk_analysis and 'risk_factors' in risk_analysis:
-                risk_factors_display = ', '.join(risk_analysis['risk_factors'][:6])  # Limit to top 6
+                risk_factors_display = ', '.join(risk_analysis['risk_factors'])  # Include ALL risk factors
             else:
                 risk_factors_display = "Transaction risk factors assessed"
                 
             compliance_requirements = investigation_data.get('compliance_requirements', [])
             if compliance_requirements:
-                compliance_display = '; '.join(compliance_requirements[:6])  # Limit to top 6
+                compliance_display = '; '.join(compliance_requirements)  # Include ALL compliance requirements
             else:
                 compliance_display = "Compliance requirements determined"
             
@@ -432,14 +432,14 @@ class StreamingHandler:
                     "content": f"REGULATORY ANALYSIS: Comprehensive analysis of ${amount:,} {currency} transaction to {country}. "
                              f"Risk assessment: {risk_analysis['risk_level'] if risk_analysis else 'MEDIUM'} (score: {risk_analysis['risk_score'] if risk_analysis else 0.5:.2f}). "
                              f"Regulatory compliance: {len(compliance_requirements)} requirements identified. "
-                             f"Analysis summary: {doc_analysis[:800]}{'...' if len(doc_analysis) > 800 else ''}",
+                             f"Analysis summary: {doc_analysis}",
                     "name": "regulatory_research"
                 },
                 {
                     "content": f"EVIDENCE COLLECTION: Risk assessment for {customer} identified {len(risk_analysis['risk_factors']) if risk_analysis and 'risk_factors' in risk_analysis else 0} risk factors: "
                              f"{risk_factors_display}. "
-                             f"Intelligence summary: {web_intel[:600]}{'...' if len(web_intel) > 600 else ''} "
-                             f"Research findings: {arxiv_research[:400]}{'...' if len(arxiv_research) > 400 else ''}",
+                             f"Intelligence summary: {web_intel} "
+                             f"Research findings: {arxiv_research}",
                     "name": "evidence_collection"
                 },
                 {
