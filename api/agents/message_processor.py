@@ -90,41 +90,51 @@ class MessageProcessor:
                 serialized_state[key] = str(value)
         return serialized_state
     
+    def extract_frontend_messages(self, messages: List[BaseMessage]) -> List[BaseMessage]:
+        """Extract detailed agent messages for frontend display (preserves detailed reasoning)"""
+        print(f"🎯 Frontend extraction: Processing {len(messages)} messages")
+        
+        # Keep only substantive agent messages with detailed content
+        frontend_messages = []
+        
+        for msg in messages:
+            # Keep ToolMessages with substantial content from agents
+            if isinstance(msg, ToolMessage) and hasattr(msg, 'name'):
+                agent_name = getattr(msg, 'name', '')
+                content = getattr(msg, 'content', '')
+                
+                # Keep detailed agent responses (not just tool confirmations)
+                if (agent_name in ['regulatory_research', 'evidence_collection', 'compliance_check', 'report_generation'] 
+                    and len(content) > 100  # Substantial content
+                    and ('**' in content or 'analysis' in content.lower() or 'assessment' in content.lower())):
+                    frontend_messages.append(msg)
+                    print(f"✅ Kept {agent_name} message ({len(content)} chars)")
+            
+            # Keep AIMessages from agents with tool calls (shows what tools were used)
+            elif isinstance(msg, AIMessage) and hasattr(msg, 'name'):
+                agent_name = getattr(msg, 'name', '')
+                if ('_executor' in agent_name or agent_name in ['regulatory_research', 'evidence_collection', 'compliance_check', 'report_generation']):
+                    frontend_messages.append(msg)
+                    print(f"✅ Kept {agent_name} tool call")
+        
+        print(f"🎯 Frontend messages: {len(messages)} → {len(frontend_messages)} detailed messages")
+        return frontend_messages
+
     def validate_ragas_sequence(self, messages: List[BaseMessage]) -> List[BaseMessage]:
-        """Filter and validate messages for RAGAS compliance"""
+        """Filter and validate messages for RAGAS compliance (more conservative filtering)"""
         print(f"🔍 RAGAS validation: Processing {len(messages)} messages")
         
-        # Status lines that should be filtered for RAGAS
-        STATUS_PREFIXES = (
+        # Only filter out true status/routing messages for RAGAS, keep detailed content
+        RAGAS_FILTER_PREFIXES = (
             "Routing investigation to ",
-            "**REGULATORY ANALYSIS REPORT**",
-            "**EVIDENCE COLLECTION REPORT**", 
-            "**COMPLIANCE ASSESSMENT REPORT**",
-            "**EXECUTIVE SUMMARY**",
-            "**FINAL DECISION**",
-            "**DETAILED REASONING**",
-            "**DETAILED INVESTIGATION ANALYSIS**",
-            "**Regulatory Assessment Synthesis:**",
-            "**Risk and Evidence Analysis Integration:**",
-            "**Compliance Determination Details:**",
-            "**COMPREHENSIVE CONCLUSIONS WITH DETAILED REASONING**",
-            "**Final Risk Classification:**",
-            "**Business Rationale Assessment:**",
-            "**Decision Logic Chain:**",
-            "**Alternative Risk Scenarios:**",
-            "**Confidence Level:**",
-            "**Recommended Actions:**",
-            "**CRITICAL SYNTHESIS REQUIREMENTS:**",
-            "**DOCUMENTATION REQUIREMENTS:**",
-            "**QUALITY ASSURANCE:**",
-            "**ESCALATION AND NOTIFICATION:**",
             "Investigation completed. All specialist agents",
+            "Initiating ",  # Supervisor routing messages
         )
         
         def is_status_line(msg: BaseMessage) -> bool:
             return (isinstance(msg, HumanMessage) and 
                    isinstance(msg.content, str) and
-                   any(msg.content.startswith(p) for p in STATUS_PREFIXES))
+                   any(msg.content.startswith(p) for p in RAGAS_FILTER_PREFIXES))
         
         # Filter out status lines
         filtered = [msg for msg in messages if not is_status_line(msg)]

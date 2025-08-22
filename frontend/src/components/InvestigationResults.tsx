@@ -779,13 +779,13 @@ to your organization's data protection and compliance policies.
               <h4 className="text-lg font-bold text-gray-800 dark:text-gray-200">📊 Investigation Report</h4>
               <div className="flex space-x-2">
                 <button
-                  onClick={() => copyToClipboard(investigation.final_decision)}
+                  onClick={() => copyToClipboard(generateReportContent(investigation))}
                   className={`px-3 py-1 text-sm font-medium rounded-md transition-all duration-200 flex items-center space-x-2 ${
                     copySuccess 
                       ? 'bg-green-600 text-white' 
                       : 'bg-gray-600 hover:bg-gray-700 text-white hover:shadow-md'
                   }`}
-                  title="Copy report to clipboard"
+                  title="Copy full report to clipboard"
                 >
                   <span>{copySuccess ? '✅' : '📋'}</span>
                   <span>{copySuccess ? 'Copied!' : 'Copy'}</span>
@@ -808,7 +808,96 @@ to your organization's data protection and compliance policies.
               {investigation.final_decision.includes('**FRAUD INVESTIGATION COMPLETE**') ? (
                 <MarkdownRenderer content={investigation.final_decision} />
               ) : (
-                <div className="text-gray-700 dark:text-gray-300 break-words overflow-wrap-anywhere whitespace-pre-wrap">{investigation.final_decision}</div>
+                <div className="text-gray-700 dark:text-gray-300 break-words overflow-wrap-anywhere whitespace-pre-wrap">
+                  {(() => {
+                    const timestamp = new Date().toISOString();
+                    const transactionDetails = investigation.transaction_details;
+                    
+                    return `
+================================================================================
+                        FRAUD INVESTIGATION REPORT
+================================================================================
+
+Report Generated: ${timestamp}
+Investigation ID: ${investigation.investigation_id}
+Status: ${investigation.status}
+
+================================================================================
+                           EXECUTIVE SUMMARY
+================================================================================
+
+Investigation Status: ${investigation.all_agents_finished ? 'COMPLETE' : 'IN PROGRESS'}
+Agents Completed: ${investigation.agents_completed}/4
+Total Messages Processed: ${investigation.total_messages}
+Risk Assessment: ${investigation.final_decision.includes('HIGH RISK') ? 'HIGH RISK' : 
+                   investigation.final_decision.includes('MEDIUM RISK') ? 'MEDIUM RISK' : 
+                   investigation.final_decision.includes('LOW RISK') ? 'LOW RISK' : 'PENDING ASSESSMENT'}
+
+================================================================================
+                         TRANSACTION DETAILS
+================================================================================
+
+Amount: ${transactionDetails?.currency || 'USD'} ${(transactionDetails?.amount || 0).toLocaleString()}
+Customer Name: ${transactionDetails?.customer_name || 'N/A'}
+Destination Country: ${transactionDetails?.country_to || 'N/A'}
+Account Type: ${transactionDetails?.account_type || 'N/A'}
+Risk Rating: ${transactionDetails?.risk_rating || 'N/A'}
+
+Transaction Description:
+${transactionDetails?.description || 'N/A'}
+
+================================================================================
+                     DETAILED INVESTIGATION FINDINGS
+================================================================================
+
+${investigation.final_decision}
+
+================================================================================
+                           TECHNICAL DETAILS
+================================================================================
+
+Investigation Completion: ${investigation.all_agents_finished ? 'All agents completed successfully' : 'Investigation in progress'}
+Agent Completion Status: ${investigation.agents_completed} out of 4 agents completed
+Message Processing: ${investigation.total_messages} messages processed during investigation
+
+${investigation.error ? `
+================================================================================
+                              ERROR DETAILS
+================================================================================
+
+${investigation.error}
+` : ''}
+
+================================================================================
+                         ADDITIONAL DATA
+================================================================================
+
+${investigation.full_results?.messages ? `
+Agent Communication Log:
+------------------------
+
+${investigation.full_results.messages.map((message: InvestigationMessage, index: number) => `Message ${index + 1} (${message.type}):
+${message.content}
+
+---
+
+`).join('')}` : ''}
+
+================================================================================
+                            REPORT FOOTER
+================================================================================
+
+This report was generated by InvestigatorAI - Advanced Fraud Detection System
+Generated on: ${timestamp}
+Investigation ID: ${investigation.investigation_id}
+
+WARNING: This report contains sensitive information and should be handled according 
+to your organization's data protection and compliance policies.
+
+================================================================================
+`;
+                  })()}
+                </div>
               )}
             </div>
           </div>

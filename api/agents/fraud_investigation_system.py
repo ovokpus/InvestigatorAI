@@ -371,6 +371,29 @@ class FraudInvestigationSystem:
             
         return state_updates
     
+    def _create_frontend_results(self, final_state: Dict[str, Any]) -> Dict[str, Any]:
+        """Create frontend-optimized results with detailed agent messages"""
+        # Extract detailed agent messages for frontend display
+        messages = final_state.get("messages", [])
+        frontend_messages = self.message_processor.extract_frontend_messages(messages)
+        
+        # Serialize the frontend messages
+        serialized_frontend_messages = self.message_processor.serialize_messages(frontend_messages)
+        
+        # Create frontend-optimized results
+        frontend_results = {
+            "investigation_id": final_state.get("investigation_id", "Unknown"),
+            "investigation_status": final_state.get("investigation_status", "completed"),
+            "agents_completed": final_state.get("agents_completed", []),
+            "messages": serialized_frontend_messages,  # Detailed agent messages for frontend
+            "total_messages": len(messages),
+            "frontend_message_count": len(frontend_messages),
+            "detailed_reasoning_available": len(frontend_messages) > 0
+        }
+        
+        print(f"🎯 Created frontend results: {len(frontend_messages)} detailed messages for display")
+        return frontend_results
+    
     @traceable(name="investigate_fraud_multi_agent", tags=["investigation", "multi-agent", "fraud"])
     def investigate_fraud(self, transaction_details: Dict[str, Any]) -> Dict[str, Any]:
         """Run a fraud investigation using the LangGraph multi-agent system"""
@@ -430,7 +453,7 @@ class FraudInvestigationSystem:
                 "total_messages": total_messages,
                 "transaction_details": transaction_details,
                 "all_agents_finished": all_agents_finished,
-                "full_results": self.message_processor.serialize_state(final_state),
+                "full_results": self._create_frontend_results(final_state),
                 "ragas_validated_messages": self.message_processor.validate_ragas_sequence(final_state.get("messages", [])),
                 "performance": {
                     "total_duration_s": total_duration,
