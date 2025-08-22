@@ -526,7 +526,100 @@ class FraudInvestigationSystem:
             }
     
     async def investigate_fraud_stream(self, transaction_details: Dict[str, Any]) -> AsyncGenerator[Dict[str, Any], None]:
-        """Stream a fraud investigation using the streaming handler"""
+        """Stream a fraud investigation using the REAL LangGraph workflow with detailed reasoning"""
+        import asyncio
+        from concurrent.futures import ThreadPoolExecutor
+        
+        # Create investigation state
         investigation_state = self.create_investigation_state(transaction_details)
-        async for result in self.streaming_handler.investigate_fraud_stream(transaction_details, investigation_state):
-            yield result
+        
+        # Yield initial progress
+        yield {
+            "type": "progress",
+            "step": "setup",
+            "agent": "system", 
+            "message": "Initializing LangGraph multi-agent investigation...",
+            "progress": 5
+        }
+        
+        # Run the actual LangGraph workflow in a thread to avoid blocking
+        def run_langgraph_workflow():
+            return self.investigation_graph.invoke(investigation_state)
+        
+        # Execute workflow with progress simulation
+        with ThreadPoolExecutor() as executor:
+            # Start the workflow
+            future = executor.submit(run_langgraph_workflow)
+            
+            # Simulate progress while workflow runs
+            progress_steps = [
+                (10, "supervisor", "Starting agent coordination..."),
+                (20, "regulatory_research", "Analyzing regulatory requirements..."),
+                (35, "evidence_collection", "Collecting evidence and calculating risk..."),
+                (50, "compliance_check", "Checking compliance requirements..."),
+                (70, "report_generation", "Generating detailed reasoning and final report..."),
+                (90, "system", "Finalizing investigation results...")
+            ]
+            
+            step_duration = 8.0  # seconds per step
+            for progress, agent, message in progress_steps:
+                # Check if workflow is done
+                if future.done():
+                    break
+                    
+                yield {
+                    "type": "progress",
+                    "step": "agent_execution",
+                    "agent": agent,
+                    "message": message,
+                    "progress": progress
+                }
+                
+                # Wait for step duration or until workflow completes
+                try:
+                    final_state = future.result(timeout=step_duration)
+                    break  # Workflow completed
+                except:
+                    continue  # Keep waiting
+            
+            # Get final results (wait if needed)
+            if not future.done():
+                yield {
+                    "type": "progress", 
+                    "step": "finalizing",
+                    "agent": "system",
+                    "message": "Completing final analysis...",
+                    "progress": 95
+                }
+                final_state = future.result()  # Wait for completion
+            else:
+                final_state = future.result()
+        
+        # Extract detailed reasoning for frontend
+        frontend_results = self._create_frontend_results(final_state)
+        
+        # Generate final decision
+        final_decision_result = self.report_generator.generate_final_decision_with_report(final_state.get("messages", []))
+        
+        # Create completion result with detailed reasoning
+        completion_result = {
+            "investigation_id": final_state.get("investigation_id", "Unknown"),
+            "status": final_state.get("investigation_status", "completed"),
+            "final_decision": final_decision_result["decision"],
+            "investigation_report": final_decision_result["report"],
+            "agents_completed": len(final_state.get("agents_completed", [])),
+            "total_messages": len(final_state.get("messages", [])),
+            "transaction_details": transaction_details,
+            "all_agents_finished": True,
+            "full_results": frontend_results,  # Contains detailed reasoning for frontend
+            "detailed_reasoning_available": frontend_results.get("detailed_reasoning_available", False)
+        }
+        
+        yield {
+            "type": "complete",
+            "step": "complete",
+            "agent": "system",
+            "message": "Investigation completed with detailed reasoning",
+            "progress": 100,
+            "result": completion_result
+        }
