@@ -14,7 +14,7 @@ startCommand = "uvicorn api.main:app --host 0.0.0.0 --port $PORT"
 # Main API service (using your existing "repo" service)
 [[services]]
 name = "repo"
-source = "."
+source = "../"
 dockerfile = "api/Dockerfile"
 
 [services.repo.variables]
