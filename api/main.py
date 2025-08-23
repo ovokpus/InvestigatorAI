@@ -1,6 +1,7 @@
 """FastAPI application for InvestigatorAI - Modular Version"""
 
 import logging
+import os
 from datetime import datetime
 from typing import Any, AsyncGenerator
 from contextlib import asynccontextmanager
@@ -30,10 +31,24 @@ from api.core.dependencies import app_state, RateLimiter, get_app_settings
 from api.endpoints.investigation import investigation_router
 from api.endpoints.tools import tools_router
 from api.endpoints.cache import cache_router
+from api.middleware.logging_middleware import LoggingMiddleware, StreamingLoggingMiddleware
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+# Configure comprehensive logging
+from api.utils.logging_config import setup_logging, get_logger
+
+# Setup logging based on environment
+log_level = os.getenv("LOG_LEVEL", "INFO")
+log_to_file = os.getenv("LOG_TO_FILE", "true").lower() == "true"
+json_logging = os.getenv("JSON_LOGGING", "false").lower() == "true"
+
+setup_logging(
+    log_level=log_level,
+    log_to_file=log_to_file,
+    json_logging=json_logging,
+    enable_performance_logging=True
+)
+
+logger = get_logger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
@@ -128,6 +143,10 @@ app.add_middleware(
     allow_methods=["GET", "POST", "DELETE", "PUT", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
 )
+
+# Add logging middleware
+app.add_middleware(LoggingMiddleware, exclude_paths=["/health", "/docs", "/openapi.json", "/favicon.ico"])
+app.add_middleware(StreamingLoggingMiddleware)
 
 # Include routers
 app.include_router(investigation_router)

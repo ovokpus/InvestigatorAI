@@ -1,15 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 
-interface TransactionDetails {
-  amount?: number;
-  currency?: string;
-  customer_name?: string;
-  country_to?: string;
-  account_type?: string;
-  description?: string;
-  risk_rating?: string;
-}
+
 
 interface InvestigationMessage {
   content: string;
@@ -26,19 +18,7 @@ interface FullResults {
   [key: string]: unknown;
 }
 
-interface Investigation {
-  investigation_id: string;
-  status: string;
-  final_decision: string;
-  agents_completed: number;
-  total_messages: number;
-  transaction_details: TransactionDetails;
-  all_agents_finished: boolean;
-  error?: string;
-  full_results?: FullResults;
-  final_report?: string;
-  final_report_available?: boolean;
-}
+
 
 
 

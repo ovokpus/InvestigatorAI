@@ -34,7 +34,7 @@ async def test_api_tracing():
     # Test 2: Test multi-agent system tracing
     print("\n2. Testing Multi-Agent System Tracing:")
     try:
-        from api.agents.multi_agent_system import FraudInvestigationSystem
+        from api.agents.langgraph.multi_agent_system import FraudInvestigationSystem
         print("   ✅ Multi-agent system import successful")
         print("   ✅ @traceable decorators applied to investigation methods")
         
@@ -141,7 +141,7 @@ def test_tracing_decorators():
     
     # Check multi-agent methods
     try:
-        from api.agents.multi_agent_system import FraudInvestigationSystem
+        from api.agents.langgraph.multi_agent_system import FraudInvestigationSystem
         system_methods = ["investigate_fraud", "investigate_fraud_stream"]
         
         for method_name in system_methods:

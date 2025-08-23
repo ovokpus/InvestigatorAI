@@ -23,19 +23,127 @@ logger = logging.getLogger(__name__)
 
 
 def serialize_for_json(obj: Any) -> Any:
-    """Recursively serialize objects for JSON, handling datetime and dataclass objects"""
+    """
+    Recursively serialize objects for JSON, handling various Python types.
+    
+    Args:
+        obj: The object to serialize
+        
+    Returns:
+        JSON-serializable representation of the object
+        
+    Handles:
+        - datetime objects -> ISO format strings
+        - Pydantic models -> model_dump()
+        - dataclasses -> dict representation
+        - sets -> lists
+        - bytes -> base64 encoded strings
+        - Decimal -> float
+        - UUID -> string
+        - Enum -> value
+        - Complex numbers -> dict with real/imag
+        - Custom objects with __dict__ -> dict
+    """
+    # Handle None explicitly
+    if obj is None:
+        return None
+        
+    # Handle datetime objects
     if isinstance(obj, datetime):
         return obj.isoformat()
-    elif hasattr(obj, 'model_dump'):  # Pydantic model
-        return obj.model_dump()
-    elif hasattr(obj, '__dataclass_fields__'):  # dataclass
-        return {k: serialize_for_json(v) for k, v in asdict(obj).items()}
-    elif isinstance(obj, dict):
-        return {k: serialize_for_json(v) for k, v in obj.items()}
-    elif isinstance(obj, (list, tuple)):
-        return [serialize_for_json(item) for item in obj]
-    else:
+    
+    # Handle date objects (separate from datetime)
+    if hasattr(obj, 'isoformat') and not isinstance(obj, datetime):
+        return obj.isoformat()
+    
+    # Handle Pydantic models
+    if hasattr(obj, 'model_dump'):
+        try:
+            return obj.model_dump()
+        except Exception as e:
+            logger.warning(f"Failed to serialize Pydantic model: {e}")
+            return str(obj)
+    
+    # Handle dataclasses
+    if hasattr(obj, '__dataclass_fields__'):
+        try:
+            return {k: serialize_for_json(v) for k, v in asdict(obj).items()}
+        except Exception as e:
+            logger.warning(f"Failed to serialize dataclass: {e}")
+            return str(obj)
+    
+    # Handle dictionaries
+    if isinstance(obj, dict):
+        try:
+            return {str(k): serialize_for_json(v) for k, v in obj.items()}
+        except Exception as e:
+            logger.warning(f"Failed to serialize dict: {e}")
+            return {}
+    
+    # Handle sequences (list, tuple, set)
+    if isinstance(obj, (list, tuple, set)):
+        try:
+            return [serialize_for_json(item) for item in obj]
+        except Exception as e:
+            logger.warning(f"Failed to serialize sequence: {e}")
+            return []
+    
+    # Handle bytes
+    if isinstance(obj, bytes):
+        try:
+            import base64
+            return base64.b64encode(obj).decode('utf-8')
+        except Exception as e:
+            logger.warning(f"Failed to serialize bytes: {e}")
+            return str(obj)
+    
+    # Handle Decimal
+    try:
+        from decimal import Decimal
+        if isinstance(obj, Decimal):
+            return float(obj)
+    except ImportError:
+        pass
+    
+    # Handle UUID
+    try:
+        from uuid import UUID
+        if isinstance(obj, UUID):
+            return str(obj)
+    except ImportError:
+        pass
+    
+    # Handle Enum
+    if hasattr(obj, '__class__') and hasattr(obj.__class__, '__bases__'):
+        try:
+            from enum import Enum
+            if isinstance(obj, Enum):
+                return obj.value
+        except ImportError:
+            pass
+    
+    # Handle complex numbers
+    if isinstance(obj, complex):
+        return {"real": obj.real, "imag": obj.imag}
+    
+    # Handle objects with __dict__
+    if hasattr(obj, '__dict__'):
+        try:
+            return {k: serialize_for_json(v) for k, v in obj.__dict__.items() if not k.startswith('_')}
+        except Exception as e:
+            logger.warning(f"Failed to serialize object with __dict__: {e}")
+            return str(obj)
+    
+    # Handle primitive types that are already JSON serializable
+    if isinstance(obj, (str, int, float, bool)):
         return obj
+    
+    # Fallback: convert to string
+    try:
+        return str(obj)
+    except Exception as e:
+        logger.error(f"Failed to serialize object of type {type(obj)}: {e}")
+        return f"<unserializable: {type(obj).__name__}>"
 
 
 @dataclass

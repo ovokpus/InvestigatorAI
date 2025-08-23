@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { logger } from '@/utils/logger';
 import InvestigationForm from '@/components/InvestigationForm';
 import InvestigationResults from '@/components/InvestigationResults';
 import Header from '@/components/Header';
@@ -47,15 +48,30 @@ export default function Home() {
   const [currentProgress, setCurrentProgress] = useState(0);
 
   const handleInvestigationSubmit = async (formData: FormData) => {
+    logger.logUserAction('investigation_submit', { 
+      amount: formData.amount,
+      currency: formData.currency,
+      country_to: formData.country_to,
+      component: 'investigation-form'
+    });
+
     setIsLoading(true);
     setProgressUpdates([]);
     setCurrentProgress(0);
     setInvestigation(null);
     
+    const startTime = performance.now(); // Move outside try block
+    
     try {
       // Use streaming endpoint for real-time progress
       // Add cache busting
       const cacheBuster = Date.now();
+      
+      logger.info('Starting investigation API call', {
+        component: 'investigation-api',
+        endpoint: '/investigate/stream'
+      });
+
       const response = await fetch(`http://localhost:8000/investigate/stream?t=${cacheBuster}`, {
         method: 'POST',
         headers: {
@@ -63,6 +79,9 @@ export default function Home() {
         },
         body: JSON.stringify(formData),
       });
+
+      const apiCallDuration = performance.now() - startTime;
+      logger.logApiCall('POST', '/investigate/stream', response.status, apiCallDuration);
 
       if (!response.ok) {
         // Handle HTTP error responses
@@ -88,6 +107,12 @@ export default function Home() {
           }
         }
         
+        logger.error('Investigation API call failed', {
+          component: 'investigation-api',
+          status: response.status,
+          statusText: response.statusText
+        });
+        
         alert(errorMessage);
         return;
       }
@@ -108,13 +133,13 @@ export default function Home() {
         const { done, value } = await reader.read();
         
         if (done) {
-          console.log('📡 Stream ended normally');
+
           break;
         }
         
         // Check for timeout
         if (Date.now() - lastEventTime > TIMEOUT_MS) {
-          console.log('⏰ Investigation timeout - auto-completing');
+
           setIsLoading(false);
           break;
         }
@@ -136,30 +161,30 @@ export default function Home() {
               setProgressUpdates(prev => [...prev, data]);
               setCurrentProgress(data.progress);
               
-              console.log('📨 Received event:', {
-                type: data.type, 
-                step: data.step,
-                progress: data.progress,
-                completed_agents: data.completed_agents,
-                hasResult: !!data.result
-              });
+
               
               // Handle completion
               if (data.type === 'complete' && data.result) {
-                console.log('✅ Completion event received:', data);
+                const totalDuration = performance.now() - startTime;
+                logger.logInvestigationEvent('investigation_completed', data.result.investigation_id, {
+                  duration_ms: totalDuration,
+                  final_decision: data.result.final_decision,
+                  agents_completed: data.result.agents_completed
+                });
+
                 setInvestigation(data.result);
                 setIsLoading(false);
-                console.log('✅ Investigation completed, loading set to false');
+
                 return; // Exit successfully
               }
               
               // Fallback: Auto-complete when all agents finish and progress is 100%
               if (data.progress === 100 && data.step === 'agent_complete' && data.completed_agents === 4) {
-                console.log('🔄 Auto-completing investigation - all agents finished');
+
                 // Small delay to ensure we have all data, then complete
                 setTimeout(() => {
                   setIsLoading(false);
-                  console.log('🔄 Auto-completion: loading set to false');
+
                 }, 1000);
               }
               
@@ -177,12 +202,18 @@ export default function Home() {
       
       // Final fallback: if we reach here and still loading, force completion
       if (isLoading) {
-        console.log('🔄 Stream ended but still loading - forcing completion');
+
         setIsLoading(false);
       }
       
     } catch (error: unknown) {
-      console.error('Investigation failed:', error);
+      const totalDuration = performance.now() - startTime;
+      
+      logger.error('Investigation failed', {
+        component: 'investigation-api',
+        duration_ms: totalDuration,
+        error: error instanceof Error ? error.message : String(error)
+      }, error instanceof Error ? error : undefined);
       
       let errorMessage = '🌐 Connection Error\n\nCannot connect to the API server. Please ensure the backend is running on localhost:8000.';
       
@@ -198,6 +229,8 @@ export default function Home() {
   };
 
   const handleNewInvestigation = () => {
+    logger.logUserAction('new_investigation', { component: 'investigation-results' });
+    
     setInvestigation(null);
     setProgressUpdates([]);
     setCurrentProgress(0);
@@ -262,28 +295,7 @@ export default function Home() {
           </nav>
         </div>
 
-        {/* Coming Soon Notice */}
-        <div className="mb-8 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/20 dark:to-indigo-950/20 rounded-lg p-6 border border-purple-200 dark:border-purple-800">
-          <h2 className="text-xl font-bold text-purple-800 dark:text-purple-200 mb-3 flex items-center space-x-2">
-            <span>🚧</span>
-            <span>COMING SOON: Advanced Investigation Features</span>
-          </h2>
-          <p className="text-purple-700 dark:text-purple-300 leading-relaxed">
-            <strong>InvestigatorAI 2.0</strong> is in development! We&apos;re building a unified investigation system supporting 4 investigation types: 
-            fraud transactions, entity research, academic research, and general research. Enhanced with 30% faster processing, 
-            memory optimization, and production-ready reliability features.
-          </p>
-        </div>
 
-        {/* App Description */}
-        <div className="mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 rounded-lg p-6 border border-blue-200 dark:border-blue-800">
-          <h2 className="text-2xl font-bold text-blue-800 dark:text-blue-200 mb-3">🔍 What InvestigatorAI Does</h2>
-          <p className="text-blue-700 dark:text-blue-300 leading-relaxed">
-            InvestigatorAI is a multi-agent fraud investigation system that transforms suspicious transaction analysis from a 6-hour manual process into a 90-minute AI-assisted workflow. 
-            Our platform combines 4 specialized AI agents with real regulatory data from INTERPOL, FinCEN, and FFIEC to provide comprehensive fraud investigation, 
-            compliance checking, and audit-ready documentation—reducing investigation time by 75% while ensuring regulatory compliance and improving fraud detection quality.
-          </p>
-        </div>
 
         {!investigation ? (
           <div className="grid lg:grid-cols-2 gap-8">
@@ -452,6 +464,29 @@ export default function Home() {
             onNewInvestigation={handleNewInvestigation}
           />
         )}
+
+        {/* Coming Soon Notice */}
+        <div className="mt-12 mb-8 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/20 dark:to-indigo-950/20 rounded-lg p-6 border border-purple-200 dark:border-purple-800">
+          <h2 className="text-xl font-bold text-purple-800 dark:text-purple-200 mb-3 flex items-center space-x-2">
+            <span>🚧</span>
+            <span>COMING SOON: Advanced Investigation Features</span>
+          </h2>
+          <p className="text-purple-700 dark:text-purple-300 leading-relaxed">
+            <strong>InvestigatorAI 2.0</strong> is in development! We&apos;re building a unified investigation system supporting 4 investigation types: 
+            fraud transactions, entity research, academic research, and general research. Enhanced with 30% faster processing, 
+            memory optimization, and production-ready reliability features.
+          </p>
+        </div>
+
+        {/* App Description */}
+        <div className="mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 rounded-lg p-6 border border-blue-200 dark:border-blue-800">
+          <h2 className="text-2xl font-bold text-blue-800 dark:text-blue-200 mb-3">🔍 What InvestigatorAI Does</h2>
+          <p className="text-blue-700 dark:text-blue-300 leading-relaxed">
+            InvestigatorAI is a multi-agent fraud investigation system that transforms suspicious transaction analysis from a 6-hour manual process into a 90-minute AI-assisted workflow. 
+            Our platform combines 4 specialized AI agents with real regulatory data from INTERPOL, FinCEN, and FFIEC to provide comprehensive fraud investigation, 
+            compliance checking, and audit-ready documentation—reducing investigation time by 75% while ensuring regulatory compliance and improving fraud detection quality.
+          </p>
+        </div>
       </main>
     </div>
   );

@@ -65,7 +65,7 @@ class MessageProcessor:
                     })
             except Exception as e:
                 # Fallback for any serialization issues
-                print(f"❌ Message serialization error: {e}, message: {message}")
+                logger.error(f"Message serialization error: {e}, message: {message}")
                 serialized_messages.append({
                     "content": f"Serialization error for message: {str(message)}",
                     "type": "message",
@@ -74,7 +74,7 @@ class MessageProcessor:
                     "error": f"Serialization error: {str(e)}"
                 })
         
-        print(f"✅ Serialized {len(serialized_messages)} messages successfully")
+        logger.debug(f"Serialized {len(serialized_messages)} messages successfully")
         return serialized_messages
     
     def serialize_state(self, state: Dict[str, Any]) -> Dict[str, Any]:
@@ -92,7 +92,7 @@ class MessageProcessor:
     
     def extract_final_report(self, messages: List[BaseMessage]) -> str:
         """Extract the comprehensive final report from Report Generation Agent"""
-        print(f"📊 Final report extraction: Processing {len(messages)} messages")
+        logger.debug(f"Final report extraction: Processing {len(messages)} messages")
         
         for msg in messages:
             if isinstance(msg, ToolMessage) and hasattr(msg, 'name'):
@@ -111,15 +111,15 @@ class MessageProcessor:
                     else:
                         report_content = content
                     
-                    print(f"📊 Found final report from {agent_name} ({len(report_content)} chars)")
+                    logger.debug(f"Found final report from {agent_name} ({len(report_content)} chars)")
                     return report_content
         
-        print("❌ No comprehensive final report found")
+        logger.warning("No comprehensive final report found")
         return ""
     
     def extract_frontend_messages(self, messages: List[BaseMessage]) -> List[BaseMessage]:
         """Extract detailed agent messages for frontend display - ONLY ToolMessages with detailed content"""
-        print(f"🎯 Frontend extraction: Processing {len(messages)} messages")
+        logger.debug(f"Frontend extraction: Processing {len(messages)} messages")
         
         # Keep ONLY ToolMessages with detailed agent responses - filter out ALL AIMessages
         frontend_messages = []
@@ -135,26 +135,26 @@ class MessageProcessor:
                     and len(content) > 100  # Substantial content
                     and ('**' in content or 'analysis' in content.lower() or 'assessment' in content.lower() or 'report' in content.lower())):
                     frontend_messages.append(msg)
-                    print(f"✅ Kept ToolMessage from {agent_name} ({len(content)} chars)")
+                    logger.debug(f"Kept ToolMessage from {agent_name} ({len(content)} chars)")
                 else:
-                    print(f"❌ Filtered out {agent_name} - insufficient content ({len(content)} chars)")
+                    logger.debug(f"Filtered out {agent_name} - insufficient content ({len(content)} chars)")
             
             # FILTER OUT all AIMessages (tool call initiations)
             elif isinstance(msg, AIMessage):
                 agent_name = getattr(msg, 'name', 'unknown')
-                print(f"❌ Filtered out AIMessage from {agent_name} (tool call initiation)")
+                logger.debug(f"Filtered out AIMessage from {agent_name} (tool call initiation)")
             
             # Filter out other message types
             else:
                 msg_type = type(msg).__name__
-                print(f"❌ Filtered out {msg_type} message")
+                logger.debug(f"Filtered out {msg_type} message")
         
-        print(f"🎯 Frontend messages: {len(messages)} → {len(frontend_messages)} ToolMessages with detailed content")
+        logger.info(f"Frontend messages: {len(messages)} → {len(frontend_messages)} ToolMessages with detailed content")
         return frontend_messages
 
     def validate_ragas_sequence(self, messages: List[BaseMessage]) -> List[BaseMessage]:
         """Filter and validate messages for RAGAS compliance (more conservative filtering)"""
-        print(f"🔍 RAGAS validation: Processing {len(messages)} messages")
+        logger.debug(f"RAGAS validation: Processing {len(messages)} messages")
         
         # Only filter out true status/routing messages for RAGAS, keep detailed content
         RAGAS_FILTER_PREFIXES = (
@@ -170,14 +170,14 @@ class MessageProcessor:
         
         # Filter out status lines
         filtered = [msg for msg in messages if not is_status_line(msg)]
-        print(f"🧹 Filtered out {len(messages) - len(filtered)} status messages")
+        logger.debug(f"Filtered out {len(messages) - len(filtered)} status messages")
         
         # Debug: show message types
         for i, msg in enumerate(filtered):
             msg_type = type(msg).__name__
             has_tool_calls = hasattr(msg, 'tool_calls') and msg.tool_calls
             tool_call_id = getattr(msg, 'tool_call_id', None)
-            print(f"  {i}: {msg_type} (tool_calls: {has_tool_calls}, tool_call_id: {tool_call_id})")
+            logger.debug(f"  {i}: {msg_type} (tool_calls: {has_tool_calls}, tool_call_id: {tool_call_id})")
         
         # Ensure proper AIMessage -> ToolMessage sequences for RAGAS
         validated: List[BaseMessage] = []
@@ -218,7 +218,7 @@ class MessageProcessor:
                             "type": "function"
                         }]
                     )
-                    print(f"🔧 Creating AIMessage → ToolMessage pair for tool '{tool_name}' (id: {tool_call_id})")
+                    logger.debug(f"Creating AIMessage → ToolMessage pair for tool '{tool_name}' (id: {tool_call_id})")
                     validated.append(ai_stub)
                 
                 # Add the ToolMessage
@@ -254,7 +254,7 @@ class MessageProcessor:
                                 tool_call_id=tc.get("id"),
                                 name=tc.get("name", "unknown_tool")
                             )
-                            print(f"🔧 Creating stub ToolMessage for tool_call_id: {tc.get('id')}")
+                            logger.debug(f"Creating stub ToolMessage for tool_call_id: {tc.get('id')}")
                             validated.append(stub_tool_msg)
                 else:
                     # Regular AIMessage without tool calls
@@ -266,7 +266,7 @@ class MessageProcessor:
             
             i += 1
         
-        print(f"✅ Normalized {len(filtered)} → {len(validated)} messages for RAGAS")
+        logger.info(f"Normalized {len(filtered)} → {len(validated)} messages for RAGAS")
         return validated
     
     def validate_content(self, content: str) -> str:

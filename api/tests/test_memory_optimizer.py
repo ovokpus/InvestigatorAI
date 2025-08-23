@@ -7,6 +7,7 @@ investigations don't cause memory leaks and perform efficiently.
 import pytest
 import gc
 import time
+import logging
 from unittest.mock import Mock, patch
 
 from api.services.memory_optimizer import MemoryOptimizer, MemoryMetrics, get_memory_optimizer
@@ -215,6 +216,9 @@ class TestMemoryOptimizer:
     
     def test_log_memory_status(self, memory_optimizer, caplog):
         """Test memory status logging"""
+        # Set the logger level to capture INFO logs
+        caplog.set_level(logging.INFO, logger='api.services.memory_optimizer')
+        
         with patch.object(memory_optimizer, 'get_memory_metrics') as mock_metrics:
             mock_metrics.return_value = MemoryMetrics(
                 total_memory_mb=1000, used_memory_mb=400, available_memory_mb=600,
@@ -283,7 +287,7 @@ class TestMemoryOptimizerIntegration:
         for cycle in range(10):
             test_data = {
                 "cycle": cycle,
-                "large_content": "x" * 50000,  # 50KB
+                "large_content": "x" * 50001,  # 50KB + 1 char (exceeds threshold)
                 "messages": [{"content": "msg" + str(i)} for i in range(100)]
             }
             
@@ -291,7 +295,8 @@ class TestMemoryOptimizerIntegration:
             
             # Verify consistent behavior
             assert cleaned["cycle"] == cycle
-            assert len(cleaned["large_content"]) < 50000
+            # Content should be truncated (original was 50001, truncated to 50000 + message)
+            assert "TRUNCATED" in cleaned["large_content"]
             assert len(cleaned["messages"]) <= 100
 
 

@@ -536,9 +536,9 @@ class StreamingHandler:
                 }
             }
             
-            print(f"📊 Enhanced investigation completed with real tool calling")
-            print(f"🎯 Risk score: {risk_analysis['risk_score'] if risk_analysis else 0.5:.2f} ({risk_analysis['risk_level'] if risk_analysis else 'MEDIUM'})")
-            print(f"⚖️ Compliance requirements: {len(compliance_requirements)}")
+            logger.info("Enhanced investigation completed with real tool calling")
+            logger.info(f"Risk score: {risk_analysis['risk_score'] if risk_analysis else 0.5:.2f} ({risk_analysis['risk_level'] if risk_analysis else 'MEDIUM'})")
+            logger.info(f"Compliance requirements: {len(compliance_requirements)}")
             
             yield {
                 "type": "complete",

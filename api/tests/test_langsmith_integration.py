@@ -57,7 +57,7 @@ def test_langsmith_integration():
     print("\n4. Testing API Component Imports:")
     components = [
         ("Main API", "api.main"),
-        ("Multi-Agent System", "api.agents.multi_agent_system"),
+        ("Multi-Agent System", "api.agents.langgraph.multi_agent_system"),
         ("Vector Store", "api.services.vector_store"),
     ]
     

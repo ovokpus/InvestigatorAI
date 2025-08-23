@@ -206,6 +206,7 @@ async def investigate_fraud(
             "all_agents_finished": all_agents_finished,
             "error": result.get("error"),
             "full_results": result.get("full_results"),
+            "final_report": result.get("investigation_report"),  # Map investigation_report to final_report for frontend
             "ragas_validated_messages": serialized_ragas_messages,
             "performance": result.get("performance", {})
         }

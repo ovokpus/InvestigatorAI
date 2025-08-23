@@ -16,8 +16,8 @@ from api.services.unified_investigation import (
     UnifiedInvestigationResponse
 )
 from api.models.schemas import UnifiedInvestigationRequest as SchemaRequest
-from api.agents.multi_agent_system import FraudInvestigationSystem
-from api.services.specialized_research import EnhancedInvestigatorAI
+from api.agents.langgraph.multi_agent_system import FraudInvestigationSystem
+from api.agents.research.specialized_research import EnhancedInvestigatorAI
 
 
 @pytest.fixture

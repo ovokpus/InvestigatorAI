@@ -257,7 +257,7 @@ class FraudInvestigationSystem:
                 if has_responses:
                     filtered_messages.append(msg)
                 else:
-                    print(f"🔧 Filtering incomplete tool call sequence from {msg.name if hasattr(msg, 'name') else 'unknown'}")
+                    logger.debug(f"Filtering incomplete tool call sequence from {msg.name if hasattr(msg, 'name') else 'unknown'}")
             else:
                 filtered_messages.append(msg)
         
@@ -273,7 +273,7 @@ class FraudInvestigationSystem:
         intermediate_steps = result.get("intermediate_steps", [])
         
         if intermediate_steps:
-            print(f"🔧 Agent {agent_name}: Processing {len(intermediate_steps)} actual tool executions")
+            logger.debug(f"Agent {agent_name}: Processing {len(intermediate_steps)} actual tool executions")
             
             # Process each tool execution step
             for i, step in enumerate(intermediate_steps):
@@ -308,11 +308,11 @@ class FraudInvestigationSystem:
                     )
                     
                     new_messages.extend([ai_message, tool_message])
-                    print(f"   ✅ Exposed tool call: {tool_name} -> {len(str(observation))} chars response")
+                    logger.debug(f"Exposed tool call: {tool_name} -> {len(str(observation))} chars response")
         
         # If no intermediate steps, fall back to previous behavior
         if not new_messages:
-            print(f"⚠️ No intermediate steps found for {agent_name}, using fallback")
+            logger.warning(f"No intermediate steps found for {agent_name}, using fallback")
             # Extract agent's final output
             agent_output = result.get("output", f"Analysis completed by {agent_name}")
             
@@ -342,7 +342,7 @@ class FraudInvestigationSystem:
             # Remove any duplicate supervisor response from new_messages
             detailed_tools = [msg for msg in new_messages if not (hasattr(msg, 'tool_call_id') and msg.tool_call_id == tool_call_id)]
             final_messages = prev_messages + [supervisor_message, supervisor_response] + detailed_tools
-            print(f"🎯 Sequence: supervisor call -> response -> {len(new_messages)} detailed tool messages")
+            logger.debug(f"Sequence: supervisor call -> response -> {len(new_messages)} detailed tool messages")
         else:
             # Fallback: just add the new messages
             final_messages = state["messages"] + new_messages
@@ -391,7 +391,7 @@ class FraudInvestigationSystem:
             "detailed_reasoning_available": len(frontend_messages) > 0
         }
         
-        print(f"🎯 Created frontend results: {len(frontend_messages)} detailed messages for display")
+        logger.info(f"Created frontend results: {len(frontend_messages)} detailed messages for display")
         return frontend_results
     
     @traceable(name="investigate_fraud_multi_agent", tags=["investigation", "multi-agent", "fraud"])

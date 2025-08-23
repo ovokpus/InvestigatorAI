@@ -165,6 +165,20 @@ class ExternalAPIService:
             # Fallback response when Tavily is unavailable
             return self._web_search_fallback(query)
     
+    def _web_search_fallback(self, query: str) -> str:
+        """Fallback response when web search is unavailable"""
+        logger.info(f"🔄 Using fallback response for query: {query}")
+        
+        # Provide contextual fallback based on query content
+        if any(term in query.lower() for term in ['sanctions', 'ofac', 'screening']):
+            return "Web intelligence temporarily unavailable. Please verify sanctions screening through official OFAC channels and internal compliance databases."
+        elif any(term in query.lower() for term in ['aml', 'money laundering', 'suspicious']):
+            return "Web intelligence temporarily unavailable. Please consult internal AML databases and regulatory guidance for suspicious activity assessment."
+        elif any(term in query.lower() for term in ['entity', 'company', 'business']):
+            return "Web intelligence temporarily unavailable. Please verify entity information through official business registries and compliance databases."
+        else:
+            return "Web intelligence temporarily unavailable. Please use alternative information sources for verification."
+    
     def _search_web_internal(self, query: str, max_results: int = 7) -> str:
         """Internal Tavily search implementation"""
         try:
@@ -214,12 +228,12 @@ class ExternalAPIService:
                 logger.error(f"❌ Tavily API error - Status: {response.status_code}, Response: {response.text[:200]}")
                 return f"Tavily API error: {response.status_code}"
                 
-        except requests.exceptions.Timeout:
+        except requests.exceptions.Timeout as e:
             logger.error(f"⏰ Tavily API timeout after 30s for query: {query}")
-            return f"Tavily API timeout for query: {query}"
+            raise  # Re-raise to allow circuit breaker to handle
         except Exception as e:
             logger.error(f"❌ Tavily search failed for query '{query}': {e}")
-            return f"Web search failed: {e}"
+            raise  # Re-raise to allow circuit breaker to handle
     
     def search_arxiv(self, query: str, max_results: int = 5) -> str:
         """Search ArXiv for research papers"""

@@ -44,7 +44,7 @@ class ReportGenerator:
             return self._synthesize_professional_report(agent_findings)
             
         except Exception as e:
-            print(f"❌ Error generating final decision: {e}")
+            logger.error(f"Error generating final decision: {e}")
             return f"Investigation completed with technical issues. Please contact support for assistance."
     
     def generate_final_decision_with_report(self, messages: Union[List[BaseMessage], List[Dict[str, Any]]]) -> Dict[str, str]:
@@ -84,7 +84,7 @@ class ReportGenerator:
             }
             
         except Exception as e:
-            print(f"❌ Error generating decision with report: {e}")
+            logger.error(f"Error generating decision with report: {e}")
             return {
                 "decision": "error",
                 "report": f"Investigation completed with technical issues. Please contact support for assistance."
@@ -95,11 +95,18 @@ class ReportGenerator:
         insights = {
             'summary': '',
             'key_points': [],
-            'recommendations': []
+            'recommendations': [],
+            'risk_indicators': []
         }
         
         # Apply comprehensive content validation
         validated_content = self.message_processor.validate_content(content)
+        
+        # Extract risk indicators from the full content
+        risk_keywords = ['HIGH RISK', 'RISK LEVEL: HIGH', 'HIGH-RISK', 'SUSPICIOUS', 'TERRORIST', 'SANCTIONS', 'SAR REQUIRED', 'OFAC', 'AL-QAEDA']
+        for keyword in risk_keywords:
+            if keyword in validated_content.upper():
+                insights['risk_indicators'].append(f"Found: {keyword}")
         
         # Clean content - remove incomplete sentences and raw regulatory text
         lines = validated_content.split('\n')
@@ -130,6 +137,13 @@ class ReportGenerator:
         elif agent_name == 'report_generation':
             insights['summary'] = f"Final report compilation completed"
             insights['key_points'] = [line for line in clean_lines if 'complete' in line.lower() or 'classification' in line.lower()]
+            # For report generation, also capture the full content as it contains the final assessment
+            if 'RISK LEVEL: HIGH' in validated_content.upper() or 'HIGH RISK' in validated_content.upper():
+                insights['key_points'].append("HIGH RISK classification identified in final report")
+            if 'TERRORIST' in validated_content.upper() or 'AL-QAEDA' in validated_content.upper():
+                insights['key_points'].append("Terrorist association identified")
+            if 'SAR' in validated_content.upper() and 'REQUIRED' in validated_content.upper():
+                insights['key_points'].append("SAR filing required")
         
         return insights
     
@@ -149,9 +163,16 @@ class ReportGenerator:
                 validated_points = [point for point in validated_points if point and len(point) > 10]
                 key_findings.extend(validated_points)
                 
-            # Extract risk level and compliance info
+            # Check risk indicators first (more reliable)
+            if findings.get('risk_indicators'):
+                for indicator in findings['risk_indicators']:
+                    if any(keyword in indicator.upper() for keyword in ['HIGH RISK', 'TERRORIST', 'SUSPICIOUS', 'SAR REQUIRED']):
+                        risk_level = "HIGH RISK"
+                        break
+                        
+            # Extract risk level and compliance info from key points
             for point in findings['key_points']:
-                if 'HIGH RISK' in point.upper():
+                if any(keyword in point.upper() for keyword in ['HIGH RISK', 'TERRORIST', 'SUSPICIOUS', 'SAR REQUIRED']):
                     risk_level = "HIGH RISK"
                 elif 'LOW RISK' in point.upper() and risk_level == "MEDIUM RISK":
                     risk_level = "LOW RISK"
@@ -215,7 +236,7 @@ class ReportGenerator:
             else:
                 decision = "not_suspicious"
         
-        print(f"🎯 Generated fraud decision: {decision} (Risk: {risk_level}, Report: {len(validated_report)} chars)")
+        logger.info(f"Generated fraud decision: {decision} (Risk: {risk_level}, Report: {len(validated_report)} chars)")
         
         return decision
     
@@ -235,9 +256,16 @@ class ReportGenerator:
                 validated_points = [point for point in validated_points if point and len(point) > 10]
                 key_findings.extend(validated_points)
                 
-            # Extract risk level and compliance info
+            # Check risk indicators first (more reliable)
+            if findings.get('risk_indicators'):
+                for indicator in findings['risk_indicators']:
+                    if any(keyword in indicator.upper() for keyword in ['HIGH RISK', 'TERRORIST', 'SUSPICIOUS', 'SAR REQUIRED']):
+                        risk_level = "HIGH RISK"
+                        break
+                        
+            # Extract risk level and compliance info from key points
             for point in findings['key_points']:
-                if 'HIGH RISK' in point.upper():
+                if any(keyword in point.upper() for keyword in ['HIGH RISK', 'TERRORIST', 'SUSPICIOUS', 'SAR REQUIRED']):
                     risk_level = "HIGH RISK"
                 elif 'LOW RISK' in point.upper() and risk_level == "MEDIUM RISK":
                     risk_level = "LOW RISK"
@@ -302,6 +330,6 @@ class ReportGenerator:
         # Final content validation on entire report
         validated_report = self.message_processor.final_report_validation(report)
         
-        print(f"🎯 Generated decision: {decision} (Risk: {risk_level}, Report: {len(validated_report)} chars)")
+        logger.info(f"Generated decision: {decision} (Risk: {risk_level}, Report: {len(validated_report)} chars)")
         
         return decision, validated_report

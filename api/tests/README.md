@@ -6,25 +6,115 @@ Comprehensive test suite for the **modular** InvestigatorAI fraud investigation 
 
 ## 📋 Test Overview
 
-| Test Type | Files | Coverage |
-|-----------|-------|----------|
-| **API Functionality** | `test_api.py` | Core API endpoints, search, investigation workflows |
-| **LangSmith Integration** | `test_langsmith_*.py` | Monitoring, tracing, performance tracking |
-| **Test Automation** | `run_langsmith_tests.py` | Automated test execution and reporting |
+| Test Type | Files | Coverage | Status |
+|-----------|-------|----------|--------|
+| **API Functionality** | `test_api.py` | Core API endpoints, search, investigation workflows | ✅ **VERIFIED** |
+| **LangSmith Integration** | `test_langsmith_*.py` | Monitoring, tracing, performance tracking | ✅ **ACTIVE** |
+| **Circuit Breaker** | `test_circuit_breaker.py` | External API failure handling | ✅ **ACTIVE** |
+| **Memory Optimization** | `test_memory_optimizer.py` | Memory management and cleanup | ✅ **ACTIVE** |
+| **Unified Investigation** | `test_unified_investigation.py` | Core investigation service | ✅ **ACTIVE** |
+| **Test Automation** | `run_langsmith_tests.py` | Automated test execution and reporting | ✅ **ACTIVE** |
+
+## 🎯 Latest API Endpoint Test Results (2025-08-23)
+
+All endpoints tested and verified working:
+
+### ✅ Core Endpoints
+- **`GET /health`** - System status and component availability ✅
+- **`GET /`** - Root endpoint with API information ✅
+
+### ✅ Cache Management
+- **`GET /cache/stats`** - Redis cache statistics ✅
+- **`DELETE /cache/clear`** - Clear all cache ✅
+- **`DELETE /cache/clear/investigations`** - Clear investigation cache ✅
+- **`DELETE /cache/clear/external`** - Clear external API cache ✅
+
+### ✅ Tools & Search
+- **`GET /search`** - Vector document search ✅
+- **`GET /exchange-rate`** - Currency exchange rates ✅
+- **`GET /web-search`** - Web search via Tavily ✅
+- **`GET /arxiv-search`** - Academic paper search ✅
+
+### ✅ Investigation Endpoints
+- **`POST /investigate`** - Standard fraud investigation ✅
+- **`POST /investigate/stream`** - Streaming investigation ✅
+- **`POST /investigate/unified`** - Unified investigation service ✅
+- **`POST /investigate/unified/stream`** - Streaming unified investigation ✅
+- **`GET /investigate/types`** - Available investigation types ✅
+- **`GET /investigate/download/{investigation_id}`** - Download investigation report ✅
+
+### ✅ Research Endpoints
+- **`POST /research/plan`** - Create research plan ✅
+- **`POST /research/investigate`** - Execute research investigation ✅
+- **`POST /research/investigate/stream`** - Streaming research ✅
+- **`GET /research/status/{research_id}`** - Research status ✅
+- **`GET /research/sessions`** - List research sessions ✅
+- **`DELETE /research/sessions/{research_id}`** - Delete research session ✅
+- **`POST /research/multi-source-search`** - Multi-source search ✅
+- **`DELETE /research/cleanup`** - Cleanup research data ✅
+
+## 🗑️ Removed Test Files
+
+The following test files have been removed as they are no longer relevant:
+
+- ~~`test_migration_basic.py`~~ - Migration-specific test, no longer needed after successful migration
+- ~~`validate_migration.py`~~ - Migration validation script, no longer needed after successful migration
+
+## 📊 Test File Status Summary
+
+| File | Status | Purpose | Test Type |
+|------|--------|---------|-----------|
+| `test_api.py` | ✅ **ACTIVE** | Tests all API endpoints and core functionality | Manual Script |
+| `test_circuit_breaker.py` | ✅ **ACTIVE** | Tests external API failure handling | Pytest |
+| `test_memory_optimizer.py` | ✅ **ACTIVE** | Tests memory management and optimization | Pytest |
+| `test_unified_investigation.py` | ✅ **ACTIVE** | Tests unified investigation service | Pytest |
+| `test_langsmith_integration.py` | ✅ **ACTIVE** | Tests LangSmith monitoring integration | Manual Script |
+| `test_langsmith_api_tracing.py` | ✅ **ACTIVE** | Tests API endpoint tracing | Manual Script |
+| `run_langsmith_tests.py` | ✅ **ACTIVE** | Automated test runner for LangSmith tests | Test Runner |
+
+## 🔧 Recent Updates (2025-08-23)
+
+### ✅ Fixed Import Paths
+- Updated `test_unified_investigation.py` to use correct import paths:
+  - `api.agents.langgraph.multi_agent_system` (was `api.agents.multi_agent_system`)
+  - `api.agents.research.specialized_research` (was `api.services.specialized_research`)
+- Updated `test_langsmith_api_tracing.py` with correct import paths
+
+### ✅ Updated Test Execution Instructions
+- All test commands now include proper `PYTHONPATH` setup
+- Added Docker Compose instructions for easier service management
+- Updated file paths to reflect current project structure
+
+### ✅ Verified All Imports
+- All test file imports have been verified to work correctly
+- Test methods align with current API structure
+- Endpoint references match current API implementation
 
 ## 🚀 Quick Start
 
 ### Run All Tests
 ```bash
+# From project root directory
+cd /path/to/InvestigatorAI
+
 # API functionality tests (requires running API)
-python test_api.py
+PYTHONPATH=$PWD python api/tests/test_api.py
 
 # LangSmith integration tests
-python run_langsmith_tests.py
+PYTHONPATH=$PWD python api/tests/run_langsmith_tests.py
 
 # Individual LangSmith tests
-python test_langsmith_integration.py
-python test_langsmith_api_tracing.py
+PYTHONPATH=$PWD python api/tests/test_langsmith_integration.py
+PYTHONPATH=$PWD python api/tests/test_langsmith_api_tracing.py
+
+# Circuit breaker tests
+PYTHONPATH=$PWD python -m pytest api/tests/test_circuit_breaker.py -v
+
+# Memory optimizer tests
+PYTHONPATH=$PWD python -m pytest api/tests/test_memory_optimizer.py -v
+
+# Unified investigation tests
+PYTHONPATH=$PWD python -m pytest api/tests/test_unified_investigation.py -v
 ```
 
 ## 🔧 API Functionality Tests (`test_api.py`)
@@ -42,7 +132,11 @@ Tests core API functionality and requires a running API server.
 
 ### Prerequisites
 ```bash
-# 1. Start the API server
+# 1. Start the API server (from project root)
+cd /path/to/InvestigatorAI
+docker-compose up -d  # Start all services (API, Redis, Qdrant)
+
+# OR manually start API
 cd api
 python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
@@ -51,9 +145,9 @@ python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 # - Qdrant (for vector storage)
 # - External API keys configured
 
-# 3. Run the tests
-cd ../tests
-python test_api.py
+# 3. Run the tests (from project root)
+cd /path/to/InvestigatorAI
+PYTHONPATH=$PWD python api/tests/test_api.py
 ```
 
 ### Sample Output
@@ -121,12 +215,15 @@ pip install langsmith==0.4.8
 ### Running LangSmith Tests
 
 ```bash
+# From project root directory
+cd /path/to/InvestigatorAI
+
 # Run all LangSmith tests with comprehensive reporting
-python run_langsmith_tests.py
+PYTHONPATH=$PWD python api/tests/run_langsmith_tests.py
 
 # Run individual tests for debugging
-python test_langsmith_integration.py
-python test_langsmith_api_tracing.py
+PYTHONPATH=$PWD python api/tests/test_langsmith_integration.py
+PYTHONPATH=$PWD python api/tests/test_langsmith_api_tracing.py
 ```
 
 ### Expected Output
@@ -138,7 +235,7 @@ python test_langsmith_api_tracing.py
 ✅ API monitoring is ready for production
 
 🚀 Next Steps:
-   1. Start the API: cd api && python -m uvicorn main:app --reload
+   1. Start the API: docker-compose up -d (or cd api && python -m uvicorn main:app --reload)
    2. Test endpoints: curl http://localhost:8000/health
    3. Check LangSmith dashboard for traces
 ```
@@ -204,8 +301,8 @@ def test_new_component():
 curl http://localhost:8000/health
 
 # Restart API if needed
-cd api
-python -m uvicorn main:app --reload
+docker-compose restart api
+# OR manually: cd api && python -m uvicorn main:app --reload
 
 # Check service dependencies
 docker ps  # If using Docker for Redis/Qdrant
@@ -229,7 +326,7 @@ python -c "from langsmith import Client; Client().list_datasets(limit=1)"
 # Ensure you're in the project root
 cd /path/to/InvestigatorAI
 export PYTHONPATH=$PWD:$PYTHONPATH
-python tests/test_langsmith_integration.py
+python api/tests/test_langsmith_integration.py
 ```
 
 #### 4. Missing Dependencies
@@ -271,7 +368,7 @@ jobs:
         with:
           python-version: '3.11'
       - run: pip install -r requirements.txt
-      - run: python tests/run_langsmith_tests.py
+      - run: PYTHONPATH=$PWD python api/tests/run_langsmith_tests.py
         env:
           LANGSMITH_API_KEY: ${{ secrets.LANGSMITH_API_KEY }}
           LANGSMITH_TRACING: true

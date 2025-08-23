@@ -1,6 +1,12 @@
 'use client';
 import React, { useState } from 'react';
 import { ReportGenerationViewer as EnhancedReportGenerationViewer, OtherAgentsViewer as EnhancedOtherAgentsViewer } from './EnhancedInvestigationResults';
+import { 
+  cleanInvestigationContent, 
+  splitContentIntoSegments, 
+  stripMarkdownFormatting,
+  parseMarkdownBoldSections
+} from '@/utils/markdownUtils';
 
 interface MarkdownRendererProps {
   content: string;
@@ -42,53 +48,9 @@ function MarkdownRenderer({ content }: MarkdownRendererProps) {
   };
 
   const renderAgentSection = (title: string, content: string) => {
-    // FIRST: Remove the duplicate header patterns like "****: REGULATORY ANALYSIS:"
-    let processedContent = content
-      .replace(/^\*{4}:\s*(REGULATORY ANALYSIS|EVIDENCE COLLECTION|COMPLIANCE CHECK|FINAL REPORT):\s*/i, '')
-      .trim();
-    
-    // AGGRESSIVE text breaking - split on multiple patterns simultaneously
-    processedContent = processedContent
-      // Break before risk/compliance patterns
-      .replace(/Risk assessment:/gi, '|||BREAK|||**Risk assessment:**')
-      .replace(/Regulatory compliance:/gi, '|||BREAK|||**Regulatory compliance:**')
-      .replace(/Document analysis:/gi, '|||BREAK|||**Document analysis:**')
-      .replace(/Web intelligence:/gi, '|||BREAK|||**Web intelligence:**')
-      .replace(/Academic research:/gi, '|||BREAK|||**Academic research:**')
-      .replace(/Suspicious indicators:/gi, '|||BREAK|||**Suspicious indicators:**')
-      .replace(/Risk classification:/gi, '|||BREAK|||**Risk classification:**')
-      .replace(/Summary:/gi, '|||BREAK|||**Summary:**')
-      .replace(/Filing requirements:/gi, '|||BREAK|||**Filing requirements:**')
-      .replace(/Key findings:/gi, '|||BREAK|||**Key findings:**')
-      .replace(/Status:/gi, '|||BREAK|||**Status:**')
-      
-      // Break before numbered items
-      .replace(/(\s)(\d+)\.\s+([A-Z])/g, '$1|||BREAK|||$2. $3')
-      
-      // Break before bullet points
-      .replace(/(\s)•\s*/g, '$1|||BREAK|||• ')
-      
-      // Break before CFR regulations
-      .replace(/(\s)(31\s+CFR|32\s+CFR)/gi, '$1|||BREAK|||$2')
-      
-      // Break before dates
-      .replace(/(\s)(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d+,\s+\d{4}/gi, '$1|||BREAK|||$2')
-      .replace(/(\s)(\d+\s+days?\s+ago)/gi, '$1|||BREAK|||$2')
-      
-      // Break before regulatory phrases
-      .replace(/(\s)(Sets forth|Includes|Appendix)/gi, '$1|||BREAK|||$2')
-      
-      // Break at sentence boundaries (period followed by capital letter)
-      .replace(/(\.\s+)([A-Z][a-z]{4,})/g, '$1|||BREAK|||$2')
-      
-      // Break before quotes
-      .replace(/(\s)("[\w\s]+)/g, '$1|||BREAK|||$2');
-    
-    // Split on our break markers and clean up
-    const segments = processedContent
-      .split('|||BREAK|||')
-      .map(segment => segment.trim())
-      .filter(segment => segment.length > 0);
+    // Use the extracted utility functions for better maintainability
+    const processedContent = cleanInvestigationContent(content);
+    const segments = splitContentIntoSegments(processedContent);
     
     return (
       <div className="mb-4 bg-white border border-gray-200 rounded-lg shadow-sm overflow-visible">
@@ -106,7 +68,7 @@ function MarkdownRenderer({ content }: MarkdownRendererProps) {
             if (trimmed.startsWith('**') && trimmed.includes(':**')) {
               return (
                 <div key={index} className="font-bold text-blue-800 mt-3 mb-1 text-sm border-b border-blue-200 pb-1">
-                  {trimmed.replace(/\*\*/g, '')}
+                  {stripMarkdownFormatting(trimmed)}
                 </div>
               );
             }
@@ -220,7 +182,7 @@ function MarkdownRenderer({ content }: MarkdownRendererProps) {
           <div className="flex items-center space-x-3">
             <span className="text-lg">✅</span>
             <p className="text-base font-bold text-gray-900">
-              {sections.status.replace(/\*\*/g, '')}
+                                {stripMarkdownFormatting(sections.status)}
             </p>
           </div>
         </div>
@@ -301,6 +263,7 @@ interface Investigation {
   full_results?: FullResults;
   final_report?: string;
   final_report_available?: boolean;
+  ragas_validated_messages?: InvestigationMessage[];
 }
 
 interface InvestigationResultsProps {
@@ -308,709 +271,9 @@ interface InvestigationResultsProps {
   onNewInvestigation: () => void;
 }
 
-interface DetailedResultsViewerProps {
-  results: FullResults;
-}
-
-// Component to show only Report Generation Agent
-function ReportGenerationViewer({ results }: DetailedResultsViewerProps) {
-
-  // Parse messages from results with debug logging
-  console.log('🔍 ReportGenerationViewer - Raw results:', results);
-  console.log('🔍 ReportGenerationViewer - Raw messages:', results?.messages);
-  
-  let messages = results?.messages || [];
-  
-  // If messages is a string, try to parse it
-  if (typeof messages === 'string') {
-    try {
-      messages = JSON.parse(messages);
-      console.log('📝 Parsed messages from string:', messages);
-    } catch (e) {
-      console.error('❌ Failed to parse messages string:', e);
-      messages = [];
-    }
-  }
-  
-  // Ensure each message has the correct structure and filter for report_generation only
-  const parsedMessages = messages
-    .map((msg: unknown, index: number) => {
-      console.log(`🔍 Message ${index}:`, msg, typeof msg);
-      
-      // If the message is a string that looks like an object, parse it
-      if (typeof msg === 'string' && msg.includes("'content':")) {
-        try {
-          // Convert Python-like dict syntax to JSON
-          const jsonString = msg
-            .replace(/'/g, '"')  // Replace single quotes with double quotes
-            .replace(/True/g, 'true')  // Replace Python True with JSON true
-            .replace(/False/g, 'false')  // Replace Python False with JSON false
-            .replace(/None/g, 'null');  // Replace Python None with JSON null
-          
-          const parsed = JSON.parse(jsonString);
-          console.log(`✅ Parsed message ${index}:`, parsed);
-          return {
-            content: parsed.content || '',
-            name: parsed.name || 'unknown',
-            type: parsed.type || 'unknown'
-          };
-        } catch (e) {
-          console.error(`❌ Failed to parse message ${index}:`, e);
-          return {
-            content: msg,
-            name: 'unknown',
-            type: 'unknown'
-          };
-        }
-      }
-      
-      // If it's already an object, use it directly
-      if (typeof msg === 'object' && msg !== null) {
-        const objMsg = msg as { content?: string; name?: string; type?: string };
-        return {
-          content: objMsg.content || '',
-          name: objMsg.name || 'unknown',
-          type: objMsg.type || 'unknown'
-        };
-      }
-      
-      // Fallback for any other format
-      return {
-        content: String(msg),
-        name: 'unknown',
-        type: 'unknown'
-      };
-    })
-    .filter((message: InvestigationMessage) => message.name === 'report_generation'); // Only show report generation
-  
-  console.log('🎯 Final parsed messages (Report Generation only):', parsedMessages);
-
-  const formatContent = (content: string) => {
-    // For investigation results, don't try to parse sections - display the full content
-    // The backend already provides well-formatted agent responses
-    return [{
-      title: 'Investigation Analysis',
-      content: content.trim(),
-      type: 'info'
-    }];
-  };
-
-  const getSectionIcon = (type: string) => {
-    switch (type) {
-      case 'warning': return '⚠️';
-      case 'danger': return '🚨';
-      case 'success': return '✅';
-      default: return 'ℹ️';
-    }
-  };
-
-  const renderMarkdownContent = (content: string): React.JSX.Element => {
-    if (!content) return <span>No content available</span>;
-    
-    // Enhanced markdown parsing for investigation reports
-    const parseMarkdown = (text: string) => {
-      // Split by double asterisks for bold sections
-      const parts = text.split(/(\*\*.*?\*\*)/g);
-      
-      return parts.map((part, index) => {
-        if (part.startsWith('**') && part.endsWith('**')) {
-          // Bold text
-          return <strong key={index} className="font-semibold text-gray-900 dark:text-gray-100">{part.slice(2, -2)}</strong>;
-        }
-        return <span key={index}>{part}</span>;
-      });
-    };
-    
-    // Check if content has structured sections (common in investigation reports)
-    if (content.includes('**') && content.split('**').length > 4) {
-      // Content has structured sections - render with better formatting
-      const sections = content.split(/\n\s*\n/);
-      
-      return (
-        <div className="space-y-4">
-          {sections.map((section, index) => {
-            if (section.match(/^\*\*[A-Z\s]+\*\*:?$/)) {
-              // This is a section header
-              const headerText = section.replace(/\*\*/g, '').replace(':', '');
-              return (
-                <div key={index} className="font-bold text-lg text-cyan-300 bg-gray-800 p-3 rounded border-l-4 border-cyan-400 mb-3">
-                  <span className="text-cyan-400">▶</span> {headerText}
-                </div>
-              );
-            } else {
-              // This is section content
-              return (
-                <div key={index} className="ml-4 space-y-2">
-                  {parseMarkdown(section.trim())}
-                </div>
-              );
-            }
-          })}
-        </div>
-      );
-    } else {
-      // Regular content with markdown formatting
-      return (
-        <div className="space-y-2">
-          {parseMarkdown(content)}
-        </div>
-      );
-    }
-  };
-
-  if (!parsedMessages.length) {
-    return (
-      <div className="text-center p-8 text-muted-foreground">
-        <p>No report generation analysis available for this investigation.</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-4">
-      {parsedMessages.map((message: InvestigationMessage, messageIndex: number) => {
-        if (!message.content || message.type === 'human') return null;
-
-        const sections = formatContent(message.content);
-        const agentName = 'Report Generation Agent';
-
-        return (
-          <div key={messageIndex} className="border border-cyan-500 rounded-lg overflow-hidden bg-gray-900">
-            <div className="bg-gray-800 p-4 border-b border-cyan-500">
-              <div className="flex items-center space-x-3">
-                <div className="text-lg text-cyan-400">📊</div>
-                <div>
-                  <h4 className="font-semibold text-cyan-300 font-mono">{agentName}</h4>
-                  <p className="text-sm text-cyan-500 font-mono">
-                    {sections.length} analysis section{sections.length !== 1 ? 's' : ''}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-4 space-y-4 bg-gray-900">
-              {sections.map((section, sectionIndex) => (
-                <div 
-                  key={sectionIndex} 
-                  className="border border-gray-700 rounded bg-gray-800 p-4"
-                >
-                  <div className="flex items-center space-x-2 mb-3">
-                    <span className="text-lg text-cyan-400">{getSectionIcon(section.type)}</span>
-                    <h5 className="font-semibold text-cyan-300 font-mono">{section.title}</h5>
-                  </div>
-                  <div className="prose prose-sm max-w-none">
-                    <div className="text-sm text-green-300 leading-relaxed break-words overflow-wrap-anywhere font-mono">
-                      {renderMarkdownContent(section.content)}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-// Component to show other agents (excluding Report Generation Agent)
-function OtherAgentsViewer({ results }: DetailedResultsViewerProps) {
-  const [expandedSections, setExpandedSections] = useState<{ [key: number]: boolean }>({});
-
-  const toggleSection = (index: number) => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [index]: !prev[index]
-    }));
-  };
-
-  // Parse messages from results with debug logging
-  console.log('🔍 OtherAgentsViewer - Raw results:', results);
-  console.log('🔍 OtherAgentsViewer - Raw messages:', results?.messages);
-  
-  let messages = results?.messages || [];
-  
-  // If messages is a string, try to parse it
-  if (typeof messages === 'string') {
-    try {
-      messages = JSON.parse(messages);
-      console.log('📝 Parsed messages from string:', messages);
-    } catch (e) {
-      console.error('❌ Failed to parse messages string:', e);
-      messages = [];
-    }
-  }
-  
-  // Ensure each message has the correct structure and filter out report_generation
-  const parsedMessages = messages
-    .map((msg: unknown, index: number) => {
-      console.log(`🔍 Message ${index}:`, msg, typeof msg);
-      
-      // If the message is a string that looks like an object, parse it
-      if (typeof msg === 'string' && msg.includes("'content':")) {
-        try {
-          // Convert Python-like dict syntax to JSON
-          const jsonString = msg
-            .replace(/'/g, '"')  // Replace single quotes with double quotes
-            .replace(/True/g, 'true')  // Replace Python True with JSON true
-            .replace(/False/g, 'false')  // Replace Python False with JSON false
-            .replace(/None/g, 'null');  // Replace Python None with JSON null
-          
-          const parsed = JSON.parse(jsonString);
-          console.log(`✅ Parsed message ${index}:`, parsed);
-          return {
-            content: parsed.content || '',
-            name: parsed.name || 'unknown',
-            type: parsed.type || 'unknown'
-          };
-        } catch (e) {
-          console.error(`❌ Failed to parse message ${index}:`, e);
-          return {
-            content: msg,
-            name: 'unknown',
-            type: 'unknown'
-          };
-        }
-      }
-      
-      // If it's already an object, use it directly
-      if (typeof msg === 'object' && msg !== null) {
-        const objMsg = msg as { content?: string; name?: string; type?: string };
-        return {
-          content: objMsg.content || '',
-          name: objMsg.name || 'unknown',
-          type: objMsg.type || 'unknown'
-        };
-      }
-      
-      // Fallback for any other format
-      return {
-        content: String(msg),
-        name: 'unknown',
-        type: 'unknown'
-      };
-    })
-    .filter((message: InvestigationMessage) => 
-      message.name !== 'report_generation' && 
-      message.name !== 'unknown' && 
-      message.type !== 'human'
-    ); // Exclude report generation and unknown/human messages
-  
-  console.log('🎯 Final parsed messages (Other Agents only):', parsedMessages);
-
-  const formatContent = (content: string) => {
-    // For investigation results, don't try to parse sections - display the full content
-    // The backend already provides well-formatted agent responses
-    return [{
-      title: 'Investigation Analysis',
-      content: content.trim(),
-      type: 'info'
-    }];
-  };
-
-  const getSectionIcon = (type: string) => {
-    switch (type) {
-      case 'warning': return '⚠️';
-      case 'danger': return '🚨';
-      case 'success': return '✅';
-      default: return 'ℹ️';
-    }
-  };
-
-  const renderMarkdownContent = (content: string): React.JSX.Element => {
-    if (!content) return <span>No content available</span>;
-    
-    // Enhanced markdown parsing for investigation reports
-    const parseMarkdown = (text: string) => {
-      // Split by double asterisks for bold sections
-      const parts = text.split(/(\*\*.*?\*\*)/g);
-      
-      return parts.map((part, index) => {
-        if (part.startsWith('**') && part.endsWith('**')) {
-          // Bold text
-          return <strong key={index} className="font-semibold text-gray-900 dark:text-gray-100">{part.slice(2, -2)}</strong>;
-        }
-        return <span key={index}>{part}</span>;
-      });
-    };
-    
-    // Check if content has structured sections (common in investigation reports)
-    if (content.includes('**') && content.split('**').length > 4) {
-      // Content has structured sections - render with better formatting
-      const sections = content.split(/\n\s*\n/);
-      
-      return (
-        <div className="space-y-4">
-          {sections.map((section, index) => {
-            if (section.match(/^\*\*[A-Z\s]+\*\*:?$/)) {
-              // This is a section header
-              const headerText = section.replace(/\*\*/g, '').replace(':', '');
-              return (
-                <div key={index} className="font-bold text-lg text-cyan-300 bg-gray-800 p-3 rounded border-l-4 border-cyan-400 mb-3">
-                  <span className="text-cyan-400">▶</span> {headerText}
-                </div>
-              );
-            } else {
-              // This is section content
-              return (
-                <div key={index} className="ml-4 space-y-2">
-                  {parseMarkdown(section.trim())}
-                </div>
-              );
-            }
-          })}
-        </div>
-      );
-    } else {
-      // Regular content with markdown formatting
-      return (
-        <div className="space-y-2">
-          {parseMarkdown(content)}
-        </div>
-      );
-    }
-  };
-
-  if (!parsedMessages.length) {
-    return (
-      <div className="text-center p-8 text-muted-foreground">
-        <p>No additional agent analysis available for this investigation.</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-4">
-      {parsedMessages.map((message: InvestigationMessage, messageIndex: number) => {
-        if (!message.content || message.type === 'human') return null;
-
-        const sections = formatContent(message.content);
-        const formatAgentName = (name: string) => {
-          switch (name) {
-            case 'system': return 'Investigation System';
-            case 'supervisor': return 'Investigation Supervisor';
-            case 'regulatory_research': return 'Regulatory Research Agent';
-            case 'evidence_collection': return 'Evidence Collection Agent';
-            case 'compliance_check': return 'Compliance Check Agent';
-            default: return name ? name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'Analysis Agent';
-          }
-        };
-        
-        const agentName = formatAgentName(message.name || 'unknown');
-
-        return (
-          <div key={messageIndex} className="border border-cyan-500 rounded-lg overflow-hidden bg-gray-900">
-            <div 
-              className="bg-gray-800 p-4 cursor-pointer flex items-center justify-between hover:bg-gray-700 transition-colors border-b border-cyan-500"
-              onClick={() => toggleSection(messageIndex)}
-            >
-              <div className="flex items-center space-x-3">
-                <div className="text-lg text-cyan-400">🤖</div>
-                <div>
-                  <h4 className="font-semibold text-cyan-300 font-mono">{agentName}</h4>
-                  <p className="text-sm text-cyan-500 font-mono">
-                    {sections.length} analysis section{sections.length !== 1 ? 's' : ''}
-                  </p>
-                </div>
-              </div>
-              <div className="text-cyan-400 font-mono">
-                {expandedSections[messageIndex] ? '▼' : '▶'}
-              </div>
-            </div>
-
-            {expandedSections[messageIndex] && (
-              <div className="p-4 space-y-4 bg-gray-900">
-                {sections.map((section, sectionIndex) => (
-                  <div 
-                    key={sectionIndex} 
-                    className="border border-gray-700 rounded bg-gray-800 p-4"
-                  >
-                    <div className="flex items-center space-x-2 mb-3">
-                      <span className="text-lg text-cyan-400">{getSectionIcon(section.type)}</span>
-                      <h5 className="font-semibold text-cyan-300 font-mono">{section.title}</h5>
-                    </div>
-                    <div className="prose prose-sm max-w-none">
-                      <div className="text-sm text-green-300 leading-relaxed break-words overflow-wrap-anywhere font-mono">
-                        {renderMarkdownContent(section.content)}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-// Component to parse and display investigation messages
-function DetailedResultsViewer({ results }: DetailedResultsViewerProps) {
-  const [expandedSections, setExpandedSections] = useState<{ [key: number]: boolean }>({});
-
-  const toggleSection = (index: number) => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [index]: !prev[index]
-    }));
-  };
-
-  // Parse messages from results with debug logging
-  console.log('🔍 DetailedResultsViewer - Raw results:', results);
-  console.log('🔍 DetailedResultsViewer - Raw messages:', results?.messages);
-  
-  let messages = results?.messages || [];
-  
-  // If messages is a string, try to parse it
-  if (typeof messages === 'string') {
-    try {
-      messages = JSON.parse(messages);
-      console.log('📝 Parsed messages from string:', messages);
-    } catch (e) {
-      console.error('❌ Failed to parse messages string:', e);
-      messages = [];
-    }
-  }
-  
-  // Ensure each message has the correct structure
-  const parsedMessages = messages.map((msg: unknown, index: number) => {
-    console.log(`🔍 Message ${index}:`, msg, typeof msg);
-    
-    // If the message is a string that looks like an object, parse it
-    if (typeof msg === 'string' && msg.includes("'content':")) {
-      try {
-        // Convert Python-like dict syntax to JSON
-        const jsonString = msg
-          .replace(/'/g, '"')  // Replace single quotes with double quotes
-          .replace(/True/g, 'true')  // Replace Python True with JSON true
-          .replace(/False/g, 'false')  // Replace Python False with JSON false
-          .replace(/None/g, 'null');  // Replace Python None with JSON null
-        
-        const parsed = JSON.parse(jsonString);
-        console.log(`✅ Parsed message ${index}:`, parsed);
-        return {
-          content: parsed.content || '',
-          name: parsed.name || 'unknown',
-          type: parsed.type || 'unknown'
-        };
-      } catch (e) {
-        console.error(`❌ Failed to parse message ${index}:`, e);
-        return {
-          content: msg,
-          name: 'unknown',
-          type: 'unknown'
-        };
-      }
-    }
-    
-    // If it's already an object, use it directly
-    if (typeof msg === 'object' && msg !== null) {
-      const objMsg = msg as { content?: string; name?: string; type?: string };
-      return {
-        content: objMsg.content || '',
-        name: objMsg.name || 'unknown',
-        type: objMsg.type || 'unknown'
-      };
-    }
-    
-    // Fallback for any other format
-    return {
-      content: String(msg),
-      name: 'unknown',
-      type: 'unknown'
-    };
-  });
-  
-  console.log('🎯 Final parsed messages:', parsedMessages);
-
-  const formatContent = (content: string) => {
-    // For investigation results, don't try to parse sections - display the full content
-    // The backend already provides well-formatted agent responses
-    return [{
-      title: 'Investigation Analysis',
-      content: content.trim(),
-      type: 'info'
-    }];
-  };
-
-  const getSectionIcon = (type: string) => {
-    switch (type) {
-      case 'warning': return '⚠️';
-      case 'danger': return '🚨';
-      case 'success': return '✅';
-      default: return 'ℹ️';
-    }
-  };
 
 
 
-  const renderMarkdownContent = (content: string): React.JSX.Element => {
-    // Parse markdown formatting and render as rich text
-    const parseMarkdown = (text: string) => {
-      // Split by double asterisks for bold sections
-      const parts = text.split(/(\*\*.*?\*\*)/g);
-      
-      return parts.map((part, index) => {
-        // Handle bold text with code-like styling
-        if (part.startsWith('**') && part.endsWith('**')) {
-          const boldText = part.slice(2, -2);
-          return (
-            <strong key={index} className="font-bold text-cyan-400 bg-gray-800 px-1 py-0.5 rounded text-sm">
-              {boldText}
-            </strong>
-          );
-        }
-        
-        // Handle regular text with line breaks
-        const lines = part.split('\n');
-        return (
-          <span key={index}>
-            {lines.map((line, lineIndex) => (
-              <span key={lineIndex}>
-                {line}
-                {lineIndex < lines.length - 1 && <br />}
-              </span>
-            ))}
-          </span>
-        );
-      });
-    };
-
-    // Handle different content structures
-    if (content.includes('**EXECUTIVE SUMMARY**') || content.includes('**REGULATORY ANALYSIS REPORT**')) {
-      // This is a structured report - render with enhanced formatting
-      const sections = content.split(/(\*\*[A-Z\s]+\*\*:?)/g).filter(Boolean);
-      
-      return (
-        <div className="space-y-4">
-          {sections.map((section, index) => {
-            if (section.match(/^\*\*[A-Z\s]+\*\*:?$/)) {
-              // This is a section header
-              const headerText = section.replace(/\*\*/g, '').replace(':', '');
-              return (
-                <div key={index} className="font-bold text-lg text-cyan-300 bg-gray-800 p-3 rounded border-l-4 border-cyan-400 mb-3">
-                  <span className="text-cyan-400">▶</span> {headerText}
-                </div>
-              );
-            } else {
-              // This is section content
-              return (
-                <div key={index} className="ml-4 space-y-2">
-                  {parseMarkdown(section.trim())}
-                </div>
-              );
-            }
-          })}
-        </div>
-      );
-    } else {
-      // Regular content with markdown formatting
-      return (
-        <div className="space-y-2">
-          {parseMarkdown(content)}
-        </div>
-      );
-    }
-  };
-
-  if (!parsedMessages.length) {
-    return (
-      <div className="text-center p-8 text-muted-foreground">
-        <p>No detailed analysis available for this investigation.</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-4">
-      {parsedMessages.map((message: InvestigationMessage, messageIndex: number) => {
-        if (!message.content || message.type === 'human') return null;
-
-        const sections = formatContent(message.content);
-        const formatAgentName = (name: string) => {
-          switch (name) {
-            case 'system': return 'Investigation System';
-            case 'supervisor': return 'Investigation Supervisor';
-            case 'regulatory_research': return 'Regulatory Research Agent';
-            case 'evidence_collection': return 'Evidence Collection Agent';
-            case 'compliance_check': return 'Compliance Check Agent';
-            case 'report_generation': return 'Report Generation Agent';
-            default: return name ? name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'Analysis Agent';
-          }
-        };
-        
-        const agentName = formatAgentName(message.name || 'unknown');
-
-        return (
-          <div key={messageIndex} className="border border-cyan-500 rounded-lg overflow-hidden bg-gray-900">
-            <div 
-              className="bg-gray-800 p-4 cursor-pointer flex items-center justify-between hover:bg-gray-700 transition-colors border-b border-cyan-500"
-              onClick={() => toggleSection(messageIndex)}
-            >
-              <div className="flex items-center space-x-3">
-                <div className="text-lg text-cyan-400">🤖</div>
-                <div>
-                  <h4 className="font-semibold text-cyan-300 font-mono">{agentName}</h4>
-                  <p className="text-sm text-cyan-500 font-mono">
-                    {sections.length} analysis section{sections.length !== 1 ? 's' : ''}
-                  </p>
-                </div>
-              </div>
-              <div className="text-cyan-400 font-mono">
-                {expandedSections[messageIndex] ? '▼' : '▶'}
-              </div>
-            </div>
-
-            {expandedSections[messageIndex] && (
-              <div className="p-4 space-y-4 bg-gray-900">
-                {sections.map((section, sectionIndex) => (
-                  <div 
-                    key={sectionIndex} 
-                    className="border border-gray-700 rounded bg-gray-800 p-4"
-                  >
-                    <div className="flex items-center space-x-2 mb-3">
-                      <span className="text-lg text-cyan-400">{getSectionIcon(section.type)}</span>
-                      <h5 className="font-semibold text-cyan-300 font-mono">{section.title}</h5>
-                    </div>
-                    <div className="prose prose-sm max-w-none">
-                      <div className="text-sm text-green-300 leading-relaxed break-words overflow-wrap-anywhere font-mono">
-                        {renderMarkdownContent(section.content)}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        );
-      })}
-
-      {/* Summary Statistics */}
-      <div className="mt-6 p-4 bg-muted rounded-lg border">
-        <h4 className="font-semibold text-contrast mb-2">Investigation Summary</h4>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-          <div>
-            <span className="text-muted-foreground">Total Messages:</span>
-            <div className="font-semibold">{parsedMessages.length}</div>
-          </div>
-          <div>
-            <span className="text-muted-foreground">Analysis Agents:</span>
-            <div className="font-semibold">{new Set(parsedMessages.map((m: InvestigationMessage) => m.name).filter(Boolean)).size}</div>
-          </div>
-          <div>
-            <span className="text-muted-foreground">System Messages:</span>
-            <div className="font-semibold">{parsedMessages.filter((m: InvestigationMessage) => m.type === 'system').length}</div>
-          </div>
-          <div>
-            <span className="text-muted-foreground">Human Inputs:</span>
-            <div className="font-semibold">{parsedMessages.filter((m: InvestigationMessage) => m.type === 'human').length}</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export default function InvestigationResults({ investigation, onNewInvestigation }: InvestigationResultsProps) {
   const [copySuccess, setCopySuccess] = useState(false);
@@ -1097,16 +360,7 @@ export default function InvestigationResults({ investigation, onNewInvestigation
     
     // Parse markdown formatting and render as rich text
     const parseMarkdown = (text: string) => {
-      // Split by double asterisks for bold sections
-      const parts = text.split(/(\*\*.*?\*\*)/g);
-      
-      return parts.map((part, index) => {
-        if (part.startsWith('**') && part.endsWith('**')) {
-          // Bold text
-          return <strong key={index} className="font-semibold text-gray-900 dark:text-gray-100">{part.slice(2, -2)}</strong>;
-        }
-        return <span key={index}>{part}</span>;
-      });
+      return parseMarkdownBoldSections(text);
     };
     
     // Split content by lines and process each
@@ -1123,35 +377,7 @@ export default function InvestigationResults({ investigation, onNewInvestigation
     );
   };
 
-  const downloadReport = () => {
-    try {
-      // Create comprehensive report content
-      const reportContent = generateReportContent(investigation);
-      
-      // Create blob and download
-      const blob = new Blob([reportContent], { type: 'text/plain;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      
-      // Create download link
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `Investigation_Report_${investigation.investigation_id}_${new Date().toISOString().slice(0, 10)}.txt`;
-      
-      // Trigger download
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      // Cleanup
-      URL.revokeObjectURL(url);
-      
-      // Show success feedback
-      setDownloadSuccess(true);
-      setTimeout(() => setDownloadSuccess(false), 2000);
-    } catch (err) {
-      console.error('Failed to download report: ', err);
-    }
-  };
+
 
   
 
@@ -1198,6 +424,67 @@ export default function InvestigationResults({ investigation, onNewInvestigation
           >
             New Investigation
           </button>
+        </div>
+      </div>
+
+      {/* Status Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-card p-4 rounded-lg shadow">
+          <div className="text-2xl font-bold text-primary">{investigation.agents_completed}/4</div>
+          <div className="text-sm text-muted-foreground">Agents Completed</div>
+        </div>
+        
+        <div className="bg-card p-4 rounded-lg shadow">
+          <div className={`text-2xl font-bold ${getStatusColor(investigation.status)}`}>
+            {investigation.status}
+          </div>
+          <div className="text-sm text-muted-foreground">Status</div>
+        </div>
+        
+        <div className="bg-card p-4 rounded-lg shadow">
+          <div className="text-2xl font-bold text-primary">{investigation.total_messages}</div>
+          <div className="text-sm text-muted-foreground">Messages Processed</div>
+        </div>
+        
+        <div className="bg-card p-4 rounded-lg shadow">
+          <div className={`text-sm font-medium ${investigation.all_agents_finished ? 'text-green-600' : 'text-yellow-600'}`}>
+            {investigation.all_agents_finished ? '✓ Complete' : '⏳ In Progress'}
+          </div>
+          <div className="text-sm text-muted-foreground">Investigation</div>
+        </div>
+      </div>
+
+      {/* Final Decision */}
+      <div className="bg-card p-6 rounded-lg shadow-lg">
+        <h3 className="text-xl font-bold mb-4 text-contrast">Investigation Report & Final Decision</h3>
+        <div className={`p-6 rounded-lg border-2 ${getDecisionColor(investigation.final_decision)}`}>
+          <div className="font-bold text-xl mb-3">
+            {investigation.final_decision.includes('**FRAUD INVESTIGATION COMPLETE**') 
+              ? '🔍 FRAUD INVESTIGATION COMPLETE' 
+              : investigation.final_decision.replace(/_/g, ' ').toUpperCase()}
+          </div>
+          
+
+          
+          {investigation.error && (
+            <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded">
+              <div className="text-red-800 dark:text-red-200 font-medium">Error Details:</div>
+              <div className="text-red-700 dark:text-red-300 text-sm mt-1">{investigation.error}</div>
+            </div>
+          )}
+          
+          {/* Investigation Completion Status */}
+          <div className="mt-4 flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <div className={`w-3 h-3 rounded-full ${investigation.all_agents_finished ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+              <span className="text-sm font-medium">
+                {investigation.all_agents_finished ? 'Investigation Complete' : 'Investigation In Progress'}
+              </span>
+            </div>
+            <div className="text-sm text-muted-foreground">
+              ID: {investigation.investigation_id}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1296,167 +583,6 @@ export default function InvestigationResults({ investigation, onNewInvestigation
           </div>
         </div>
       )}
-
-      {/* Status Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-card p-4 rounded-lg shadow">
-          <div className="text-2xl font-bold text-primary">{investigation.agents_completed}/4</div>
-          <div className="text-sm text-muted-foreground">Agents Completed</div>
-        </div>
-        
-        <div className="bg-card p-4 rounded-lg shadow">
-          <div className={`text-2xl font-bold ${getStatusColor(investigation.status)}`}>
-            {investigation.status}
-          </div>
-          <div className="text-sm text-muted-foreground">Status</div>
-        </div>
-        
-        <div className="bg-card p-4 rounded-lg shadow">
-          <div className="text-2xl font-bold text-primary">{investigation.total_messages}</div>
-          <div className="text-sm text-muted-foreground">Messages Processed</div>
-        </div>
-        
-        <div className="bg-card p-4 rounded-lg shadow">
-          <div className={`text-sm font-medium ${investigation.all_agents_finished ? 'text-green-600' : 'text-yellow-600'}`}>
-            {investigation.all_agents_finished ? '✓ Complete' : '⏳ In Progress'}
-          </div>
-          <div className="text-sm text-muted-foreground">Investigation</div>
-        </div>
-      </div>
-
-      {/* Final Decision */}
-      <div className="bg-card p-6 rounded-lg shadow-lg">
-        <h3 className="text-xl font-bold mb-4 text-contrast">Investigation Report & Final Decision</h3>
-        <div className={`p-6 rounded-lg border-2 ${getDecisionColor(investigation.final_decision)}`}>
-          <div className="font-bold text-xl mb-3">
-            {investigation.final_decision.includes('**FRAUD INVESTIGATION COMPLETE**') 
-              ? '🔍 FRAUD INVESTIGATION COMPLETE' 
-              : investigation.final_decision.replace(/_/g, ' ').toUpperCase()}
-          </div>
-          
-          {/* Display detailed investigation findings */}
-          <div className="mt-4 p-6 bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-blue-950 rounded-lg border border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between mb-4">
-              <h4 className="text-lg font-bold text-gray-800 dark:text-gray-200">📊 Investigation Report</h4>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => copyToClipboard(generateReportContent(investigation))}
-                  className={`px-3 py-1 text-sm font-medium rounded-md transition-all duration-200 flex items-center space-x-2 ${
-                    copySuccess 
-                      ? 'bg-green-600 text-white' 
-                      : 'bg-gray-600 hover:bg-gray-700 text-white hover:shadow-md'
-                  }`}
-                  title="Copy full report to clipboard"
-                >
-                  <span>{copySuccess ? '✅' : '📋'}</span>
-                  <span>{copySuccess ? 'Copied!' : 'Copy'}</span>
-                </button>
-                <button
-                  onClick={downloadReport}
-                  className={`px-3 py-1 text-sm font-medium rounded-md transition-all duration-200 flex items-center space-x-2 ${
-                    downloadSuccess 
-                      ? 'bg-green-600 text-white' 
-                      : 'bg-blue-600 hover:bg-blue-700 text-white hover:shadow-md'
-                  }`}
-                  title="Download full investigation report as text file"
-                >
-                  <span>{downloadSuccess ? '✅' : '📥'}</span>
-                  <span>{downloadSuccess ? 'Downloaded!' : 'Download'}</span>
-                </button>
-              </div>
-            </div>
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-600 max-w-none overflow-auto">
-              {investigation.final_decision.includes('**FRAUD INVESTIGATION COMPLETE**') ? (
-                <MarkdownRenderer content={investigation.final_decision} />
-              ) : (
-                <div className="bg-gray-900 text-green-400 p-6 rounded-lg font-mono text-sm overflow-auto border-2 border-gray-700 shadow-lg">
-                  <div className="whitespace-pre-wrap break-words">
-                  {(() => {
-                    const timestamp = new Date().toISOString();
-                    const transactionDetails = investigation.transaction_details;
-                    
-                    return `
-          ================================================================================
-                                  FRAUD INVESTIGATION SUMMARY
-          ================================================================================
-
-          Report Generated: ${timestamp}
-          Investigation ID: ${investigation.investigation_id}
-          Investigation Status: ${investigation.all_agents_finished ? 'COMPLETE' : 'IN PROGRESS'}
-          Agents Completed: ${investigation.agents_completed}/4
-          Total Messages Processed: ${investigation.total_messages}
-          Risk Assessment: ${investigation.final_decision.includes('HIGH RISK') ? 'HIGH RISK' : 
-                            investigation.final_decision.includes('MEDIUM RISK') ? 'MEDIUM RISK' : 
-                            investigation.final_decision.includes('LOW RISK') ? 'LOW RISK' : 'PENDING ASSESSMENT'}
-
-          ================================================================================
-                                  TRANSACTION DETAILS
-          ================================================================================
-
-          Amount: ${transactionDetails?.currency || 'USD'} ${(transactionDetails?.amount || 0).toLocaleString()}
-          Customer Name: ${transactionDetails?.customer_name || 'N/A'}
-          Destination Country: ${transactionDetails?.country_to || 'N/A'}
-          Account Type: ${transactionDetails?.account_type || 'N/A'}
-          Risk Rating: ${transactionDetails?.risk_rating || 'N/A'}
-          Transaction Description: ${transactionDetails?.description || 'N/A'}
-
-          ================================================================================
-                              INVESTIGATION FINDING
-          ================================================================================
-
-          ${investigation.final_decision}
-
-          ================================================================================
-                                    TECHNICAL DETAILS
-          ================================================================================
-
-          Investigation Completion: ${investigation.all_agents_finished ? 'All agents completed successfully' : 'Investigation in progress'}
-          Agent Completion Status: ${investigation.agents_completed} out of 4 agents completed
-          Message Processing: ${investigation.total_messages} messages processed during investigation
-          ${investigation.error ? `
-          ================================================================================
-                                        ERROR DETAILS
-          ================================================================================
-
-          ${investigation.error}
-          ` : 'No Errors Found: Report Generation Successful'}
-          This report was generated by InvestigatorAI - Advanced Fraud Detection System
-          Generated on: ${timestamp}
-          Investigation ID: ${investigation.investigation_id}
-
-          WARNING: This report contains sensitive information and should be handled according 
-          to your organization's data protection and compliance policies.
-
-          ================================================================================
-                      `;
-                                               })()}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-          
-          {investigation.error && (
-            <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded">
-              <div className="text-red-800 dark:text-red-200 font-medium">Error Details:</div>
-              <div className="text-red-700 dark:text-red-300 text-sm mt-1">{investigation.error}</div>
-            </div>
-          )}
-          
-          {/* Investigation Completion Status */}
-          <div className="mt-4 flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <div className={`w-3 h-3 rounded-full ${investigation.all_agents_finished ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
-              <span className="text-sm font-medium">
-                {investigation.all_agents_finished ? 'Investigation Complete' : 'Investigation In Progress'}
-              </span>
-            </div>
-            <div className="text-sm text-muted-foreground">
-              ID: {investigation.investigation_id}
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Comprehensive Final Report - Prominent Display */}
       {investigation.final_report && (
