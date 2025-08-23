@@ -98,23 +98,109 @@ Homepage = "https://github.com/ai-makerspace/InvestigatorAI"
 Repository = "https://github.com/ai-makerspace/InvestigatorAI"
 Issues = "https://github.com/ai-makerspace/InvestigatorAI/issues"
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["investigator_ai*"]
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
+    "--cov=api",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-fail-under=20",
+    "-W ignore::DeprecationWarning"
+]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+markers = [
+    "asyncio: marks tests as async",
+    "integration: marks tests as integration tests",
+    "performance: marks tests as performance tests", 
+    "stress: marks tests as stress tests",
+    "slow: marks tests as slow running",
+]
+asyncio_mode = "auto"
 
-[tool.black]
-line-length = 88
-target-version = ['py311']
+[tool.coverage.run]
+source = ["api", "investigator_ai"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "*/__pycache__/*",
+    "*/venv/*",
+    "*/.venv/*",
+    "*/site-packages/*",
+    "api/agents/multi_agent_system_broken.py"
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.13"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+show_error_codes = true
 
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-python_files = ["test_*.py"]
-python_classes = ["Test*"]
-python_functions = ["test_*"]
-addopts = "--cov=investigator_ai --cov-report=html --cov-report=term-missing"
+[[tool.mypy.overrides]]
+module = [
+    "qdrant_client.*",
+    "langchain.*", 
+    "langchain_openai.*",
+    "langchain_core.*",
+    "langchain_community.*",
+    "langgraph.*",
+    "langsmith.*",
+    "ragas.*",
+    "datasets.*",
+    "kaggle.*",
+    "PyPDF2.*",
+    "rapidfuzz.*",
+    "rank_bm25.*"
+]
+ignore_missing_imports = true
+
+[tool.black]
+line-length = 120
+target-version = ['py313']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["investigator_ai*"]

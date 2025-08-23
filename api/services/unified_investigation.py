@@ -6,20 +6,144 @@ into a single, simplified interface while maintaining backward compatibility.
 
 import asyncio
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, List, Any, Optional, Union, Literal
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 
 from langchain_openai import ChatOpenAI
 from langsmith import traceable
 
-from .multi_source_research import MultiSourceResearchService
-from .specialized_research import EnhancedInvestigatorAI
-from ..agents.multi_agent_system import FraudInvestigationSystem
+from ..agents.research.multi_source_research import MultiSourceResearchService
+from ..agents.research.specialized_research import EnhancedInvestigatorAI
+from ..agents.langgraph.multi_agent_system import FraudInvestigationSystem
 from ..core.config import Settings
-from ..models.schemas import InvestigationRequest, ResearchRequest
+from ..models.schemas import InvestigationRequest, ResearchRequest, UnifiedInvestigationResponse
 
 logger = logging.getLogger(__name__)
+
+
+def serialize_for_json(obj: Any) -> Any:
+    """
+    Recursively serialize objects for JSON, handling various Python types.
+    
+    Args:
+        obj: The object to serialize
+        
+    Returns:
+        JSON-serializable representation of the object
+        
+    Handles:
+        - datetime objects -> ISO format strings
+        - Pydantic models -> model_dump()
+        - dataclasses -> dict representation
+        - sets -> lists
+        - bytes -> base64 encoded strings
+        - Decimal -> float
+        - UUID -> string
+        - Enum -> value
+        - Complex numbers -> dict with real/imag
+        - Custom objects with __dict__ -> dict
+    """
+    # Handle None explicitly
+    if obj is None:
+        return None
+        
+    # Handle datetime objects
+    if isinstance(obj, datetime):
+        return obj.isoformat()
+    
+    # Handle date objects (separate from datetime)
+    if hasattr(obj, 'isoformat') and not isinstance(obj, datetime):
+        return obj.isoformat()
+    
+    # Handle Pydantic models
+    if hasattr(obj, 'model_dump'):
+        try:
+            return obj.model_dump()
+        except Exception as e:
+            logger.warning(f"Failed to serialize Pydantic model: {e}")
+            return str(obj)
+    
+    # Handle dataclasses
+    if hasattr(obj, '__dataclass_fields__'):
+        try:
+            return {k: serialize_for_json(v) for k, v in asdict(obj).items()}
+        except Exception as e:
+            logger.warning(f"Failed to serialize dataclass: {e}")
+            return str(obj)
+    
+    # Handle dictionaries
+    if isinstance(obj, dict):
+        try:
+            return {str(k): serialize_for_json(v) for k, v in obj.items()}
+        except Exception as e:
+            logger.warning(f"Failed to serialize dict: {e}")
+            return {}
+    
+    # Handle sequences (list, tuple, set)
+    if isinstance(obj, (list, tuple, set)):
+        try:
+            return [serialize_for_json(item) for item in obj]
+        except Exception as e:
+            logger.warning(f"Failed to serialize sequence: {e}")
+            return []
+    
+    # Handle bytes
+    if isinstance(obj, bytes):
+        try:
+            import base64
+            return base64.b64encode(obj).decode('utf-8')
+        except Exception as e:
+            logger.warning(f"Failed to serialize bytes: {e}")
+            return str(obj)
+    
+    # Handle Decimal
+    try:
+        from decimal import Decimal
+        if isinstance(obj, Decimal):
+            return float(obj)
+    except ImportError:
+        pass
+    
+    # Handle UUID
+    try:
+        from uuid import UUID
+        if isinstance(obj, UUID):
+            return str(obj)
+    except ImportError:
+        pass
+    
+    # Handle Enum
+    if hasattr(obj, '__class__') and hasattr(obj.__class__, '__bases__'):
+        try:
+            from enum import Enum
+            if isinstance(obj, Enum):
+                return obj.value
+        except ImportError:
+            pass
+    
+    # Handle complex numbers
+    if isinstance(obj, complex):
+        return {"real": obj.real, "imag": obj.imag}
+    
+    # Handle objects with __dict__
+    if hasattr(obj, '__dict__'):
+        try:
+            return {k: serialize_for_json(v) for k, v in obj.__dict__.items() if not k.startswith('_')}
+        except Exception as e:
+            logger.warning(f"Failed to serialize object with __dict__: {e}")
+            return str(obj)
+    
+    # Handle primitive types that are already JSON serializable
+    if isinstance(obj, (str, int, float, bool)):
+        return obj
+    
+    # Fallback: convert to string
+    try:
+        return str(obj)
+    except Exception as e:
+        logger.error(f"Failed to serialize object of type {type(obj)}: {e}")
+        return f"<unserializable: {type(obj).__name__}>"
 
 
 @dataclass
@@ -51,23 +175,7 @@ class UnifiedInvestigationRequest:
     metadata: Dict[str, Any] = None
 
 
-@dataclass
-class UnifiedInvestigationResponse:
-    """Unified response model for all investigation types"""
-    
-    investigation_id: str
-    investigation_type: str
-    status: str
-    duration_seconds: float
-    
-    # Results (one will be populated based on type)
-    fraud_result: Optional[Dict[str, Any]] = None
-    research_result: Optional[Dict[str, Any]] = None
-    
-    # Common metadata
-    agents_used: List[str] = None
-    error_message: Optional[str] = None
-    performance_metrics: Dict[str, Any] = None
+# UnifiedInvestigationResponse is now imported from models.schemas
 
 
 class UnifiedInvestigationService:
@@ -236,6 +344,7 @@ class UnifiedInvestigationService:
         yield {
             "type": "progress",
             "investigation_id": investigation_id,
+            "investigation_type": request.investigation_type,
             "step": "routing", 
             "message": f"Routing {request.investigation_type} investigation...",
             "progress": 10
@@ -243,7 +352,7 @@ class UnifiedInvestigationService:
         
         try:
             if request.investigation_type == "fraud_transaction":
-                # For fraud investigations, use the existing streaming
+                # For fraud investigations, use the existing streaming pattern
                 transaction_details = {
                     "amount": request.amount or 0.0,
                     "currency": request.currency or "USD",
@@ -255,27 +364,66 @@ class UnifiedInvestigationService:
                     "timestamp": datetime.now().isoformat()
                 }
                 
+                # Stream fraud investigation - REPLICATE WORKING PATTERN EXACTLY
                 async for progress in self.fraud_system.investigate_fraud_stream(transaction_details):
-                    # Add unified investigation metadata
+                    # Add minimal unified metadata but keep the same structure
                     progress["investigation_id"] = investigation_id
                     progress["investigation_type"] = request.investigation_type
                     yield progress
             
             else:
-                # For research investigations, provide basic progress updates
-                yield {"type": "progress", "investigation_id": investigation_id, "step": "researching", "message": "Conducting enhanced research...", "progress": 50}
+                # For research investigations, use enhanced research streaming
+                yield {"type": "progress", "investigation_id": investigation_id, "step": "initializing", "message": "Starting enhanced research...", "progress": 10}
                 
-                # Execute the investigation
-                result = await self.investigate(request)
+                # Create research request
+                research_request = {
+                    "type": request.investigation_type.replace('_research', ''),  # entity_research -> entity
+                    "topic": request.topic,
+                    "entity_name": request.entity_name,
+                    "entity_type": request.entity_type,
+                    "field": request.field,
+                    "context": request.context,
+                    "include_market_analysis": request.include_market_analysis
+                }
+                
+                yield {"type": "progress", "investigation_id": investigation_id, "step": "researching", "message": "Conducting specialized research...", "progress": 30}
+                
+                # Execute enhanced research
+                result = await self.enhanced_investigator.investigate_with_domain_expertise(research_request)
+                
+                yield {"type": "progress", "investigation_id": investigation_id, "step": "analyzing", "message": "Analyzing research findings...", "progress": 80}
+                
+                # Create unified response for research
+                start_time = datetime.now() - timedelta(seconds=30)  # Approximate
+                end_time = datetime.now()
+                duration = (end_time - start_time).total_seconds()
+                
+                unified_result = UnifiedInvestigationResponse(
+                    investigation_id=investigation_id,
+                    investigation_type=request.investigation_type,
+                    status="completed",
+                    duration_seconds=duration,
+                    agents_used=["enhanced_research_agent"],
+                    performance_metrics={
+                        "duration_seconds": duration,
+                        "start_time": start_time.isoformat(),
+                        "end_time": end_time.isoformat()
+                    },
+                    research_result={
+                        "type": request.investigation_type,
+                        "result": result,
+                        "status": "completed"
+                    }
+                )
                 
                 # Final completion
                 yield {
                     "type": "complete", 
                     "investigation_id": investigation_id,
                     "step": "completed", 
-                    "message": "Investigation completed successfully",
+                    "message": "Enhanced research completed successfully",
                     "progress": 100,
-                    "result": result
+                    "result": serialize_for_json(unified_result)
                 }
                 
         except Exception as e:

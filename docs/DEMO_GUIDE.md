@@ -547,7 +547,217 @@ Watch terminal for:
 - [ ] Production-ready architecture
 - [ ] Human oversight preserved
 
-## 🎯 Success Metrics
+## 🚀 Unified Investigation System Examples
+
+The Unified Investigation System provides a streamlined interface that combines all investigation capabilities into a single, powerful workflow. Here are detailed examples of how to use this advanced system.
+
+### 🎯 Basic Unified Investigation
+
+**Purpose**: Single interface for complete fraud investigation workflow
+**Location**: Navigate to `/unified` or click "Unified Investigation" in the main menu
+
+#### Example 1: High-Value International Transfer
+```json
+{
+  "amount": 15000000,
+  "currency": "USD",
+  "description": "Business payment for international trade",
+  "customer_name": "Corner Market Express",
+  "account_type": "Business",
+  "risk_rating": "Medium",
+  "country_to": "Brazil"
+}
+```
+
+**What You'll See:**
+1. **Real-time Agent Processing**: Watch as 4 specialized agents work simultaneously
+2. **Professional Report Format**: Clean, banker-friendly formatting with:
+   - Bold section headers (ALL CAPS sections automatically bolded)
+   - Monospace font for easy reading
+   - Color-coded risk indicators (HIGH/MEDIUM/LOW)
+   - Professional highlighting for regulatory terms (OFAC, SAR, AML)
+3. **Comprehensive Analysis**: 
+   - Regulatory Assessment Synthesis
+   - Risk and Evidence Analysis Integration
+   - Compliance Determination Details
+   - Final Risk Classification with detailed reasoning
+
+**Expected Processing Time**: 60-90 seconds
+**Expected Outcome**: HIGH risk classification with detailed compliance requirements
+
+#### Example 2: Cryptocurrency Exchange Investigation
+```json
+{
+  "amount": 450000,
+  "currency": "USD",
+  "description": "Digital asset exchange deposit for institutional trading",
+  "customer_name": "Blockchain Capital Partners",
+  "account_type": "Investment",
+  "risk_rating": "High",
+  "country_to": "Cayman Islands"
+}
+```
+
+**Investigation Focus Areas**:
+- Virtual Asset Service Provider (VASP) compliance
+- Offshore jurisdiction risk assessment
+- Institutional trading pattern analysis
+- Sanctions screening requirements
+
+**Key Features Demonstrated**:
+- **Expandable Report Generation**: Top section always visible with key findings
+- **Collapsible Supporting Analysis**: Bottom sections for detailed agent findings
+- **Professional Color Coding**: 
+  - 🟡 Risk scores highlighted in gold
+  - 🔵 Regulatory terms in professional blue
+  - 🔴 High-risk items in red with backgrounds
+
+### 🔍 Enhanced Research System Examples
+
+The Enhanced Research System provides powerful document search and analysis capabilities with advanced AI-powered insights.
+
+#### Research Example 1: Regulatory Compliance Query
+**Location**: Navigate to `/research` or click "Research" in the main menu
+
+**Query**: `"Enhanced due diligence requirements for high-risk customers under BSA"`
+
+**What You'll Get**:
+- **Comprehensive Document Analysis**: Real regulatory documents from FinCEN, FFIEC, and FATF
+- **Contextual Insights**: AI-powered analysis of regulatory requirements
+- **Practical Applications**: How regulations apply to specific scenarios
+- **Citation Sources**: Direct references to regulatory sections and guidance
+
+**Advanced Research Techniques**:
+```
+1. Specific Regulation Search:
+   "31 CFR 1020.320 suspicious activity report filing requirements"
+
+2. Cross-Jurisdictional Analysis:
+   "FATF recommendations vs US AML requirements comparison"
+
+3. Industry-Specific Guidance:
+   "Money services business MSB compliance requirements FinCEN"
+
+4. Recent Regulatory Updates:
+   "2024 FinCEN beneficial ownership rule changes"
+```
+
+#### Research Example 2: Sanctions and OFAC Analysis
+**Query**: `"OFAC sanctions screening requirements for international wire transfers"`
+
+**Expected Results**:
+- **Treasury Guidance**: Direct OFAC compliance requirements
+- **Screening Procedures**: Step-by-step sanctions checking processes
+- **Red Flag Indicators**: Warning signs for potential sanctions violations
+- **Industry Best Practices**: How financial institutions implement OFAC compliance
+
+#### Research Example 3: Fraud Pattern Analysis
+**Query**: `"Trade-based money laundering red flags in import export transactions"`
+
+**Research Capabilities**:
+- **Pattern Recognition**: Common fraud schemes and indicators
+- **Case Studies**: Real-world examples from regulatory guidance
+- **Risk Assessment**: How to evaluate trade finance transactions
+- **Documentation Requirements**: Proper due diligence procedures
+
+### 🎛️ Advanced Unified Investigation Features
+
+#### Multi-Session Investigation Tracking
+**Feature**: Session management and investigation history
+**How to Use**:
+1. Start multiple investigations simultaneously
+2. Track progress across different cases
+3. Compare investigation results
+4. Export comprehensive reports
+
+**Example Workflow**:
+```
+Session 1: High-value crypto transaction → HIGH risk
+Session 2: Structured cash deposits → MEDIUM risk  
+Session 3: Shell company payment → HIGH risk
+Session 4: Charity organization transfer → LOW risk
+```
+
+#### Investigation Report Export
+**Feature**: Professional PDF and text report generation
+**Formats Available**:
+- **Executive Summary**: Key findings and recommendations
+- **Detailed Analysis**: Complete agent findings and evidence
+- **Compliance Checklist**: Required actions and deadlines
+- **Regulatory Citations**: Source documents and references
+
+#### Real-Time Collaboration
+**Feature**: Share investigation results with team members
+**Capabilities**:
+- Copy investigation reports to clipboard
+- Download detailed analysis files
+- Share investigation IDs for case tracking
+- Export data for case management systems
+
+### 🔧 System Integration Examples
+
+#### API Integration for Financial Institutions
+**Endpoint**: `POST /api/investigate`
+**Use Case**: Integrate with existing transaction monitoring systems
+
+```python
+import requests
+
+# Example integration with core banking system
+transaction_data = {
+    "amount": 75000,
+    "currency": "USD", 
+    "customer_name": "International Trading Co",
+    "country_to": "UAE",
+    "risk_rating": "Medium"
+}
+
+response = requests.post(
+    "http://localhost:8000/api/investigate",
+    json=transaction_data
+)
+
+investigation_result = response.json()
+```
+
+#### Compliance Workflow Integration
+**Feature**: Automated SAR filing preparation
+**Process**:
+1. Transaction flagged by monitoring system
+2. Unified Investigation automatically triggered
+3. Risk assessment completed within 90 seconds
+4. SAR documentation prepared if required
+5. Compliance officer review and approval
+
+### 📊 Performance Benchmarks
+
+#### Unified Investigation System Performance
+- **Average Processing Time**: 60-90 seconds
+- **Agent Coordination**: 4 specialized agents working in parallel
+- **Document Analysis**: 50+ regulatory documents searched
+- **Risk Calculation**: Multi-factor analysis with quantitative scoring
+- **Report Generation**: Professional banking-standard formatting
+
+#### Enhanced Research System Performance
+- **Search Response Time**: 2-3 seconds
+- **Document Coverage**: 1000+ regulatory documents indexed
+- **Query Understanding**: Natural language processing with context awareness
+- **Result Relevance**: AI-ranked results with confidence scoring
+
+### 🎯 Demo Script for Advanced Features
+
+#### Unified Investigation Demo (5 minutes)
+1. **Setup** (30 seconds): Navigate to Unified Investigation page
+2. **High-Value Case** (2 minutes): Input $15M Brazil transaction, show real-time processing
+3. **Results Analysis** (2 minutes): Highlight professional formatting, risk scoring, compliance requirements
+4. **Export Features** (30 seconds): Demonstrate report download and sharing
+
+#### Enhanced Research Demo (3 minutes)
+1. **Regulatory Search** (1 minute): Query BSA requirements, show comprehensive results
+2. **Advanced Query** (1 minute): Cross-reference OFAC and AML regulations
+3. **Practical Application** (1 minute): Show how research applies to investigation scenarios
+
+### 🏆 Success Metrics
 
 A successful demo should show:
 - ✅ All system components operational
@@ -557,3 +767,6 @@ A successful demo should show:
 - ✅ Real regulatory content in search results
 - ✅ Multi-agent processing evidence in logs
 - ✅ Appropriate error handling and user feedback
+- ✅ **Professional report formatting** with banking-style colors and layout
+- ✅ **Advanced research capabilities** with comprehensive regulatory coverage
+- ✅ **Unified workflow** demonstrating seamless integration of all features

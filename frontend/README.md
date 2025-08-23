@@ -2,7 +2,7 @@
 
 > **📂 Navigation**: [🏠 Home](../README.md) | [🔧 API Docs](../api/README.md) | [🤖 Agent Architecture](../docs/AGENT_PROMPTS.md) | [📈 Advanced Retrievers](../docs/ADVANCED_RETRIEVERS.md) | [💼 Business Case](../docs/BUSINESS_CASE.md) | [🎓 Certification](../docs/CERTIFICATION_CHALLENGE.md) | [🎬 Demo Guide](../docs/DEMO_GUIDE.md) | [💻 Frontend](README.md) | [📊 Data](../data/README.md) | [🚀 Deploy](../deploy/README.md) | [🧪 Tests](../tests/README.md) | [🔄 Merge](../MERGE.md)
 
-A modern Next.js frontend for the InvestigatorAI Multi-Agent Fraud Investigation System.
+A modern Next.js frontend for the **modular** InvestigatorAI Multi-Agent Fraud Investigation System with **code-style UI** and **rich text rendering**.
 
 ## 📋 Table of Contents
 
@@ -18,13 +18,20 @@ A modern Next.js frontend for the InvestigatorAI Multi-Agent Fraud Investigation
 
 ### 🚀 Features
 
+#### **🔍 Enhanced Investigation Interface (August 2025)**
+- **Detailed Investigation Analysis**: Top-priority display of comprehensive reasoning from modular agents
+- **Code-Style UI**: Terminal/IDE aesthetic with dark theme and cyan accents  
+- **Rich Text Rendering**: Markdown formatting with structured display for professional review
+- **Unlimited Length Analysis**: Complete detailed reasoning without character restrictions
+- **Copy/Download Functionality**: Full analysis export with professional formatting
+
+#### **🎯 Core Investigation Features**
 - **Fraud Investigation Interface**: Submit transaction details for AI-powered fraud analysis
 - **Real-time Status Monitoring**: API health checks and system status updates
 - **Document Search**: Query regulatory databases and compliance documents
 - **Exchange Rate Lookup**: Get current currency exchange rates
 - **Interactive Help & Documentation**: Comprehensive user guide with demo examples
 - **Responsive Design**: Works seamlessly on desktop and mobile devices
-- **Dark Blue Theme**: Professional, accessible interface with high contrast
 
 ### 🛠️ Technology Stack
 

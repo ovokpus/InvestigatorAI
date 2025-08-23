@@ -4,7 +4,7 @@
 
 > **Comprehensive catalog of all data sources collected by the InvestigatorAI system**
 
-This document provides a complete reference for all data sources, files, and datasets collected by the three data collection scripts. Each entry includes the source location, data format, content description, and specific relevance to fraud investigation workflows.
+This document provides a complete reference for all data sources, files, and datasets collected by the three data collection scripts. Each entry includes the source location, data format, content description, and specific relevance to **modular** fraud investigation workflows with **unlimited-length detailed reasoning**.
 
 ---
 

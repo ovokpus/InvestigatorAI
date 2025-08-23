@@ -7,7 +7,7 @@ export default function Header() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold">InvestigatorAI</h1>
-            <p className="text-sm opacity-90">Multi-Agent Fraud Investigation System (Challenge Accepted)</p>
+            <p className="text-sm opacity-90">Multi-Agent Fraud Investigation System</p>
           </div>
           
           <div className="flex items-center space-x-4">

@@ -128,16 +128,16 @@ class VectorStoreService:
                     force_recreate=False  # Don't recreate if exists
                 )
                 
-                print(f"✅ Vector database created with {len(documents)} document chunks")
+                logger.info(f"Vector database created with {len(documents)} document chunks")
             
             # Initialize BM25 retriever for fast sparse search (if enabled)
             if self.settings.bm25_enabled:
-                print("🚀 Initializing BM25 retriever for optimized search...")
+                logger.info("Initializing BM25 retriever for optimized search...")
                 self.bm25_retriever = BM25Retriever.from_documents(documents)
                 self.bm25_retriever.k = 5  # Default k value
-                print(f"✅ BM25 retriever initialized with {len(documents)} documents")
+                logger.info(f"BM25 retriever initialized with {len(documents)} documents")
             else:
-                print("ℹ️ BM25 retriever disabled in configuration, using dense search only")
+                logger.info("BM25 retriever disabled in configuration, using dense search only")
             
             self.is_initialized = True
             
@@ -149,7 +149,7 @@ class VectorStoreService:
             return True
             
         except Exception as e:
-            print(f"❌ Failed to initialize vector store: {e}")
+            logger.error(f"Failed to initialize vector store: {e}")
             return False
     
     def _test_vector_store(self) -> None:
