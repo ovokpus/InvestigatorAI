@@ -45,7 +45,7 @@ class InvestigationResponse(BaseModel):
 class HealthResponse(BaseModel):
     """Health check response"""
     status: str
-    timestamp: datetime
+    timestamp: str
     version: str
     api_keys_available: bool
     vector_store_initialized: bool
@@ -54,7 +54,7 @@ class AgentToolResponse(BaseModel):
     """Response from agent tools"""
     result: str
     source: str
-    timestamp: datetime
+    timestamp: str
 
 # Document Processing Models
 class DocumentMetadata(BaseModel):
@@ -183,7 +183,7 @@ class ResearchPlanResponse(BaseModel):
     sections: List[ResearchSectionResponse] = Field(default_factory=list)
     research_depth: int = 2
     query_count: int = 2
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: str = Field(default_factory=lambda: datetime.now().isoformat())
 
 
 class EntityInvestigationResponse(BaseModel):
@@ -218,8 +218,8 @@ class ResearchStatusResponse(BaseModel):
     progress_percentage: float = 0.0
     completed_sections: int = 0
     total_sections: int = 0
-    created_at: datetime
-    updated_at: datetime
+    created_at: str
+    updated_at: str
     error_message: Optional[str] = None
 
 
@@ -232,7 +232,7 @@ class ResearchResponse(BaseModel):
     financial_result: Optional[EntityInvestigationResponse] = None
     academic_result: Optional[AcademicResearchResponse] = None
     general_result: Optional[ResearchPlanResponse] = None
-    timestamp: datetime
+    timestamp: str
     error: Optional[str] = None
 
 

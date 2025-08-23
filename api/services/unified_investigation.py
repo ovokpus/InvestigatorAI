@@ -6,20 +6,36 @@ into a single, simplified interface while maintaining backward compatibility.
 
 import asyncio
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, List, Any, Optional, Union, Literal
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 
 from langchain_openai import ChatOpenAI
 from langsmith import traceable
 
-from .multi_source_research import MultiSourceResearchService
-from .specialized_research import EnhancedInvestigatorAI
-from ..agents.multi_agent_system import FraudInvestigationSystem
+from ..agents.research.multi_source_research import MultiSourceResearchService
+from ..agents.research.specialized_research import EnhancedInvestigatorAI
+from ..agents.langgraph.multi_agent_system import FraudInvestigationSystem
 from ..core.config import Settings
-from ..models.schemas import InvestigationRequest, ResearchRequest
+from ..models.schemas import InvestigationRequest, ResearchRequest, UnifiedInvestigationResponse
 
 logger = logging.getLogger(__name__)
+
+
+def serialize_for_json(obj: Any) -> Any:
+    """Recursively serialize objects for JSON, handling datetime and dataclass objects"""
+    if isinstance(obj, datetime):
+        return obj.isoformat()
+    elif hasattr(obj, 'model_dump'):  # Pydantic model
+        return obj.model_dump()
+    elif hasattr(obj, '__dataclass_fields__'):  # dataclass
+        return {k: serialize_for_json(v) for k, v in asdict(obj).items()}
+    elif isinstance(obj, dict):
+        return {k: serialize_for_json(v) for k, v in obj.items()}
+    elif isinstance(obj, (list, tuple)):
+        return [serialize_for_json(item) for item in obj]
+    else:
+        return obj
 
 
 @dataclass
@@ -51,23 +67,7 @@ class UnifiedInvestigationRequest:
     metadata: Dict[str, Any] = None
 
 
-@dataclass
-class UnifiedInvestigationResponse:
-    """Unified response model for all investigation types"""
-    
-    investigation_id: str
-    investigation_type: str
-    status: str
-    duration_seconds: float
-    
-    # Results (one will be populated based on type)
-    fraud_result: Optional[Dict[str, Any]] = None
-    research_result: Optional[Dict[str, Any]] = None
-    
-    # Common metadata
-    agents_used: List[str] = None
-    error_message: Optional[str] = None
-    performance_metrics: Dict[str, Any] = None
+# UnifiedInvestigationResponse is now imported from models.schemas
 
 
 class UnifiedInvestigationService:
@@ -244,7 +244,7 @@ class UnifiedInvestigationService:
         
         try:
             if request.investigation_type == "fraud_transaction":
-                # For fraud investigations, use the existing streaming
+                # For fraud investigations, use the existing streaming pattern
                 transaction_details = {
                     "amount": request.amount or 0.0,
                     "currency": request.currency or "USD",
@@ -256,27 +256,66 @@ class UnifiedInvestigationService:
                     "timestamp": datetime.now().isoformat()
                 }
                 
+                # Stream fraud investigation - REPLICATE WORKING PATTERN EXACTLY
                 async for progress in self.fraud_system.investigate_fraud_stream(transaction_details):
-                    # Add unified investigation metadata
+                    # Add minimal unified metadata but keep the same structure
                     progress["investigation_id"] = investigation_id
                     progress["investigation_type"] = request.investigation_type
                     yield progress
             
             else:
-                # For research investigations, provide basic progress updates
-                yield {"type": "progress", "investigation_id": investigation_id, "step": "researching", "message": "Conducting enhanced research...", "progress": 50}
+                # For research investigations, use enhanced research streaming
+                yield {"type": "progress", "investigation_id": investigation_id, "step": "initializing", "message": "Starting enhanced research...", "progress": 10}
                 
-                # Execute the investigation
-                result = await self.investigate(request)
+                # Create research request
+                research_request = {
+                    "type": request.investigation_type.replace('_research', ''),  # entity_research -> entity
+                    "topic": request.topic,
+                    "entity_name": request.entity_name,
+                    "entity_type": request.entity_type,
+                    "field": request.field,
+                    "context": request.context,
+                    "include_market_analysis": request.include_market_analysis
+                }
+                
+                yield {"type": "progress", "investigation_id": investigation_id, "step": "researching", "message": "Conducting specialized research...", "progress": 30}
+                
+                # Execute enhanced research
+                result = await self.enhanced_investigator.investigate_with_domain_expertise(research_request)
+                
+                yield {"type": "progress", "investigation_id": investigation_id, "step": "analyzing", "message": "Analyzing research findings...", "progress": 80}
+                
+                # Create unified response for research
+                start_time = datetime.now() - timedelta(seconds=30)  # Approximate
+                end_time = datetime.now()
+                duration = (end_time - start_time).total_seconds()
+                
+                unified_result = UnifiedInvestigationResponse(
+                    investigation_id=investigation_id,
+                    investigation_type=request.investigation_type,
+                    status="completed",
+                    duration_seconds=duration,
+                    agents_used=["enhanced_research_agent"],
+                    performance_metrics={
+                        "duration_seconds": duration,
+                        "start_time": start_time.isoformat(),
+                        "end_time": end_time.isoformat()
+                    },
+                    research_result={
+                        "type": request.investigation_type,
+                        "result": result,
+                        "status": "completed"
+                    }
+                )
                 
                 # Final completion
                 yield {
                     "type": "complete", 
                     "investigation_id": investigation_id,
                     "step": "completed", 
-                    "message": "Investigation completed successfully",
+                    "message": "Enhanced research completed successfully",
                     "progress": 100,
-                    "result": result
+                    "result": serialize_for_json(unified_result)
                 }
                 
         except Exception as e:

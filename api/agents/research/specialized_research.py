@@ -18,7 +18,7 @@ from langsmith import traceable
 
 from .multi_source_research import MultiSourceResearchService, SearchResponse
 from .iterative_research import IterativeResearchAgent, ResearchSection, ResearchPlan, ResearchPlanner
-from ..core.config import Settings
+from ...core.config import Settings
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ class EntityInvestigationResult:
     sources: List[str]
     compliance_issues: List[str]
     recommendations: List[str]
-    investigation_date: datetime
+    investigation_date: str
     confidence_score: float = 0.0
 
 
@@ -108,7 +108,7 @@ class FinancialResearchAgent(BaseSpecializedAgent):
             sources=analysis.get("sources", []),
             compliance_issues=compliance_assessment.get("issues", []),
             recommendations=compliance_assessment.get("recommendations", []),
-            investigation_date=datetime.now(),
+            investigation_date=datetime.now().isoformat(),
             confidence_score=analysis.get("confidence_score", 0.0)
         )
     

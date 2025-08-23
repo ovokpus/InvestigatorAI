@@ -3,9 +3,9 @@ from langchain_core.tools import tool
 from typing import Optional
 import logging
 
-from ..services.vector_store import VectorStoreManager
-from ..services.external_apis import ExternalAPIService, RiskCalculator, ComplianceChecker
-from ..core.config import get_settings
+from ...services.vector_store import VectorStoreManager
+from ...services.external_apis import ExternalAPIService, RiskCalculator, ComplianceChecker
+from ...core.config import get_settings
 
 logger = logging.getLogger(__name__)
 

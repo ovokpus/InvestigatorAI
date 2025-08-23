@@ -5,9 +5,9 @@ from datetime import datetime
 from typing import Dict, Any, AsyncGenerator, Callable
 import openai
 
-from ..services.config_service import get_config_service
-from ..services.cache_service import get_cache_service
-from ..services.memory_optimizer import get_memory_optimizer
+from ...services.config_service import get_config_service
+from ...services.cache_service import get_cache_service
+from ...services.memory_optimizer import get_memory_optimizer
 from .message_processor import MessageProcessor
 from .report_generator import ReportGenerator
 
@@ -92,7 +92,7 @@ class StreamingHandler:
             async def run_document_search() -> str:
                 logger.info("🔍 [DEBUG] Starting run_document_search() in streaming endpoint")
                 await asyncio.sleep(2.0)  # Simulate vector search time
-                from ..services.vector_store import VectorStoreManager
+                from ...services.vector_store import VectorStoreManager
                 vector_store = VectorStoreManager.get_instance()
                 if vector_store and vector_store.is_initialized:
                     country = transaction_details.get('country_to', '')
@@ -110,7 +110,7 @@ class StreamingHandler:
                         logger.info(f"🔍 [DEBUG] Raw result {i+1}: {raw_preview}")
                     
                     # Apply the same filtering as the regulatory research tool
-                    from ..agents.tools import _extract_regulatory_insights
+                    from .tools import _extract_regulatory_insights
                     logger.info("🔍 [DEBUG] Applying _extract_regulatory_insights filtering")
                     unique_results = []
                     seen_insights = set()

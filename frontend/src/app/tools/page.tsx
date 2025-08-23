@@ -27,12 +27,7 @@ export default function ToolsPage() {
             <span className="px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium">
               Tools & Search
             </span>
-            <Link 
-              href="/research" 
-              className="px-4 py-2 bg-purple-600 text-white hover:bg-purple-700 rounded-lg font-medium transition-colors"
-            >
-              🔬 Enhanced Research
-            </Link>
+
             <a 
               href="/help" 
               className="px-4 py-2 bg-secondary text-secondary-foreground hover:bg-accent rounded-lg font-medium transition-colors"
@@ -60,23 +55,16 @@ export default function ToolsPage() {
           <ExchangeRate />
         </div>
 
-        {/* Enhanced Research Capabilities */}
+        {/* Enhanced Research Capabilities - Coming Soon */}
         <div className="mt-8 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/20 dark:to-indigo-950/20 rounded-lg p-6 border border-purple-200 dark:border-purple-800">
-          <div className="flex justify-between items-start mb-4">
-            <div>
-              <h2 className="text-2xl font-bold text-purple-800 dark:text-purple-200 mb-2">
-                🔬 New: Enhanced Research Capabilities
-              </h2>
-              <p className="text-purple-700 dark:text-purple-300">
-                Sophisticated research workflows with multi-source intelligence and quality assessment
-              </p>
-            </div>
-            <Link 
-              href="/research"
-              className="bg-purple-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-purple-700 transition-colors"
-            >
-              Try Enhanced Research →
-            </Link>
+          <div className="mb-4">
+            <h2 className="text-2xl font-bold text-purple-800 dark:text-purple-200 mb-2 flex items-center space-x-2">
+              <span>🚧</span>
+              <span>Coming Soon: Enhanced Research Capabilities</span>
+            </h2>
+            <p className="text-purple-700 dark:text-purple-300">
+              Sophisticated research workflows with multi-source intelligence and quality assessment are in development
+            </p>
           </div>
           
           <div className="grid md:grid-cols-3 gap-4">

@@ -14,16 +14,16 @@ import json
 
 from langsmith import traceable
 
-from .models.schemas import (
+from ..models.schemas import (
     ResearchRequest, ResearchResponse, ResearchPlanRequest, ResearchPlanResponse,
     ResearchStatusResponse, ResearchSessionListResponse, EntityInvestigationResponse,
     AcademicResearchResponse, SearchResponse, ResearchStatus, MultiSourceSearchRequest
 )
-from .services.multi_source_research import MultiSourceResearchService
-from .services.iterative_research import IterativeResearchAgent, ResearchPlanner
-from .services.specialized_research import EnhancedInvestigatorAI, FinancialResearchAgent, AcademicResearchAgent
-from .services.research_state import ResearchStateManager
-from .core.config import Settings
+from ..agents.research.multi_source_research import MultiSourceResearchService
+from ..agents.research.iterative_research import IterativeResearchAgent, ResearchPlanner
+from ..agents.research.specialized_research import EnhancedInvestigatorAI, FinancialResearchAgent, AcademicResearchAgent
+from ..agents.research.research_state import ResearchStateManager
+from ..core.config import Settings
 
 logger = logging.getLogger(__name__)
 
@@ -98,7 +98,7 @@ async def generate_research_plan(
         )
         
         # Convert to response format
-        from .services.iterative_research import ResearchSection
+        from ..agents.research.iterative_research import ResearchSection
         section_responses = []
         for section in research_plan.sections:
             section_response = {
@@ -187,7 +187,7 @@ async def conduct_enhanced_research(
             type=request.type,
             status=ResearchStatus.COMPLETED,
             result=result.get("result"),
-            timestamp=datetime.now()
+            timestamp=datetime.now().isoformat()
         )
         
         # Add type-specific results
@@ -451,7 +451,7 @@ async def cleanup_old_research(
         return {
             "message": f"Cleaned up {cleaned_count} old research sessions",
             "days_old": days_old,
-            "timestamp": datetime.now()
+            "timestamp": datetime.now().isoformat()
         }
         
     except Exception as e:

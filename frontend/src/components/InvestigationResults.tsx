@@ -1,5 +1,6 @@
 'use client';
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { ReportGenerationViewer as EnhancedReportGenerationViewer, OtherAgentsViewer as EnhancedOtherAgentsViewer } from './EnhancedInvestigationResults';
 
 interface MarkdownRendererProps {
   content: string;
@@ -311,6 +312,439 @@ interface DetailedResultsViewerProps {
   results: FullResults;
 }
 
+// Component to show only Report Generation Agent
+function ReportGenerationViewer({ results }: DetailedResultsViewerProps) {
+
+  // Parse messages from results with debug logging
+  console.log('🔍 ReportGenerationViewer - Raw results:', results);
+  console.log('🔍 ReportGenerationViewer - Raw messages:', results?.messages);
+  
+  let messages = results?.messages || [];
+  
+  // If messages is a string, try to parse it
+  if (typeof messages === 'string') {
+    try {
+      messages = JSON.parse(messages);
+      console.log('📝 Parsed messages from string:', messages);
+    } catch (e) {
+      console.error('❌ Failed to parse messages string:', e);
+      messages = [];
+    }
+  }
+  
+  // Ensure each message has the correct structure and filter for report_generation only
+  const parsedMessages = messages
+    .map((msg: unknown, index: number) => {
+      console.log(`🔍 Message ${index}:`, msg, typeof msg);
+      
+      // If the message is a string that looks like an object, parse it
+      if (typeof msg === 'string' && msg.includes("'content':")) {
+        try {
+          // Convert Python-like dict syntax to JSON
+          const jsonString = msg
+            .replace(/'/g, '"')  // Replace single quotes with double quotes
+            .replace(/True/g, 'true')  // Replace Python True with JSON true
+            .replace(/False/g, 'false')  // Replace Python False with JSON false
+            .replace(/None/g, 'null');  // Replace Python None with JSON null
+          
+          const parsed = JSON.parse(jsonString);
+          console.log(`✅ Parsed message ${index}:`, parsed);
+          return {
+            content: parsed.content || '',
+            name: parsed.name || 'unknown',
+            type: parsed.type || 'unknown'
+          };
+        } catch (e) {
+          console.error(`❌ Failed to parse message ${index}:`, e);
+          return {
+            content: msg,
+            name: 'unknown',
+            type: 'unknown'
+          };
+        }
+      }
+      
+      // If it's already an object, use it directly
+      if (typeof msg === 'object' && msg !== null) {
+        const objMsg = msg as { content?: string; name?: string; type?: string };
+        return {
+          content: objMsg.content || '',
+          name: objMsg.name || 'unknown',
+          type: objMsg.type || 'unknown'
+        };
+      }
+      
+      // Fallback for any other format
+      return {
+        content: String(msg),
+        name: 'unknown',
+        type: 'unknown'
+      };
+    })
+    .filter((message: InvestigationMessage) => message.name === 'report_generation'); // Only show report generation
+  
+  console.log('🎯 Final parsed messages (Report Generation only):', parsedMessages);
+
+  const formatContent = (content: string) => {
+    // For investigation results, don't try to parse sections - display the full content
+    // The backend already provides well-formatted agent responses
+    return [{
+      title: 'Investigation Analysis',
+      content: content.trim(),
+      type: 'info'
+    }];
+  };
+
+  const getSectionIcon = (type: string) => {
+    switch (type) {
+      case 'warning': return '⚠️';
+      case 'danger': return '🚨';
+      case 'success': return '✅';
+      default: return 'ℹ️';
+    }
+  };
+
+  const renderMarkdownContent = (content: string): React.JSX.Element => {
+    if (!content) return <span>No content available</span>;
+    
+    // Enhanced markdown parsing for investigation reports
+    const parseMarkdown = (text: string) => {
+      // Split by double asterisks for bold sections
+      const parts = text.split(/(\*\*.*?\*\*)/g);
+      
+      return parts.map((part, index) => {
+        if (part.startsWith('**') && part.endsWith('**')) {
+          // Bold text
+          return <strong key={index} className="font-semibold text-gray-900 dark:text-gray-100">{part.slice(2, -2)}</strong>;
+        }
+        return <span key={index}>{part}</span>;
+      });
+    };
+    
+    // Check if content has structured sections (common in investigation reports)
+    if (content.includes('**') && content.split('**').length > 4) {
+      // Content has structured sections - render with better formatting
+      const sections = content.split(/\n\s*\n/);
+      
+      return (
+        <div className="space-y-4">
+          {sections.map((section, index) => {
+            if (section.match(/^\*\*[A-Z\s]+\*\*:?$/)) {
+              // This is a section header
+              const headerText = section.replace(/\*\*/g, '').replace(':', '');
+              return (
+                <div key={index} className="font-bold text-lg text-cyan-300 bg-gray-800 p-3 rounded border-l-4 border-cyan-400 mb-3">
+                  <span className="text-cyan-400">▶</span> {headerText}
+                </div>
+              );
+            } else {
+              // This is section content
+              return (
+                <div key={index} className="ml-4 space-y-2">
+                  {parseMarkdown(section.trim())}
+                </div>
+              );
+            }
+          })}
+        </div>
+      );
+    } else {
+      // Regular content with markdown formatting
+      return (
+        <div className="space-y-2">
+          {parseMarkdown(content)}
+        </div>
+      );
+    }
+  };
+
+  if (!parsedMessages.length) {
+    return (
+      <div className="text-center p-8 text-muted-foreground">
+        <p>No report generation analysis available for this investigation.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {parsedMessages.map((message: InvestigationMessage, messageIndex: number) => {
+        if (!message.content || message.type === 'human') return null;
+
+        const sections = formatContent(message.content);
+        const agentName = 'Report Generation Agent';
+
+        return (
+          <div key={messageIndex} className="border border-cyan-500 rounded-lg overflow-hidden bg-gray-900">
+            <div className="bg-gray-800 p-4 border-b border-cyan-500">
+              <div className="flex items-center space-x-3">
+                <div className="text-lg text-cyan-400">📊</div>
+                <div>
+                  <h4 className="font-semibold text-cyan-300 font-mono">{agentName}</h4>
+                  <p className="text-sm text-cyan-500 font-mono">
+                    {sections.length} analysis section{sections.length !== 1 ? 's' : ''}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 space-y-4 bg-gray-900">
+              {sections.map((section, sectionIndex) => (
+                <div 
+                  key={sectionIndex} 
+                  className="border border-gray-700 rounded bg-gray-800 p-4"
+                >
+                  <div className="flex items-center space-x-2 mb-3">
+                    <span className="text-lg text-cyan-400">{getSectionIcon(section.type)}</span>
+                    <h5 className="font-semibold text-cyan-300 font-mono">{section.title}</h5>
+                  </div>
+                  <div className="prose prose-sm max-w-none">
+                    <div className="text-sm text-green-300 leading-relaxed break-words overflow-wrap-anywhere font-mono">
+                      {renderMarkdownContent(section.content)}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// Component to show other agents (excluding Report Generation Agent)
+function OtherAgentsViewer({ results }: DetailedResultsViewerProps) {
+  const [expandedSections, setExpandedSections] = useState<{ [key: number]: boolean }>({});
+
+  const toggleSection = (index: number) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [index]: !prev[index]
+    }));
+  };
+
+  // Parse messages from results with debug logging
+  console.log('🔍 OtherAgentsViewer - Raw results:', results);
+  console.log('🔍 OtherAgentsViewer - Raw messages:', results?.messages);
+  
+  let messages = results?.messages || [];
+  
+  // If messages is a string, try to parse it
+  if (typeof messages === 'string') {
+    try {
+      messages = JSON.parse(messages);
+      console.log('📝 Parsed messages from string:', messages);
+    } catch (e) {
+      console.error('❌ Failed to parse messages string:', e);
+      messages = [];
+    }
+  }
+  
+  // Ensure each message has the correct structure and filter out report_generation
+  const parsedMessages = messages
+    .map((msg: unknown, index: number) => {
+      console.log(`🔍 Message ${index}:`, msg, typeof msg);
+      
+      // If the message is a string that looks like an object, parse it
+      if (typeof msg === 'string' && msg.includes("'content':")) {
+        try {
+          // Convert Python-like dict syntax to JSON
+          const jsonString = msg
+            .replace(/'/g, '"')  // Replace single quotes with double quotes
+            .replace(/True/g, 'true')  // Replace Python True with JSON true
+            .replace(/False/g, 'false')  // Replace Python False with JSON false
+            .replace(/None/g, 'null');  // Replace Python None with JSON null
+          
+          const parsed = JSON.parse(jsonString);
+          console.log(`✅ Parsed message ${index}:`, parsed);
+          return {
+            content: parsed.content || '',
+            name: parsed.name || 'unknown',
+            type: parsed.type || 'unknown'
+          };
+        } catch (e) {
+          console.error(`❌ Failed to parse message ${index}:`, e);
+          return {
+            content: msg,
+            name: 'unknown',
+            type: 'unknown'
+          };
+        }
+      }
+      
+      // If it's already an object, use it directly
+      if (typeof msg === 'object' && msg !== null) {
+        const objMsg = msg as { content?: string; name?: string; type?: string };
+        return {
+          content: objMsg.content || '',
+          name: objMsg.name || 'unknown',
+          type: objMsg.type || 'unknown'
+        };
+      }
+      
+      // Fallback for any other format
+      return {
+        content: String(msg),
+        name: 'unknown',
+        type: 'unknown'
+      };
+    })
+    .filter((message: InvestigationMessage) => 
+      message.name !== 'report_generation' && 
+      message.name !== 'unknown' && 
+      message.type !== 'human'
+    ); // Exclude report generation and unknown/human messages
+  
+  console.log('🎯 Final parsed messages (Other Agents only):', parsedMessages);
+
+  const formatContent = (content: string) => {
+    // For investigation results, don't try to parse sections - display the full content
+    // The backend already provides well-formatted agent responses
+    return [{
+      title: 'Investigation Analysis',
+      content: content.trim(),
+      type: 'info'
+    }];
+  };
+
+  const getSectionIcon = (type: string) => {
+    switch (type) {
+      case 'warning': return '⚠️';
+      case 'danger': return '🚨';
+      case 'success': return '✅';
+      default: return 'ℹ️';
+    }
+  };
+
+  const renderMarkdownContent = (content: string): React.JSX.Element => {
+    if (!content) return <span>No content available</span>;
+    
+    // Enhanced markdown parsing for investigation reports
+    const parseMarkdown = (text: string) => {
+      // Split by double asterisks for bold sections
+      const parts = text.split(/(\*\*.*?\*\*)/g);
+      
+      return parts.map((part, index) => {
+        if (part.startsWith('**') && part.endsWith('**')) {
+          // Bold text
+          return <strong key={index} className="font-semibold text-gray-900 dark:text-gray-100">{part.slice(2, -2)}</strong>;
+        }
+        return <span key={index}>{part}</span>;
+      });
+    };
+    
+    // Check if content has structured sections (common in investigation reports)
+    if (content.includes('**') && content.split('**').length > 4) {
+      // Content has structured sections - render with better formatting
+      const sections = content.split(/\n\s*\n/);
+      
+      return (
+        <div className="space-y-4">
+          {sections.map((section, index) => {
+            if (section.match(/^\*\*[A-Z\s]+\*\*:?$/)) {
+              // This is a section header
+              const headerText = section.replace(/\*\*/g, '').replace(':', '');
+              return (
+                <div key={index} className="font-bold text-lg text-cyan-300 bg-gray-800 p-3 rounded border-l-4 border-cyan-400 mb-3">
+                  <span className="text-cyan-400">▶</span> {headerText}
+                </div>
+              );
+            } else {
+              // This is section content
+              return (
+                <div key={index} className="ml-4 space-y-2">
+                  {parseMarkdown(section.trim())}
+                </div>
+              );
+            }
+          })}
+        </div>
+      );
+    } else {
+      // Regular content with markdown formatting
+      return (
+        <div className="space-y-2">
+          {parseMarkdown(content)}
+        </div>
+      );
+    }
+  };
+
+  if (!parsedMessages.length) {
+    return (
+      <div className="text-center p-8 text-muted-foreground">
+        <p>No additional agent analysis available for this investigation.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {parsedMessages.map((message: InvestigationMessage, messageIndex: number) => {
+        if (!message.content || message.type === 'human') return null;
+
+        const sections = formatContent(message.content);
+        const formatAgentName = (name: string) => {
+          switch (name) {
+            case 'system': return 'Investigation System';
+            case 'supervisor': return 'Investigation Supervisor';
+            case 'regulatory_research': return 'Regulatory Research Agent';
+            case 'evidence_collection': return 'Evidence Collection Agent';
+            case 'compliance_check': return 'Compliance Check Agent';
+            default: return name ? name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'Analysis Agent';
+          }
+        };
+        
+        const agentName = formatAgentName(message.name || 'unknown');
+
+        return (
+          <div key={messageIndex} className="border border-cyan-500 rounded-lg overflow-hidden bg-gray-900">
+            <div 
+              className="bg-gray-800 p-4 cursor-pointer flex items-center justify-between hover:bg-gray-700 transition-colors border-b border-cyan-500"
+              onClick={() => toggleSection(messageIndex)}
+            >
+              <div className="flex items-center space-x-3">
+                <div className="text-lg text-cyan-400">🤖</div>
+                <div>
+                  <h4 className="font-semibold text-cyan-300 font-mono">{agentName}</h4>
+                  <p className="text-sm text-cyan-500 font-mono">
+                    {sections.length} analysis section{sections.length !== 1 ? 's' : ''}
+                  </p>
+                </div>
+              </div>
+              <div className="text-cyan-400 font-mono">
+                {expandedSections[messageIndex] ? '▼' : '▶'}
+              </div>
+            </div>
+
+            {expandedSections[messageIndex] && (
+              <div className="p-4 space-y-4 bg-gray-900">
+                {sections.map((section, sectionIndex) => (
+                  <div 
+                    key={sectionIndex} 
+                    className="border border-gray-700 rounded bg-gray-800 p-4"
+                  >
+                    <div className="flex items-center space-x-2 mb-3">
+                      <span className="text-lg text-cyan-400">{getSectionIcon(section.type)}</span>
+                      <h5 className="font-semibold text-cyan-300 font-mono">{section.title}</h5>
+                    </div>
+                    <div className="prose prose-sm max-w-none">
+                      <div className="text-sm text-green-300 leading-relaxed break-words overflow-wrap-anywhere font-mono">
+                        {renderMarkdownContent(section.content)}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 // Component to parse and display investigation messages
 function DetailedResultsViewer({ results }: DetailedResultsViewerProps) {
   const [expandedSections, setExpandedSections] = useState<{ [key: number]: boolean }>({});
@@ -409,16 +843,9 @@ function DetailedResultsViewer({ results }: DetailedResultsViewerProps) {
     }
   };
 
-  const getSectionColor = (type: string) => {
-    switch (type) {
-      case 'warning': return 'border-yellow-200 bg-yellow-50 dark:bg-yellow-900/20';
-      case 'danger': return 'border-red-200 bg-red-50 dark:bg-red-900/20';
-      case 'success': return 'border-green-200 bg-green-50 dark:bg-green-900/20';
-      default: return 'border-blue-200 bg-blue-50 dark:bg-blue-900/20';
-    }
-  };
 
-  const renderMarkdownContent = (content: string): JSX.Element => {
+
+  const renderMarkdownContent = (content: string): React.JSX.Element => {
     // Parse markdown formatting and render as rich text
     const parseMarkdown = (text: string) => {
       // Split by double asterisks for bold sections
@@ -619,6 +1046,83 @@ export default function InvestigationResults({ investigation, onNewInvestigation
     }
   };
 
+  const generateReportContent = (investigation: Investigation): string => {
+    const timestamp = new Date().toISOString();
+    let content = `FRAUD INVESTIGATION REPORT\n`;
+    content += `Generated: ${timestamp}\n`;
+    content += `Investigation ID: ${investigation.investigation_id}\n`;
+    content += `Status: ${investigation.status}\n`;
+    content += `Final Decision: ${investigation.final_decision}\n\n`;
+    
+    // Transaction Details
+    if (investigation.transaction_details) {
+      content += `TRANSACTION DETAILS:\n`;
+      content += `Customer: ${investigation.transaction_details.customer_name || 'N/A'}\n`;
+      content += `Amount: ${investigation.transaction_details.currency || '$'}${investigation.transaction_details.amount || 'N/A'}\n`;
+      content += `Account Type: ${investigation.transaction_details.account_type || 'N/A'}\n`;
+      content += `Country To: ${investigation.transaction_details.country_to || 'N/A'}\n`;
+      content += `Description: ${investigation.transaction_details.description || 'N/A'}\n`;
+      content += `Risk Rating: ${investigation.transaction_details.risk_rating || 'N/A'}\n\n`;
+    }
+    
+    // Final Report
+    if (investigation.final_report) {
+      content += `INVESTIGATION FINDINGS:\n`;
+      content += `${investigation.final_report}\n\n`;
+    }
+    
+    // Full Results if available
+    if (investigation.full_results) {
+      content += `DETAILED ANALYSIS:\n`;
+      content += `Agents Completed: ${investigation.agents_completed}/${investigation.full_results.total_agents || 'N/A'}\n`;
+      content += `Total Messages: ${investigation.total_messages}\n\n`;
+      
+      if (investigation.full_results.agent_results) {
+        Object.entries(investigation.full_results.agent_results).forEach(([agentName, result]) => {
+          content += `${agentName.toUpperCase()} AGENT:\n`;
+          if (typeof result === 'string') {
+            content += `${result}\n\n`;
+          } else if (result && typeof result === 'object') {
+            content += `${JSON.stringify(result, null, 2)}\n\n`;
+          }
+        });
+      }
+    }
+    
+    return content;
+  };
+
+  const renderMarkdownContent = (content: string): React.JSX.Element => {
+    if (!content) return <span>No content available</span>;
+    
+    // Parse markdown formatting and render as rich text
+    const parseMarkdown = (text: string) => {
+      // Split by double asterisks for bold sections
+      const parts = text.split(/(\*\*.*?\*\*)/g);
+      
+      return parts.map((part, index) => {
+        if (part.startsWith('**') && part.endsWith('**')) {
+          // Bold text
+          return <strong key={index} className="font-semibold text-gray-900 dark:text-gray-100">{part.slice(2, -2)}</strong>;
+        }
+        return <span key={index}>{part}</span>;
+      });
+    };
+    
+    // Split content by lines and process each
+    const lines = content.split('\n');
+    
+    return (
+      <div className="space-y-2">
+        {lines.map((line, index) => (
+          <div key={index} className="leading-relaxed">
+            {parseMarkdown(line)}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   const downloadReport = () => {
     try {
       // Create comprehensive report content
@@ -755,7 +1259,7 @@ export default function InvestigationResults({ investigation, onNewInvestigation
               </button>
             </div>
           </div>
-          <DetailedResultsViewer results={investigation.full_results} />
+          <EnhancedReportGenerationViewer results={investigation.full_results} />
         </div>
       ) : (
         <div className="bg-card p-6 rounded-lg shadow-lg border-2 border-yellow-500">
@@ -1049,6 +1553,21 @@ export default function InvestigationResults({ investigation, onNewInvestigation
         </div>
       </div>
 
+      {/* Additional Agent Analysis - BOTTOM SECTION */}
+      {investigation.full_results && (
+        <div className="bg-gray-900 p-6 rounded-lg shadow-lg border-2 border-gray-600">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-2xl font-bold text-gray-300 flex items-center space-x-3">
+              <span className="text-3xl">🔬</span>
+              <span>Additional Agent Analysis</span>
+              <span className="px-3 py-1 bg-gray-800 text-gray-300 text-sm font-medium rounded border border-gray-500">
+                SUPPORTING EVIDENCE
+              </span>
+            </h3>
+          </div>
+          <EnhancedOtherAgentsViewer results={investigation.full_results} />
+        </div>
+      )}
 
     </div>
   );

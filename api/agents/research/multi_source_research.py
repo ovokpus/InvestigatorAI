@@ -19,7 +19,7 @@ from enum import Enum
 import requests
 from langsmith import traceable
 
-from ..core.config import Settings
+from ...core.config import Settings
 
 logger = logging.getLogger(__name__)
 
@@ -76,10 +76,6 @@ class MultiSourceResearchService:
         self.search_api_params = {
             "tavily": ["max_results", "search_depth", "include_raw_content", "topic"],
             "arxiv": ["max_results", "get_full_documents", "load_all_available_meta"],
-            # Future API parameters (when implemented):
-            # "pubmed": ["top_k_results", "email", "api_key", "doc_content_chars_max"],
-            # "exa": ["max_characters", "num_results", "include_domains", "exclude_domains"],
-            # "perplexity": ["max_results", "search_recency_filter"]
         }
         
     def get_search_params(self, search_api: str, search_api_config: Optional[Dict[str, Any]]) -> Dict[str, Any]:
@@ -91,8 +87,7 @@ class MultiSourceResearchService:
             
         return {k: v for k, v in search_api_config.items() if k in accepted_params}
     
-    @traceable
-    async def search_tavily_async(self, search_queries: List[str], **kwargs) -> List[SearchResponse]:
+    async def search_tavily_async(self, search_queries: List[str], **kwargs: Any) -> List[SearchResponse]:
         """Asynchronous Tavily search with concurrent processing"""
         logger.info(f"🌐 Starting Tavily async search for {len(search_queries)} queries")
         
@@ -118,7 +113,7 @@ class MultiSourceResearchService:
                 # Use aiohttp for async requests
                 import aiohttp
                 async with aiohttp.ClientSession() as session:
-                    async with session.post(url, json=payload, timeout=30) as response:
+                    async with session.post(url, json=payload, timeout=aiohttp.ClientTimeout(total=30)) as response:
                         if response.status == 200:
                             data = await response.json()
                             results = []
@@ -166,7 +161,7 @@ class MultiSourceResearchService:
                     SearchResponse(query=search_queries[i], source="tavily", error=str(response))
                 )
             else:
-                processed_responses.append(response)
+                processed_responses.append(response)  # type: ignore
         
         logger.info(f"✅ Tavily async search completed - {len(processed_responses)} responses")
         return processed_responses
@@ -187,7 +182,7 @@ class MultiSourceResearchService:
                 
                 import aiohttp
                 async with aiohttp.ClientSession() as session:
-                    async with session.get(url, timeout=30) as response:
+                    async with session.get(url, timeout=aiohttp.ClientTimeout(total=30)) as response: 
                         if response.status == 200:
                             content = await response.text()
                             root = ET.fromstring(content)
@@ -200,9 +195,9 @@ class MultiSourceResearchService:
                                 summary_elem = entry.find('{http://www.w3.org/2005/Atom}summary')
                                 id_elem = entry.find('{http://www.w3.org/2005/Atom}id')
                                 
-                                title = title_elem.text.strip() if title_elem is not None else "No title"
-                                summary = summary_elem.text.strip() if summary_elem is not None else "No summary"
-                                entry_id = id_elem.text.strip() if id_elem is not None else ""
+                                title = title_elem.text.strip() if title_elem is not None and title_elem.text else "No title"
+                                summary = summary_elem.text.strip() if summary_elem is not None and summary_elem.text else "No summary"
+                                entry_id = id_elem.text.strip() if id_elem is not None and id_elem.text else ""
                                 
                                 # Extract authors
                                 authors = []
@@ -214,7 +209,7 @@ class MultiSourceResearchService:
                                 # Format content with metadata
                                 content_parts = [f"Summary: {summary}"]
                                 if authors:
-                                    content_parts.append(f"Authors: {', '.join(authors)}")
+                                    content_parts.append(f"Authors: {', '.join([a for a in authors if a])}")
                                 
                                 published_elem = entry.find('{http://www.w3.org/2005/Atom}published')
                                 if published_elem is not None:
@@ -261,7 +256,7 @@ class MultiSourceResearchService:
         """Search multiple sources concurrently"""
         logger.info(f"🔍 Multi-source search: {len(queries)} queries across {sources}")
         
-        all_responses = []
+        all_responses: List[SearchResponse] = []
         search_tasks = []
         
         for source in sources:
@@ -286,7 +281,7 @@ class MultiSourceResearchService:
             for result in results:
                 if isinstance(result, Exception):
                     logger.error(f"Source search failed: {result}")
-                else:
+                elif isinstance(result, list):
                     all_responses.extend(result)
         
         logger.info(f"✅ Multi-source search completed - {len(all_responses)} total responses")

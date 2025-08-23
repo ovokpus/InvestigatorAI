@@ -4,7 +4,7 @@ from typing import Dict, Any, Callable
 from langgraph.graph import END, StateGraph
 from langchain.agents import AgentExecutor
 
-from ..models.schemas import FraudInvestigationState
+from ...models.schemas import FraudInvestigationState
 
 logger = logging.getLogger(__name__)
 

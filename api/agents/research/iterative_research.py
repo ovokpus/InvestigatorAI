@@ -14,7 +14,7 @@ from langchain_openai import ChatOpenAI
 from langsmith import traceable
 
 from .multi_source_research import MultiSourceResearchService, SearchResponse
-from ..core.config import Settings
+from ...core.config import Settings
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +49,7 @@ class ResearchPlan:
     sections: List[ResearchSection] = field(default_factory=list)
     research_depth: int = 2
     query_count: int = 2
-    created_at: datetime = field(default_factory=datetime.now)
+    created_at: str = field(default_factory=lambda: datetime.now().isoformat())
 
 
 class ResearchQualityAssessor:
@@ -83,33 +83,38 @@ class ResearchQualityAssessor:
         4. Depth: Is the analysis sufficiently detailed for the topic?
         5. Coherence: Is the content well-structured and logical?
         
-        ASSESSMENT TASK:
-        Evaluate the content and provide:
-        1. Grade: "pass" if content meets requirements, "fail" if insufficient
-        2. Quality Score: 0.0-1.0 numeric score
-        3. Missing Aspects: List specific areas that need improvement
-        4. Follow-up Queries: Specific search queries to address deficiencies
-        5. Feedback Text: Detailed explanation of assessment
+        CRITICAL: You MUST respond with ONLY valid JSON. No markdown, no explanations, no additional text.
         
-        Respond in JSON format:
+        JSON Schema (REQUIRED):
         {{
-            "grade": "pass" or "fail",
-            "quality_score": 0.0-1.0,
-            "missing_aspects": ["aspect1", "aspect2"],
-            "follow_up_queries": ["query1", "query2"],
-            "feedback_text": "detailed feedback"
+            "grade": "pass",
+            "quality_score": 0.8,
+            "missing_aspects": [],
+            "follow_up_queries": [],
+            "feedback_text": "Assessment feedback"
         }}
-        """
+        
+        Respond with valid JSON only:"""
         
         try:
             response = await self.llm.ainvoke([
-                SystemMessage(content="You are a research quality assessor."),
+                SystemMessage(content="You are a research quality assessor. You MUST respond with valid JSON only."),
                 HumanMessage(content=grading_prompt)
             ])
             
             # Parse the JSON response
             import json
-            feedback_data = json.loads(response.content)
+            content_str = response.content if isinstance(response.content, str) else str(response.content)
+            
+            # Handle markdown JSON wrapper if present
+            if content_str.strip().startswith("```json"):
+                # Extract JSON from markdown code block
+                json_start = content_str.find("{")
+                json_end = content_str.rfind("}") + 1
+                if json_start != -1 and json_end > json_start:
+                    content_str = content_str[json_start:json_end]
+            
+            feedback_data = json.loads(content_str)  # type: ignore
             
             feedback = ResearchFeedback(
                 grade=feedback_data.get("grade", "fail"),
@@ -196,7 +201,8 @@ class IterativeResearchAgent:
                 HumanMessage(content=query_prompt)
             ])
             
-            queries = [q.strip() for q in response.content.split('\n') if q.strip()]
+            content_str = response.content if isinstance(response.content, str) else str(response.content)
+            queries = [q.strip() for q in content_str.split('\n') if q.strip()]
             queries = queries[:self.query_count]  # Limit to configured count
             
             logger.info(f"✅ Generated {len(queries)} search queries")
@@ -266,7 +272,8 @@ class IterativeResearchAgent:
                 HumanMessage(content=writing_prompt)
             ])
             
-            content = response.content.strip()
+            content_str = response.content if isinstance(response.content, str) else str(response.content)
+            content = content_str.strip()
             logger.info(f"✅ Generated {len(content)} characters of content")
             return content
             
@@ -276,7 +283,7 @@ class IterativeResearchAgent:
     
     @traceable
     async def research_section_iteratively(self, topic: str, section: ResearchSection,
-                                         sources: List[str] = None) -> ResearchSection:
+                                         sources: List[str] | None = None) -> ResearchSection:
         """Research a section with iterative refinement based on quality feedback"""
         logger.info(f"🔄 Starting iterative research for section: {section.name}")
         
@@ -326,7 +333,7 @@ class IterativeResearchAgent:
     
     @traceable
     async def research_multiple_sections(self, topic: str, sections: List[ResearchSection],
-                                       sources: List[str] = None) -> List[ResearchSection]:
+                                       sources: List[str] | None = None) -> List[ResearchSection]:
         """Research multiple sections concurrently with iterative refinement"""
         logger.info(f"🔬 Starting research for {len(sections)} sections")
         
@@ -379,26 +386,51 @@ class ResearchPlanner:
         - Include 2-3 main research sections (research: true)
         - End with conclusion/summary (research: false)
         
-        Respond in JSON format:
+        CRITICAL: You MUST respond with ONLY valid JSON. No markdown, no explanations, no additional text.
+        
+        JSON Schema (REQUIRED):
         {{
             "sections": [
                 {{
-                    "name": "Section Name",
-                    "description": "Detailed description of section content and scope",
-                    "research": true/false
+                    "name": "Introduction",
+                    "description": "Overview of the topic",
+                    "research": false
+                }},
+                {{
+                    "name": "Main Analysis",
+                    "description": "Detailed analysis of the topic",
+                    "research": true
+                }},
+                {{
+                    "name": "Conclusion",
+                    "description": "Summary and implications",
+                    "research": false
                 }}
             ]
         }}
-        """
+        
+        Respond with valid JSON only:"""
         
         try:
             response = await self.llm.ainvoke([
-                SystemMessage(content="You are a research planning specialist."),
+                SystemMessage(content="You are a research planning specialist. You MUST respond with valid JSON only."),
                 HumanMessage(content=planning_prompt)
             ])
             
             import json
-            plan_data = json.loads(response.content)
+            content_str = response.content if isinstance(response.content, str) else str(response.content)
+            
+
+            
+            # Handle markdown JSON wrapper if present
+            if content_str.strip().startswith("```json"):
+                # Extract JSON from markdown code block
+                json_start = content_str.find("{")
+                json_end = content_str.rfind("}") + 1
+                if json_start != -1 and json_end > json_start:
+                    content_str = content_str[json_start:json_end]
+            
+            plan_data = json.loads(content_str)  # type: ignore
             
             sections = []
             for section_data in plan_data.get("sections", []):

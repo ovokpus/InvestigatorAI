@@ -8,9 +8,9 @@ from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, BaseMessage, AIMessage, ToolMessage
 
 
-from ..models.schemas import FraudInvestigationState
-from ..agents.tools import initialize_tools
-from ..services.external_apis import ExternalAPIService
+from ...models.schemas import FraudInvestigationState
+from .tools import initialize_tools
+from ...services.external_apis import ExternalAPIService
 from .agent_factory import AgentFactory
 from .workflow_builder import WorkflowBuilder
 from .message_processor import MessageProcessor
