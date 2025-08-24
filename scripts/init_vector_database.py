@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-Document Vector Database Initialization Service
+Standalone Vector Database Initialization Service
 
 This service runs after Qdrant starts and before the API starts.
 It processes all regulatory documents and loads them into the vector database.
-This separates document processing from API startup for faster API availability.
+This is a standalone script that doesn't depend on the API codebase.
 """
 
 import os
@@ -12,14 +12,9 @@ import sys
 import time
 import logging
 from pathlib import Path
-
-# Add the api directory to the Python path
-sys.path.append('/app')
-
-from api.core.config import get_settings
-from api.services.document_processor import DocumentProcessor
-from api.services.vector_store import VectorStoreService
-from langchain_openai import OpenAIEmbeddings
+from typing import List, Dict, Any
+import requests
+import json
 
 # Configure logging
 logging.basicConfig(
@@ -28,10 +23,23 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+class Config:
+    """Standalone configuration class"""
+    def __init__(self):
+        self.qdrant_host = os.getenv("QDRANT_HOST", "localhost")
+        self.qdrant_port = int(os.getenv("QDRANT_PORT", "6333"))
+        self.openai_api_key = os.getenv("OPENAI_API_KEY")
+        self.embedding_model = os.getenv("EMBEDDING_MODEL", "text-embedding-3-large")
+        self.collection_name = os.getenv("VECTOR_COLLECTION_NAME", "regulatory_documents")
+        self.pdf_data_path = os.getenv("PDF_DATA_PATH", "data/pdf_downloads")
+        self.chunk_size = int(os.getenv("CHUNK_SIZE", "1000"))
+        self.chunk_overlap = int(os.getenv("CHUNK_OVERLAP", "200"))
+        
+        if not self.openai_api_key:
+            raise ValueError("OPENAI_API_KEY environment variable is required")
+
 def wait_for_qdrant(host: str, port: int, max_retries: int = 30) -> bool:
     """Wait for Qdrant to be ready"""
-    import requests
-    
     for attempt in range(max_retries):
         try:
             response = requests.get(f"http://{host}:{port}/", timeout=5)
@@ -45,125 +53,145 @@ def wait_for_qdrant(host: str, port: int, max_retries: int = 30) -> bool:
     logger.error(f"❌ Qdrant not ready after {max_retries} attempts")
     return False
 
-def check_collection_exists(settings) -> bool:
-    """Check if vector collection already exists with documents"""
+def create_qdrant_collection(config: Config) -> bool:
+    """Create Qdrant collection if it doesn't exist, return True if already populated"""
     try:
         from qdrant_client import QdrantClient
+        from qdrant_client.models import Distance, VectorParams
         
-        client = QdrantClient(
-            host=settings.qdrant_host,
-            port=settings.qdrant_port,
-            timeout=10
-        )
+        client = QdrantClient(host=config.qdrant_host, port=config.qdrant_port)
         
         # Check if collection exists
         try:
-            collection_info = client.get_collection(settings.vector_collection_name)
-            points_count = collection_info.points_count
-            
-            if points_count > 0:
-                logger.info(f"✅ Collection '{settings.vector_collection_name}' exists with {points_count} documents")
-                return True
-            else:
-                logger.info(f"📋 Collection '{settings.vector_collection_name}' exists but is empty")
-                return False
-                
+            collection_info = client.get_collection(config.collection_name)
+            logger.info(f"✅ Collection '{config.collection_name}' already exists with {collection_info.points_count} documents")
+            return collection_info.points_count > 0
         except Exception:
-            logger.info(f"📋 Collection '{settings.vector_collection_name}' does not exist")
+            # Collection doesn't exist, create it
+            logger.info(f"📋 Creating collection '{config.collection_name}'...")
+            client.create_collection(
+                collection_name=config.collection_name,
+                vectors_config=VectorParams(size=3072, distance=Distance.COSINE)  # text-embedding-3-large dimensions
+            )
             return False
             
     except Exception as e:
-        logger.error(f"❌ Error checking collection: {e}")
+        logger.error(f"❌ Error with Qdrant collection: {e}")
         return False
 
-def initialize_vector_database():
-    """Initialize the vector database with regulatory documents"""
-    logger.info("🚀 Starting Document Vector Database Initialization")
-    logger.info("=" * 60)
-    
+def process_pdf_documents(config: Config) -> bool:
+    """Process PDF documents and add to vector store"""
     try:
-        # Load settings
-        settings = get_settings()
-        logger.info(f"📁 PDF Directory: {settings.pdf_data_path}")
-        logger.info(f"🗄️  Vector Collection: {settings.vector_collection_name}")
-        logger.info(f"🤖 Embedding Model: {settings.embedding_model}")
+        from langchain_community.document_loaders import PyPDFLoader
+        from langchain.text_splitter import RecursiveCharacterTextSplitter
+        from langchain_openai import OpenAIEmbeddings
+        from qdrant_client import QdrantClient
+        from qdrant_client.models import PointStruct
+        import uuid
         
-        # Wait for Qdrant to be ready
-        if not wait_for_qdrant(settings.qdrant_host, settings.qdrant_port):
-            return False
+        # Initialize components
+        client = QdrantClient(host=config.qdrant_host, port=config.qdrant_port)
+        embeddings = OpenAIEmbeddings(
+            openai_api_key=config.openai_api_key,
+            model=config.embedding_model
+        )
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=config.chunk_size,
+            chunk_overlap=config.chunk_overlap
+        )
         
-        # Check if collection already exists with documents
-        if check_collection_exists(settings):
-            logger.info("✅ Vector database already initialized - skipping document processing")
-            return True
-        
-        # Initialize embeddings with configured model
-        logger.info("🔧 Initializing embeddings...")
-        embeddings = OpenAIEmbeddings(model=settings.embedding_model)
-        logger.info(f"✅ Embeddings initialized with model: {settings.embedding_model}")
-        
-        # Initialize document processor
-        logger.info("📚 Initializing document processor...")
-        doc_processor = DocumentProcessor(embeddings, settings)
-        logger.info("✅ Document processor initialized with procedural text filtering")
-        
-        # Check for PDF files
-        pdf_dir = Path(settings.pdf_data_path)
-        if not pdf_dir.exists():
-            logger.error(f"❌ PDF directory not found: {pdf_dir}")
+        # Find PDF files
+        pdf_path = Path(config.pdf_data_path)
+        if not pdf_path.exists():
+            logger.error(f"❌ PDF directory not found: {pdf_path}")
             return False
             
-        pdf_files = list(pdf_dir.glob("*.pdf"))
+        pdf_files = list(pdf_path.glob("*.pdf"))
         if not pdf_files:
-            logger.error(f"❌ No PDF files found in {pdf_dir}")
+            logger.error(f"❌ No PDF files found in {pdf_path}")
             return False
             
-        logger.info(f"📄 Found {len(pdf_files)} PDF files to process")
+        logger.info(f"📚 Found {len(pdf_files)} PDF files to process")
         
-        # Process all documents
-        logger.info("🔄 Processing regulatory documents...")
-        all_documents = doc_processor.process_all_pdfs()
-        
-        if not all_documents:
-            logger.error("❌ No documents processed successfully")
-            return False
+        # Process each PDF
+        all_points = []
+        for pdf_file in pdf_files:
+            logger.info(f"📄 Processing {pdf_file.name}...")
             
-        logger.info(f"✅ Processed {len(all_documents)} document chunks")
+            try:
+                # Load and split document
+                loader = PyPDFLoader(str(pdf_file))
+                documents = loader.load()
+                chunks = text_splitter.split_documents(documents)
+                
+                # Create embeddings and points
+                for i, chunk in enumerate(chunks):
+                    embedding = embeddings.embed_query(chunk.page_content)
+                    
+                    point = PointStruct(
+                        id=str(uuid.uuid4()),
+                        vector=embedding,
+                        payload={
+                            "content": chunk.page_content,
+                            "source": pdf_file.name,
+                            "chunk_index": i,
+                            "metadata": chunk.metadata
+                        }
+                    )
+                    all_points.append(point)
+                    
+                logger.info(f"✅ Processed {pdf_file.name}: {len(chunks)} chunks")
+                
+            except Exception as e:
+                logger.error(f"❌ Error processing {pdf_file.name}: {e}")
+                continue
         
-        # Initialize vector store
-        logger.info("🗄️  Initializing vector store...")
-        vector_service = VectorStoreService(embeddings, settings)
-        
-        # Convert to LangChain documents
-        langchain_docs = doc_processor.get_langchain_documents()
-        
-        # Initialize vector store with documents
-        success = vector_service.initialize_from_documents(langchain_docs)
-        
-        if success:
-            logger.info("🎉 SUCCESS! Vector database initialized with regulatory documents")
-            logger.info(f"📊 Total document chunks: {len(langchain_docs)}")
-            logger.info("🚀 API can now start quickly without document processing delay")
+        # Upload all points to Qdrant
+        if all_points:
+            logger.info(f"📤 Uploading {len(all_points)} document chunks to Qdrant...")
+            client.upsert(
+                collection_name=config.collection_name,
+                points=all_points
+            )
+            logger.info("✅ Successfully uploaded all document chunks")
             return True
         else:
-            logger.error("❌ Failed to initialize vector store")
+            logger.error("❌ No document chunks to upload")
             return False
             
     except Exception as e:
-        logger.error(f"❌ Error initializing vector database: {e}")
-        import traceback
-        traceback.print_exc()
+        logger.error(f"❌ Error processing documents: {e}")
         return False
 
-if __name__ == "__main__":
-    logger.info("🔧 Document Vector Database Initialization Service")
-    logger.info("🎯 Purpose: Pre-load documents to speed up API startup")
+def main():
+    """Main initialization function"""
+    logger.info("🚀 Starting standalone vector database initialization...")
     
-    success = initialize_vector_database()
-    
-    if success:
-        logger.info("✅ INITIALIZATION COMPLETE - API can start quickly now!")
-        sys.exit(0)
-    else:
-        logger.error("❌ INITIALIZATION FAILED")
+    try:
+        # Load configuration
+        config = Config()
+        logger.info(f"📋 Configuration loaded - Qdrant: {config.qdrant_host}:{config.qdrant_port}")
+        
+        # Wait for Qdrant to be ready
+        if not wait_for_qdrant(config.qdrant_host, config.qdrant_port):
+            sys.exit(1)
+        
+        # Create collection and check if already populated
+        if create_qdrant_collection(config):
+            logger.info("✅ Vector database already initialized. Skipping...")
+            return
+        
+        # Process PDF documents
+        logger.info("📚 Processing regulatory documents...")
+        if process_pdf_documents(config):
+            logger.info("🎉 Vector database initialization complete!")
+        else:
+            logger.error("❌ Vector database initialization failed!")
+            sys.exit(1)
+            
+    except Exception as e:
+        logger.error(f"❌ Initialization failed: {e}")
         sys.exit(1)
+
+if __name__ == "__main__":
+    main()

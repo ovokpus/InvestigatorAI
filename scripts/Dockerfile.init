@@ -1,4 +1,4 @@
-# Document Vector Database Initialization Service
+# Standalone Vector Database Initialization Service
 FROM python:3.13-slim
 
 WORKDIR /app
@@ -8,13 +8,17 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy pyproject.toml and install Python dependencies
-COPY pyproject.toml .
-COPY uv.lock .
-RUN pip install --no-cache-dir .
+# Install only the required Python packages
+RUN pip install --no-cache-dir \
+    qdrant-client==1.7.0 \
+    langchain==0.1.0 \
+    langchain-community==0.0.10 \
+    langchain-openai==0.0.5 \
+    openai==1.6.1 \
+    requests==2.32.4 \
+    pypdf==4.0.1
 
-# Copy the entire codebase (needed for imports)
-COPY api/ ./api/
+# Copy only the standalone script
 COPY scripts/init_vector_database.py ./
 
 # Copy data directory (regulatory PDFs)
