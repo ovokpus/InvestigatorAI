@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { createApiUrl } from '@/utils/api';
 
 interface ExchangeRateResult {
   result: string;
@@ -36,7 +37,7 @@ export default function ExchangeRate() {
 
     try {
       const response = await fetch(
-        `http://localhost:8000/exchange-rate?from_currency=${fromCurrency}&to_currency=${toCurrency}`
+        `${createApiUrl('/exchange-rate')}?from_currency=${fromCurrency}&to_currency=${toCurrency}`
       );
 
       if (!response.ok) {
