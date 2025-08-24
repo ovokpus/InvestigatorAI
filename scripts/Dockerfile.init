@@ -28,4 +28,4 @@ COPY data/ ./data/
 RUN chmod +x init_vector_database.py
 
 # Run the initialization script
-CMD ["python", "init_vector_database.py"]
+CMD ["python", "init_vector_database.py"]# Force rebuild Sat Aug 23 22:10:21 MDT 2025
