@@ -32,14 +32,32 @@ class Settings:
         self.redis_user: str = os.getenv("REDISUSER", os.getenv("REDIS_USER", ""))
         self.cache_enabled: bool = os.getenv("CACHE_ENABLED", "true").lower() == "true"
         
+        # Debug: Log all Redis-related environment variables
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info("🔍 Redis Environment Variables:")
+        for key, value in os.environ.items():
+            if "REDIS" in key.upper():
+                # Mask password for security
+                display_value = "***MASKED***" if "PASSWORD" in key.upper() else value
+                logger.info(f"   {key}: {display_value}")
+        
         # Qdrant Vector Database Configuration - Railway compatible
-        # Railway internal service names: servicename.railway.internal
-        self.qdrant_host: str = os.getenv("QDRANT_HOST", "localhost")
+        # Railway may provide various environment variables for services
+        self.qdrant_host: str = os.getenv("QDRANT_HOST", os.getenv("QDRANT_PRIVATE_URL", "localhost"))
         self.qdrant_port: int = int(os.getenv("QDRANT_PORT", "6333"))
         self.qdrant_grpc_port: int = int(os.getenv("QDRANT_GRPC_PORT", "6334"))
         self.qdrant_api_key: str = os.getenv("QDRANT_API_KEY", "")
-        self.qdrant_url: str = os.getenv("QDRANT_URL", "")  # Full URL if provided
+        self.qdrant_url: str = os.getenv("QDRANT_URL", os.getenv("QDRANT_PRIVATE_URL", ""))  # Full URL if provided
         self.vector_collection_name: str = os.getenv("VECTOR_COLLECTION_NAME", "regulatory_documents")
+        
+        # Debug: Log all Qdrant-related environment variables
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info("🔍 Qdrant Environment Variables:")
+        for key, value in os.environ.items():
+            if "QDRANT" in key.upper():
+                logger.info(f"   {key}: {value}")
         
         # Document processing
         self.chunk_size: int = int(os.getenv("CHUNK_SIZE", "1000"))

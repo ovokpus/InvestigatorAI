@@ -138,6 +138,7 @@ class VectorStoreService:
         logger.info(f"🔗 Connecting to Qdrant database...")
         logger.info(f"   🎯 Host: {self.settings.qdrant_host}:{self.settings.qdrant_port}")
         logger.info(f"   🔐 API Key: {'✅ Set' if self.settings.qdrant_api_key else '❌ Not set'}")
+        logger.info(f"   🌐 QDRANT_URL: {self.settings.qdrant_url if self.settings.qdrant_url else '❌ Not set'}")
         logger.info(f"   ⏰ Timeout: 60s")
         
         try:
@@ -188,6 +189,7 @@ class VectorStoreService:
         except Exception as e:
             logger.error(f"❌ Qdrant connection failed: {e}")
             logger.exception(f"   🔍 Connection error details:")
+            logger.warning("   ⚠️  Vector store will be disabled - app will run without vector search")
             self.qdrant_client = None
     
     def initialize_from_documents(self, documents: List[Document]) -> bool:

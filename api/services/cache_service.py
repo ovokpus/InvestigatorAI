@@ -37,10 +37,8 @@ class CacheService:
             # Use REDIS_URL if available (Railway provides this)
             if self.settings.redis_url:
                 logger.info("🚂 Using Railway REDIS_URL for connection")
-                # Add IPv6 dual-stack support for Railway
                 redis_url = self.settings.redis_url
-                if "railway.internal" in redis_url and "?family=" not in redis_url:
-                    redis_url += "?family=0"  # Enable dual-stack IPv4/IPv6 lookup
+                logger.info(f"   🔗 Redis URL: {redis_url}")
                 
                 self.redis_client = redis.from_url(
                     redis_url,

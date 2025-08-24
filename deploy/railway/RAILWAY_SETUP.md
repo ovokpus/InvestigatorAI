@@ -10,23 +10,24 @@ Railway uses **IPv6-only internal networking**. Services connect using internal 
 
 #### **Redis Connection:**
 ```bash
-# Railway auto-generates these - you may need to set manually:
-REDIS_URL=redis://default:password@redis.railway.internal:6379
-# OR individual components:
-REDISHOST=redis.railway.internal
+# Railway should auto-generate REDIS_URL - check your service variables
+# If not available, Railway may provide these individual variables:
+REDISHOST=<redis_internal_host>
 REDISPORT=6379
-REDISPASSWORD=your_redis_password
+REDISPASSWORD=<generated_password>
 REDISUSER=default
 ```
 
 #### **Qdrant Connection:**
 ```bash
-# Set these in your Railway API service:
-QDRANT_HOST=qdrant.railway.internal
+# Railway may provide these variables - check your Qdrant service:
+QDRANT_PRIVATE_URL=<qdrant_internal_url>
+# OR set manually if Railway doesn't auto-generate:
+QDRANT_HOST=<qdrant_internal_host>
 QDRANT_PORT=6333
-# OR full URL:
-QDRANT_URL=http://qdrant.railway.internal:6333
 ```
+
+> **Note**: Railway's internal hostnames are auto-generated and may not follow the `servicename.railway.internal` pattern. Check your service's "Variables" tab for the actual values.
 
 #### **Your API Keys:**
 ```bash
