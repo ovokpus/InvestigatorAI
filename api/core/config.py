@@ -22,18 +22,23 @@ class Settings:
         self.llm_temperature: float = float(os.getenv("LLM_TEMPERATURE", "0"))
         self.llm_max_tokens: int = int(os.getenv("LLM_MAX_TOKENS", "15000"))  # Configurable via env var
         
-        # Redis Cache Configuration
-        self.redis_host: str = os.getenv("REDIS_HOST", "localhost")
-        self.redis_port: int = int(os.getenv("REDIS_PORT", "6379"))
+        # Redis Cache Configuration - Railway compatible
+        # Railway provides REDIS_URL automatically, fallback to individual components
+        self.redis_url: str = os.getenv("REDIS_URL", "")
+        self.redis_host: str = os.getenv("REDISHOST", os.getenv("REDIS_HOST", "localhost"))
+        self.redis_port: int = int(os.getenv("REDISPORT", os.getenv("REDIS_PORT", "6379")))
         self.redis_db: int = int(os.getenv("REDIS_DB", "0"))
-        self.redis_password: str = os.getenv("REDIS_PASSWORD", "")
+        self.redis_password: str = os.getenv("REDISPASSWORD", os.getenv("REDIS_PASSWORD", ""))
+        self.redis_user: str = os.getenv("REDISUSER", os.getenv("REDIS_USER", ""))
         self.cache_enabled: bool = os.getenv("CACHE_ENABLED", "true").lower() == "true"
         
-        # Qdrant Vector Database Configuration
+        # Qdrant Vector Database Configuration - Railway compatible
+        # Railway internal service names: servicename.railway.internal
         self.qdrant_host: str = os.getenv("QDRANT_HOST", "localhost")
         self.qdrant_port: int = int(os.getenv("QDRANT_PORT", "6333"))
         self.qdrant_grpc_port: int = int(os.getenv("QDRANT_GRPC_PORT", "6334"))
         self.qdrant_api_key: str = os.getenv("QDRANT_API_KEY", "")
+        self.qdrant_url: str = os.getenv("QDRANT_URL", "")  # Full URL if provided
         self.vector_collection_name: str = os.getenv("VECTOR_COLLECTION_NAME", "regulatory_documents")
         
         # Document processing

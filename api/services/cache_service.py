@@ -31,19 +31,40 @@ class CacheService:
             logger.info("📴 Cache disabled in settings - skipping Redis connection")
     
     def _connect(self):
-        """Connect to Redis server"""
+        """Connect to Redis server - Railway IPv6 compatible"""
         logger.info(f"🔗 Connecting to Redis cache...")
         try:
-            self.redis_client = redis.Redis(
-                host=self.settings.redis_host,
-                port=self.settings.redis_port,
-                db=self.settings.redis_db,
-                decode_responses=True,
-                socket_timeout=5,
-                socket_connect_timeout=5,
-                retry_on_timeout=True,
-                health_check_interval=30
-            )
+            # Use REDIS_URL if available (Railway provides this)
+            if self.settings.redis_url:
+                logger.info("🚂 Using Railway REDIS_URL for connection")
+                # Add IPv6 dual-stack support for Railway
+                redis_url = self.settings.redis_url
+                if "railway.internal" in redis_url and "?family=" not in redis_url:
+                    redis_url += "?family=0"  # Enable dual-stack IPv4/IPv6 lookup
+                
+                self.redis_client = redis.from_url(
+                    redis_url,
+                    decode_responses=True,
+                    socket_timeout=10,  # Longer timeout for Railway
+                    socket_connect_timeout=10,
+                    retry_on_timeout=True,
+                    health_check_interval=30
+                )
+            else:
+                # Fallback to individual connection parameters
+                logger.info("🐳 Using individual Redis connection parameters")
+                self.redis_client = redis.Redis(
+                    host=self.settings.redis_host,
+                    port=self.settings.redis_port,
+                    db=self.settings.redis_db,
+                    password=self.settings.redis_password if self.settings.redis_password else None,
+                    username=self.settings.redis_user if self.settings.redis_user else None,
+                    decode_responses=True,
+                    socket_timeout=10,
+                    socket_connect_timeout=10,
+                    retry_on_timeout=True,
+                    health_check_interval=30
+                )
             
             # Test connection
             logger.debug("🔍 Testing Redis connection...")
