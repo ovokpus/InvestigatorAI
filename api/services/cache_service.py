@@ -23,7 +23,12 @@ class CacheService:
         
         self.settings = settings
         self.redis_client = None
-        self._connect()
+        
+        # Only try to connect if cache is enabled
+        if settings.cache_enabled:
+            self._connect()
+        else:
+            logger.info("📴 Cache disabled in settings - skipping Redis connection")
     
     def _connect(self):
         """Connect to Redis server"""
@@ -306,22 +311,33 @@ def cache_result(cache_key_func, ttl: int = 3600):
 
 # Global instance
 _cache_service = None
+_initializing = False  # Flag to prevent recursion
 
 def get_cache_service() -> CacheService:
     """Get global cache service instance"""
-    global _cache_service
-    if _cache_service is None:
+    global _cache_service, _initializing
+    
+    if _cache_service is None and not _initializing:
+        _initializing = True  # Set flag to prevent recursion
         try:
             from ..core.config import get_settings
             settings = get_settings()
             _cache_service = CacheService(settings)
+            logger.info("✅ Cache service initialized successfully")
         except RecursionError as e:
             logger.error(f"❌ Recursion error in cache service initialization: {e}")
-            # Create a minimal cache service that's disabled
             _cache_service = _create_disabled_cache_service()
         except Exception as e:
             logger.error(f"❌ Error initializing cache service: {e}")
+            logger.exception("Full error details:")
             _cache_service = _create_disabled_cache_service()
+        finally:
+            _initializing = False  # Reset flag
+    elif _initializing:
+        # If we're already initializing, return a disabled service to break recursion
+        logger.warning("🔄 Recursion detected in cache service initialization - returning disabled service")
+        return _create_disabled_cache_service()
+    
     return _cache_service
 
 def _create_disabled_cache_service() -> CacheService:

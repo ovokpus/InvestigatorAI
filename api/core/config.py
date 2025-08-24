@@ -55,8 +55,14 @@ class Settings:
         self.langsmith_tracing: bool = os.getenv("LANGSMITH_TRACING", "false").lower() == "true"
         self.langsmith_endpoint: str = os.getenv("LANGSMITH_ENDPOINT", "https://api.smith.langchain.com")
         
-        # Validate required API keys
-        self._validate_api_keys()
+        # Validate required API keys (optional for cache service initialization)
+        try:
+            self._validate_api_keys()
+        except ValueError as e:
+            # Don't fail initialization if API keys are missing - just log warning
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning(f"⚠️  API key validation failed: {e}")
         
         # Initialize LangSmith if configured
         self._setup_langsmith()
