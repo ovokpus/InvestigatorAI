@@ -137,7 +137,11 @@ app.add_middleware(
         "http://localhost:3000",
         "http://localhost:3001",
         "https://investigator-ai.app",
-        "https://*.investigator-ai.app"
+        "https://*.investigator-ai.app",
+        "https://investigator-ai-ochre.vercel.app",
+        "https://investigator-ai-ovo-okpubulukus-projects.vercel.app",
+        "https://investigator-ai-ovokpus-ovo-okpubulukus-projects.vercel.app",
+        "https://*.vercel.app"
     ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "DELETE", "PUT", "OPTIONS"],
