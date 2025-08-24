@@ -26,10 +26,16 @@ logger = logging.getLogger(__name__)
 class Config:
     """Standalone configuration class"""
     def __init__(self):
+        # Qdrant configuration - support both URL and host/port patterns
+        self.qdrant_url = os.getenv("QDRANT_URL")
         self.qdrant_host = os.getenv("QDRANT_HOST", "localhost")
         self.qdrant_port = int(os.getenv("QDRANT_PORT", "6333"))
+        
+        # API configuration
         self.openai_api_key = os.getenv("OPENAI_API_KEY")
         self.embedding_model = os.getenv("EMBEDDING_MODEL", "text-embedding-3-large")
+        
+        # Vector database configuration
         self.collection_name = os.getenv("VECTOR_COLLECTION_NAME", "regulatory_documents")
         self.pdf_data_path = os.getenv("PDF_DATA_PATH", "data/pdf_downloads")
         self.chunk_size = int(os.getenv("CHUNK_SIZE", "1000"))
@@ -37,14 +43,27 @@ class Config:
         
         if not self.openai_api_key:
             raise ValueError("OPENAI_API_KEY environment variable is required")
+        
+        if self.qdrant_url:
+            logger.info(f"📋 Vector init config - Qdrant URL: {self.qdrant_url}")
+        else:
+            logger.info(f"📋 Vector init config - Qdrant: {self.qdrant_host}:{self.qdrant_port}")
 
-def wait_for_qdrant(host: str, port: int, max_retries: int = 30) -> bool:
+def wait_for_qdrant(config: Config, max_retries: int = 30) -> bool:
     """Wait for Qdrant to be ready"""
+    if config.qdrant_url:
+        # Use provided URL (Railway managed service)
+        url = config.qdrant_url.rstrip('/') + '/'
+    else:
+        # Use host/port (local deployment)
+        protocol = "https" if config.qdrant_port == 443 else "http"
+        url = f"{protocol}://{config.qdrant_host}:{config.qdrant_port}/" if config.qdrant_port != 443 else f"{protocol}://{config.qdrant_host}/"
+    
     for attempt in range(max_retries):
         try:
-            response = requests.get(f"http://{host}:{port}/", timeout=5)
+            response = requests.get(url, timeout=5)
             if response.status_code == 200:
-                logger.info(f"✅ Qdrant is ready at {host}:{port}")
+                logger.info(f"✅ Qdrant is ready at {url}")
                 return True
         except Exception as e:
             logger.info(f"⏳ Waiting for Qdrant... (attempt {attempt + 1}/{max_retries})")
@@ -59,7 +78,13 @@ def create_qdrant_collection(config: Config) -> bool:
         from qdrant_client import QdrantClient
         from qdrant_client.models import Distance, VectorParams
         
-        client = QdrantClient(host=config.qdrant_host, port=config.qdrant_port)
+        # Configure client - use URL if provided, otherwise host/port
+        if config.qdrant_url:
+            client = QdrantClient(url=config.qdrant_url)
+        elif config.qdrant_port == 443:
+            client = QdrantClient(url=f"https://{config.qdrant_host}")
+        else:
+            client = QdrantClient(host=config.qdrant_host, port=config.qdrant_port)
         
         # Check if collection exists
         try:
@@ -173,7 +198,7 @@ def main():
         logger.info(f"📋 Configuration loaded - Qdrant: {config.qdrant_host}:{config.qdrant_port}")
         
         # Wait for Qdrant to be ready
-        if not wait_for_qdrant(config.qdrant_host, config.qdrant_port):
+        if not wait_for_qdrant(config):
             sys.exit(1)
         
         # Create collection and check if already populated

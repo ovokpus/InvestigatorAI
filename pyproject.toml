@@ -25,7 +25,7 @@ dependencies = [
     "openpyxl==3.1.5",
     # AI/ML and LangChain dependencies for enhanced notebook
     "langchain-openai==0.3.28",
-    "langchain-core==0.3.72", 
+    "langchain-core==0.3.72",
     "langchain-community==0.3.27",
     "langgraph==0.6.1",
     "langchain-qdrant>=0.2.0",
@@ -58,7 +58,8 @@ dependencies = [
     "langchain-experimental==0.3.1",
     "langchain-cohere==0.3.1",
     # Migration dependencies (5-hour migration)
-    "psutil>=5.9.0",  # Memory monitoring for MemoryOptimizer
+    "psutil>=5.9.0", # Memory monitoring for MemoryOptimizer
+    "pypdf>=6.0.0",
 ]
 
 [project.optional-dependencies]
