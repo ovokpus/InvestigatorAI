@@ -183,8 +183,16 @@ class VectorStoreService:
             # Try a simple ping first
             import socket
             try:
-                host = url.split('://')[1].split(':')[0]
-                port = int(url.split(':')[-1].split('/')[0])
+                # Parse URL more carefully
+                from urllib.parse import urlparse
+                parsed = urlparse(url)
+                host = parsed.hostname
+                port = parsed.port
+                
+                # Default ports for HTTP/HTTPS if not specified
+                if port is None:
+                    port = 443 if parsed.scheme == 'https' else 80
+                
                 logger.info(f"   🔌 Testing socket connection to {host}:{port}")
                 
                 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -249,11 +257,14 @@ class VectorStoreService:
                 else:
                     qdrant_url = f"http://{self.settings.qdrant_host}:{self.settings.qdrant_port}"
                 
+                # Create Qdrant client for LangChain integration
+                from qdrant_client import QdrantClient
+                qdrant_client = QdrantClient(url=qdrant_url, timeout=60)
+                
                 self.vector_store = QdrantVectorStore(
-                    url=qdrant_url,
+                    client=qdrant_client,
                     collection_name=self.settings.vector_collection_name,
-                    embedding=self.embeddings,
-                    prefer_grpc=False  # Use REST API
+                    embedding=self.embeddings
                 )
                 logger.info("   ✅ Connected to existing vector store")
                 
@@ -273,13 +284,15 @@ class VectorStoreService:
                 logger.info(f"   🔗 Using Qdrant URL: {qdrant_url}")
                 
                 # Create vector store using containerized Qdrant
+                # Create Qdrant client for LangChain integration
+                from qdrant_client import QdrantClient
+                qdrant_client = QdrantClient(url=qdrant_url, timeout=60)
+                
                 self.vector_store = QdrantVectorStore.from_documents(
                     documents=documents,
                     embedding=self.embeddings,
-                    url=qdrant_url,
-                    collection_name=self.settings.vector_collection_name,
-                    force_recreate=False,  # Don't recreate if exists
-                    prefer_grpc=False  # Use REST API for Railway compatibility
+                    client=qdrant_client,
+                    collection_name=self.settings.vector_collection_name
                 )
                 
                 logger.info(f"Vector database created with {len(documents)} document chunks")
@@ -619,11 +632,13 @@ class VectorStoreManager:
                             qdrant_url = f"http://{settings.qdrant_host}:{settings.qdrant_port}"
                         
                         # Connect to existing vector store
+                        from qdrant_client import QdrantClient
+                        qdrant_client = QdrantClient(url=qdrant_url, timeout=60)
+                        
                         cls._instance.vector_store = QdrantVectorStore(
-                            url=qdrant_url,
+                            client=qdrant_client,
                             collection_name=settings.vector_collection_name,
-                            embedding=embeddings,
-                            prefer_grpc=False  # Use REST API
+                            embedding=embeddings
                         )
                         
                         # Initialize BM25 if enabled (will need documents)
