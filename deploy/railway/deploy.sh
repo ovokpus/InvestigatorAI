@@ -102,9 +102,9 @@ railway variables set --service repo \
 
 # Service connections
 railway variables set --service repo \
-    REDIS_HOST='${{Redis.RAILWAY_PRIVATE_DOMAIN}}' \
+    REDIS_HOST='${{redis.RAILWAY_PRIVATE_DOMAIN}}' \
     REDIS_PORT=6379 \
-    QDRANT_HOST='${{Qdrant.RAILWAY_PRIVATE_DOMAIN}}' \
+    QDRANT_HOST='${{qdrant.RAILWAY_PRIVATE_DOMAIN}}' \
     QDRANT_PORT=6333
 
 # Performance settings
