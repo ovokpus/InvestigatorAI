@@ -123,7 +123,7 @@ class VectorStoreService:
         self.embeddings = embeddings
         self.settings = settings
         self.vector_store: Optional[QdrantVectorStore] = None
-        self.qdrant_client: Optional[RestQdrantClient] = None
+        self.qdrant_client: Optional[Any] = None  # QdrantClient from official SDK
         self.bm25_retriever: Optional[BM25Retriever] = None
         self.documents: List[Document] = []  # Store for BM25 initialization
         self.cache_service = get_cache_service()
@@ -170,10 +170,13 @@ class VectorStoreService:
                 url = f"http://{self.settings.qdrant_host}:{self.settings.qdrant_port}"
                 logger.info("🐳 Using HTTP REST API for local/Docker deployment")
             
-            self.qdrant_client = RestQdrantClient(
+            # Use official Qdrant SDK for connection testing
+            from qdrant_client import QdrantClient
+            self.qdrant_client = QdrantClient(
                 url=url,
                 api_key=self.settings.qdrant_api_key if self.settings.qdrant_api_key else None,
-                timeout=60
+                timeout=120,
+                prefer_grpc=False  # Force REST API for Railway compatibility
             )
             
             # Test connection
@@ -207,15 +210,16 @@ class VectorStoreService:
             except Exception as e:
                 logger.error(f"   ❌ Socket test failed: {e}")
             
-            collections_response = self.qdrant_client.get_collections()
-            collections = collections_response.get('result', {}).get('collections', [])
+            # Test connection using official SDK
+            collections_info = self.qdrant_client.get_collections()
+            collections = collections_info.collections
             
             connection_time = (time.time() - start_time) * 1000
             logger.info(f"✅ Connected to Qdrant successfully in {connection_time:.1f}ms")
             logger.info(f"   📋 Available collections: {len(collections)}")
             
             for collection in collections:
-                logger.debug(f"   📦 Collection: {collection.get('name', 'Unknown')}")
+                logger.debug(f"   📦 Collection: {collection.name}")
                 
         except Exception as e:
             logger.error(f"❌ Qdrant connection failed: {e}")
@@ -633,7 +637,7 @@ class VectorStoreManager:
                         
                         # Connect to existing vector store
                         from qdrant_client import QdrantClient
-                        qdrant_client = QdrantClient(url=qdrant_url, timeout=60)
+                        qdrant_client = QdrantClient(url=qdrant_url, timeout=120, prefer_grpc=False)
                         
                         cls._instance.vector_store = QdrantVectorStore(
                             client=qdrant_client,
