@@ -311,7 +311,44 @@ def get_cache_service() -> CacheService:
     """Get global cache service instance"""
     global _cache_service
     if _cache_service is None:
-        from ..core.config import get_settings
-        settings = get_settings()
-        _cache_service = CacheService(settings)
+        try:
+            from ..core.config import get_settings
+            settings = get_settings()
+            _cache_service = CacheService(settings)
+        except RecursionError as e:
+            logger.error(f"❌ Recursion error in cache service initialization: {e}")
+            # Create a minimal cache service that's disabled
+            _cache_service = _create_disabled_cache_service()
+        except Exception as e:
+            logger.error(f"❌ Error initializing cache service: {e}")
+            _cache_service = _create_disabled_cache_service()
     return _cache_service
+
+def _create_disabled_cache_service() -> CacheService:
+    """Create a disabled cache service as fallback"""
+    class DisabledCacheService:
+        def __init__(self):
+            self.redis_client = None
+            
+        def is_available(self) -> bool:
+            return False
+            
+        def set(self, key: str, value: Any, ttl: int = 3600) -> bool:
+            return False
+            
+        def get(self, key: str) -> Optional[Any]:
+            return None
+            
+        def delete(self, key: str) -> bool:
+            return False
+            
+        def clear_expired_keys(self) -> int:
+            return 0
+            
+        def clear_pattern(self, pattern: str) -> int:
+            return 0
+            
+        def get_cache_stats(self) -> Dict[str, Any]:
+            return {"status": "disabled", "error": "Cache service failed to initialize"}
+    
+    return DisabledCacheService()

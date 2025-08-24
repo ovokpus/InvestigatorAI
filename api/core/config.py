@@ -93,9 +93,15 @@ class Settings:
             # Also set legacy LangChain project for compatibility
             os.environ["LANGCHAIN_PROJECT"] = self.langsmith_project
 
+# Global settings instance
+_settings_instance = None
+
 def get_settings() -> Settings:
-    """Get application settings"""
-    return Settings()
+    """Get application settings (singleton pattern)"""
+    global _settings_instance
+    if _settings_instance is None:
+        _settings_instance = Settings()
+    return _settings_instance
 
 def initialize_llm_components(settings: Settings) -> tuple[ChatOpenAI, OpenAIEmbeddings]:
     """Initialize LLM and embedding models"""
