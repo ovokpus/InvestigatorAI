@@ -27,6 +27,7 @@ RUN uv pip install --system --no-cache .
 # Copy API source code
 COPY api/ ./api/
 COPY data/ ./data/
+COPY scripts/init_vector_database.py ./scripts/
 
 # Create non-root user
 RUN adduser --disabled-password --gecos '' appuser && \
@@ -40,5 +41,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# Run the application
-CMD ["sh", "-c", "uvicorn api.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# Run vector initialization then start API
+CMD ["sh", "-c", "python scripts/init_vector_database.py && uvicorn api.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
