@@ -15,6 +15,10 @@ from pathlib import Path
 from typing import List, Dict, Any
 import requests
 import json
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(
@@ -49,28 +53,53 @@ class Config:
         else:
             logger.info(f"📋 Vector init config - Qdrant: {self.qdrant_host}:{self.qdrant_port}")
 
-def wait_for_qdrant(config: Config, max_retries: int = 60) -> bool:
-    """Wait for Qdrant to be ready - Extended for Railway"""
-    if config.qdrant_url:
-        # Use provided URL (Railway managed service)
-        url = config.qdrant_url.rstrip('/') + '/'
-    else:
-        # Use host/port (local deployment)
-        protocol = "https" if config.qdrant_port == 443 else "http"
-        url = f"{protocol}://{config.qdrant_host}:{config.qdrant_port}/" if config.qdrant_port != 443 else f"{protocol}://{config.qdrant_host}/"
-    
-    for attempt in range(max_retries):
-        try:
-            response = requests.get(url, timeout=10)  # Increased timeout for Railway
-            if response.status_code == 200:
-                logger.info(f"✅ Qdrant is ready at {url}")
-                return True
-        except Exception as e:
-            logger.info(f"⏳ Waiting for Qdrant... (attempt {attempt + 1}/{max_retries}) - {str(e)[:50]}")
-            time.sleep(3)  # Longer wait for Railway startup
-    
-    logger.error(f"❌ Qdrant not ready after {max_retries} attempts")
-    return False
+def wait_for_qdrant(config: Config, max_retries: int = 10) -> bool:
+    """Wait for Qdrant to be ready - Works with both local and cloud"""
+    try:
+        from qdrant_client import QdrantClient
+        
+        # Configure client based on environment
+        if config.qdrant_url:
+            # Check if this is Railway or Cloud
+            is_railway = "railway.app" in config.qdrant_url
+            
+            if is_railway:
+                # Railway container - no API key needed
+                client = QdrantClient(
+                    url=config.qdrant_url,
+                    api_key=None,
+                    timeout=60,
+                    prefer_grpc=False
+                )
+                logger.info(f"🚂 Testing connection to Railway Qdrant: {config.qdrant_url}")
+            else:
+                # Cloud deployment - needs API key
+                api_key = os.getenv("QDRANT_API_KEY")
+                client = QdrantClient(
+                    url=config.qdrant_url,
+                    api_key=api_key,
+                    timeout=30,
+                    prefer_grpc=False
+                )
+                logger.info(f"🔗 Testing connection to Qdrant Cloud: {config.qdrant_url}")
+        else:
+            # Local deployment
+            client = QdrantClient(
+                host=config.qdrant_host, 
+                port=config.qdrant_port, 
+                timeout=30, 
+                prefer_grpc=False
+            )
+            logger.info(f"🔗 Testing connection to local Qdrant: {config.qdrant_host}:{config.qdrant_port}")
+        
+        # Test connection
+        collections = client.get_collections()
+        logger.info(f"✅ Qdrant is ready! Found {len(collections.collections)} collections")
+        return True
+        
+    except Exception as e:
+        logger.error(f"❌ Qdrant connection failed: {e}")
+        return False
 
 def create_qdrant_collection(config: Config) -> bool:
     """Create Qdrant collection if it doesn't exist, return True if already populated"""
@@ -80,13 +109,24 @@ def create_qdrant_collection(config: Config) -> bool:
         
         # Configure client for Railway container - REST API only
         if config.qdrant_url:
-            client = QdrantClient(
-                url=config.qdrant_url, 
-                timeout=60, 
-                prefer_grpc=False,  # Force REST API for Railway
-                api_key=None,       # No auth needed for Railway container
-                https=True          # Railway uses HTTPS
-            )
+            is_railway = "railway.app" in config.qdrant_url
+            
+            if is_railway:
+                client = QdrantClient(
+                    url=config.qdrant_url, 
+                    timeout=120,        # Extended timeout for Railway
+                    prefer_grpc=False,  # Force REST API for Railway
+                    api_key=None        # No auth needed for Railway container
+                )
+            else:
+                # Cloud deployment
+                api_key = os.getenv("QDRANT_API_KEY")
+                client = QdrantClient(
+                    url=config.qdrant_url, 
+                    timeout=60, 
+                    prefer_grpc=False,
+                    api_key=api_key
+                )
         elif config.qdrant_port == 443:
             client = QdrantClient(url=f"https://{config.qdrant_host}", timeout=60, prefer_grpc=False)
         else:
@@ -143,13 +183,24 @@ def process_pdf_documents(config: Config) -> bool:
         
         # Initialize components for Railway container - REST API only
         if config.qdrant_url:
-            client = QdrantClient(
-                url=config.qdrant_url, 
-                timeout=600, 
-                prefer_grpc=False,  # Force REST API for Railway
-                api_key=None,       # No auth needed for Railway container
-                https=True          # Railway uses HTTPS
-            )
+            is_railway = "railway.app" in config.qdrant_url
+            
+            if is_railway:
+                client = QdrantClient(
+                    url=config.qdrant_url, 
+                    timeout=600,        # Extended timeout for Railway uploads
+                    prefer_grpc=False,  # Force REST API for Railway
+                    api_key=None        # No auth needed for Railway container
+                )
+            else:
+                # Cloud deployment
+                api_key = os.getenv("QDRANT_API_KEY")
+                client = QdrantClient(
+                    url=config.qdrant_url, 
+                    timeout=600, 
+                    prefer_grpc=False,
+                    api_key=api_key
+                )
         elif config.qdrant_port == 443:
             client = QdrantClient(url=f"https://{config.qdrant_host}", timeout=600, prefer_grpc=False)
         else:
