@@ -19,8 +19,8 @@ RUN pip install --no-cache-dir \
     pypdf==6.0.0 \
     pydantic==2.11.7
 
-# Copy only the standalone script
-COPY scripts/init_vector_database.py ./
+# Copy the Railway-compatible script
+COPY scripts/init_vector_database_railway.py ./init_vector_database.py
 
 # Copy data directory (regulatory PDFs)
 COPY data/ ./data/
