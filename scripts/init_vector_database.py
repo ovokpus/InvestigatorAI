@@ -49,8 +49,8 @@ class Config:
         else:
             logger.info(f"📋 Vector init config - Qdrant: {self.qdrant_host}:{self.qdrant_port}")
 
-def wait_for_qdrant(config: Config, max_retries: int = 30) -> bool:
-    """Wait for Qdrant to be ready"""
+def wait_for_qdrant(config: Config, max_retries: int = 60) -> bool:
+    """Wait for Qdrant to be ready - Extended for Railway"""
     if config.qdrant_url:
         # Use provided URL (Railway managed service)
         url = config.qdrant_url.rstrip('/') + '/'
@@ -61,13 +61,13 @@ def wait_for_qdrant(config: Config, max_retries: int = 30) -> bool:
     
     for attempt in range(max_retries):
         try:
-            response = requests.get(url, timeout=5)
+            response = requests.get(url, timeout=10)  # Increased timeout for Railway
             if response.status_code == 200:
                 logger.info(f"✅ Qdrant is ready at {url}")
                 return True
         except Exception as e:
-            logger.info(f"⏳ Waiting for Qdrant... (attempt {attempt + 1}/{max_retries})")
-            time.sleep(2)
+            logger.info(f"⏳ Waiting for Qdrant... (attempt {attempt + 1}/{max_retries}) - {str(e)[:50]}")
+            time.sleep(3)  # Longer wait for Railway startup
     
     logger.error(f"❌ Qdrant not ready after {max_retries} attempts")
     return False
@@ -79,12 +79,13 @@ def create_qdrant_collection(config: Config) -> bool:
         from qdrant_client.models import Distance, VectorParams
         
         # Configure client - use URL if provided, otherwise host/port
+        # Set longer timeout for Railway managed services
         if config.qdrant_url:
-            client = QdrantClient(url=config.qdrant_url)
+            client = QdrantClient(url=config.qdrant_url, timeout=600, prefer_grpc=False)  # 10min timeout for Railway
         elif config.qdrant_port == 443:
-            client = QdrantClient(url=f"https://{config.qdrant_host}")
+            client = QdrantClient(url=f"https://{config.qdrant_host}", timeout=600)
         else:
-            client = QdrantClient(host=config.qdrant_host, port=config.qdrant_port)
+            client = QdrantClient(host=config.qdrant_host, port=config.qdrant_port, timeout=600, prefer_grpc=False)
         
         # Check if collection exists
         try:
@@ -114,8 +115,13 @@ def process_pdf_documents(config: Config) -> bool:
         from qdrant_client.models import PointStruct
         import uuid
         
-        # Initialize components
-        client = QdrantClient(host=config.qdrant_host, port=config.qdrant_port)
+        # Initialize components with Railway-optimized timeout
+        if config.qdrant_url:
+            client = QdrantClient(url=config.qdrant_url, timeout=600, prefer_grpc=False)  # 10min timeout for Railway
+        elif config.qdrant_port == 443:
+            client = QdrantClient(url=f"https://{config.qdrant_host}", timeout=600)
+        else:
+            client = QdrantClient(host=config.qdrant_host, port=config.qdrant_port, timeout=600, prefer_grpc=False)
         embeddings = OpenAIEmbeddings(
             openai_api_key=config.openai_api_key,
             model=config.embedding_model
@@ -171,13 +177,43 @@ def process_pdf_documents(config: Config) -> bool:
                 logger.error(f"❌ Error processing {pdf_file.name}: {e}")
                 continue
         
-        # Upload all points to Qdrant
+        # Upload all points to Qdrant in batches
         if all_points:
             logger.info(f"📤 Uploading {len(all_points)} document chunks to Qdrant...")
-            client.upsert(
-                collection_name=config.collection_name,
-                points=all_points
-            )
+            
+            # Upload in smaller batches optimized for Railway
+            batch_size = 50  # Reduced batch size for Railway network limits
+            total_batches = (len(all_points) + batch_size - 1) // batch_size
+            
+            for i in range(0, len(all_points), batch_size):
+                batch = all_points[i:i + batch_size]
+                batch_num = (i // batch_size) + 1
+                
+                logger.info(f"📦 Uploading batch {batch_num}/{total_batches} ({len(batch)} chunks)...")
+                
+                # Retry logic for Railway network issues
+                max_retries = 3
+                for retry in range(max_retries):
+                    try:
+                        client.upsert(
+                            collection_name=config.collection_name,
+                            points=batch
+                        )
+                        logger.info(f"✅ Batch {batch_num}/{total_batches} uploaded successfully")
+                        break
+                    except Exception as e:
+                        if retry < max_retries - 1:
+                            logger.warning(f"⚠️ Batch {batch_num} failed (attempt {retry + 1}), retrying... {str(e)[:100]}")
+                            time.sleep(5)  # Wait before retry
+                        else:
+                            logger.error(f"❌ Error uploading batch {batch_num} after {max_retries} attempts: {e}")
+                            return False
+                
+                # Progress indicator for long uploads
+                if batch_num % 10 == 0:
+                    progress = (batch_num / total_batches) * 100
+                    logger.info(f"📊 Upload progress: {progress:.1f}% ({batch_num}/{total_batches} batches)")
+            
             logger.info("✅ Successfully uploaded all document chunks")
             return True
         else:
