@@ -78,32 +78,58 @@ def create_qdrant_collection(config: Config) -> bool:
         from qdrant_client import QdrantClient
         from qdrant_client.models import Distance, VectorParams
         
-        # Configure client - use URL if provided, otherwise host/port
-        # Set longer timeout for Railway managed services
+        # Configure client for Railway container - REST API only
         if config.qdrant_url:
-            client = QdrantClient(url=config.qdrant_url, timeout=600, prefer_grpc=False)  # 10min timeout for Railway
-        elif config.qdrant_port == 443:
-            client = QdrantClient(url=f"https://{config.qdrant_host}", timeout=600)
-        else:
-            client = QdrantClient(host=config.qdrant_host, port=config.qdrant_port, timeout=600, prefer_grpc=False)
-        
-        # Check if collection exists
-        try:
-            collection_info = client.get_collection(config.collection_name)
-            logger.info(f"✅ Collection '{config.collection_name}' already exists with {collection_info.points_count} documents")
-            return collection_info.points_count > 0
-        except Exception:
-            # Collection doesn't exist, create it
-            logger.info(f"📋 Creating collection '{config.collection_name}'...")
-            client.create_collection(
-                collection_name=config.collection_name,
-                vectors_config=VectorParams(size=3072, distance=Distance.COSINE)  # text-embedding-3-large dimensions
+            client = QdrantClient(
+                url=config.qdrant_url, 
+                timeout=60, 
+                prefer_grpc=False,  # Force REST API for Railway
+                api_key=None,       # No auth needed for Railway container
+                https=True          # Railway uses HTTPS
             )
-            return False
+        elif config.qdrant_port == 443:
+            client = QdrantClient(url=f"https://{config.qdrant_host}", timeout=60, prefer_grpc=False)
+        else:
+            client = QdrantClient(host=config.qdrant_host, port=config.qdrant_port, timeout=60, prefer_grpc=False)
+        
+        # Check if collection exists with retry logic
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                collection_info = client.get_collection(config.collection_name)
+                logger.info(f"✅ Collection '{config.collection_name}' already exists with {collection_info.points_count} documents")
+                return collection_info.points_count > 0
+            except Exception as e:
+                if "not found" in str(e).lower() or "does not exist" in str(e).lower():
+                    # Collection doesn't exist, try to create it
+                    logger.info(f"📋 Creating collection '{config.collection_name}' (attempt {attempt + 1}/{max_retries})...")
+                    try:
+                        client.create_collection(
+                            collection_name=config.collection_name,
+                            vectors_config=VectorParams(size=3072, distance=Distance.COSINE)  # text-embedding-3-large dimensions
+                        )
+                        logger.info(f"✅ Collection '{config.collection_name}' created successfully")
+                        return False  # Collection is new, needs to be populated
+                    except Exception as create_error:
+                        if attempt < max_retries - 1:
+                            logger.warning(f"⚠️ Collection creation failed (attempt {attempt + 1}), retrying... {str(create_error)[:100]}")
+                            time.sleep(5)
+                        else:
+                            logger.error(f"❌ Failed to create collection after {max_retries} attempts: {create_error}")
+                            return None
+                else:
+                    if attempt < max_retries - 1:
+                        logger.warning(f"⚠️ Connection issue (attempt {attempt + 1}), retrying... {str(e)[:100]}")
+                        time.sleep(5)
+                    else:
+                        logger.error(f"❌ Failed to connect to Qdrant after {max_retries} attempts: {e}")
+                        return None
+        
+        return False
             
     except Exception as e:
-        logger.error(f"❌ Error with Qdrant collection: {e}")
-        return False
+        logger.error(f"❌ Critical error with Qdrant collection: {e}")
+        return None
 
 def process_pdf_documents(config: Config) -> bool:
     """Process PDF documents and add to vector store"""
@@ -115,11 +141,17 @@ def process_pdf_documents(config: Config) -> bool:
         from qdrant_client.models import PointStruct
         import uuid
         
-        # Initialize components with Railway-optimized timeout
+        # Initialize components for Railway container - REST API only
         if config.qdrant_url:
-            client = QdrantClient(url=config.qdrant_url, timeout=600, prefer_grpc=False)  # 10min timeout for Railway
+            client = QdrantClient(
+                url=config.qdrant_url, 
+                timeout=600, 
+                prefer_grpc=False,  # Force REST API for Railway
+                api_key=None,       # No auth needed for Railway container
+                https=True          # Railway uses HTTPS
+            )
         elif config.qdrant_port == 443:
-            client = QdrantClient(url=f"https://{config.qdrant_host}", timeout=600)
+            client = QdrantClient(url=f"https://{config.qdrant_host}", timeout=600, prefer_grpc=False)
         else:
             client = QdrantClient(host=config.qdrant_host, port=config.qdrant_port, timeout=600, prefer_grpc=False)
         embeddings = OpenAIEmbeddings(
@@ -238,7 +270,11 @@ def main():
             sys.exit(1)
         
         # Create collection and check if already populated
-        if create_qdrant_collection(config):
+        collection_result = create_qdrant_collection(config)
+        if collection_result is None:
+            logger.error("❌ Failed to create or connect to Qdrant collection. Exiting...")
+            sys.exit(1)
+        elif collection_result:
             logger.info("✅ Vector database already initialized. Skipping...")
             return
         
