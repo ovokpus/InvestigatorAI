@@ -62,31 +62,23 @@ class VectorStoreService:
         try:
             start_time = time.time()
             
-            # Determine protocol and URL - Railway compatible
-            # Check for Railway internal networking or public URLs
-            is_railway_internal = "railway.internal" in self.settings.qdrant_host
-            is_railway_public = "railway.app" in self.settings.qdrant_host
-            is_railway = is_railway_internal or is_railway_public
-            
-            # Use QDRANT_URL if provided (Railway might set this)
+            # Determine protocol and URL based on explicit provider setting
             if self.settings.qdrant_url:
                 url = self.settings.qdrant_url
-                logger.info(f"🚂 Using provided QDRANT_URL: {url}")
-            elif is_railway_internal:
-                # Railway internal networking - use HTTP with internal hostname
+                logger.info(f"🔗 Using provided QDRANT_URL: {url}")
+            elif self.settings.qdrant_provider == "railway":
+                # Railway deployment - use HTTP with provided host/port
                 url = f"http://{self.settings.qdrant_host}:{self.settings.qdrant_port}"
-                logger.info("🚂 Detected Railway internal networking - using HTTP REST API")
-                logger.warning("   ⚠️  Note: Railway internal hostnames are auto-generated, not 'servicename.railway.internal'")
-                logger.info("   💡 Check your Railway service variables for the actual internal hostname")
-            elif is_railway_public:
-                # Railway public URL - use HTTPS
+                logger.info("🚂 Using Railway Qdrant configuration")
+            elif self.settings.qdrant_provider == "cloud":
+                # Cloud deployment - use HTTPS
                 protocol = "https" if self.settings.qdrant_port == 443 else "http"
                 url = f"{protocol}://{self.settings.qdrant_host}:{self.settings.qdrant_port}" if self.settings.qdrant_port != 443 else f"{protocol}://{self.settings.qdrant_host}"
-                logger.info("🚂 Detected Railway public URL - using HTTPS REST API")
+                logger.info("☁️ Using Qdrant Cloud configuration")
             else:
                 # Local/Docker deployment
                 url = f"http://{self.settings.qdrant_host}:{self.settings.qdrant_port}"
-                logger.info("🐳 Using HTTP REST API for local/Docker deployment")
+                logger.info("🐳 Using local/Docker Qdrant configuration")
             
             # Use official Qdrant SDK for connection testing
             from qdrant_client import QdrantClient
