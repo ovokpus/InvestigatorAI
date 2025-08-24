@@ -1,0 +1,10 @@
+# Railway configuration for Vector Database Initialization Service
+# This service runs once to populate the vector database with regulatory documents
+
+[build]
+builder = "dockerfile"
+dockerfilePath = "scripts/Dockerfile.init"
+
+[deploy]
+restartPolicyType = "never"
+healthcheckTimeout = 600
