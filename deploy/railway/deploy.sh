@@ -80,61 +80,60 @@ echo "🔧 Configuring Railway services..."
 
 # Redis configuration
 echo "1️⃣ Configuring Redis..."
-railway variables set --service redis \
-    REDIS_ARGS="--appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru" || echo "⚠️  Redis may already be configured"
+railway variables --service redis --set "REDIS_ARGS=--appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru" || echo "⚠️  Redis may already be configured"
 
 # Qdrant configuration
 echo "2️⃣ Configuring Qdrant..."
-railway variables set --service qdrant \
-    QDRANT__SERVICE__HTTP_PORT=6333 \
-    QDRANT__SERVICE__GRPC_PORT=6334 \
-    QDRANT__LOG_LEVEL=INFO || echo "⚠️  Qdrant may already be configured"
+railway variables --service qdrant \
+    --set "QDRANT__SERVICE__HTTP_PORT=6333" \
+    --set "QDRANT__SERVICE__GRPC_PORT=6334" \
+    --set "QDRANT__LOG_LEVEL=INFO" || echo "⚠️  Qdrant may already be configured"
 
 # API service configuration
 echo "3️⃣ Configuring API service (repo)..."
 
 # Core settings
-railway variables set --service repo \
-    PORT=8000 \
-    PYTHONPATH=/app \
-    LOG_LEVEL=INFO \
-    DEBUG=false
+railway variables --service repo \
+    --set "PORT=8000" \
+    --set "PYTHONPATH=/app" \
+    --set "LOG_LEVEL=INFO" \
+    --set "DEBUG=false"
 
 # Service connections
-railway variables set --service repo \
-    REDIS_HOST='${{redis.RAILWAY_PRIVATE_DOMAIN}}' \
-    REDIS_PORT=6379 \
-    QDRANT_HOST='${{qdrant.RAILWAY_PRIVATE_DOMAIN}}' \
-    QDRANT_PORT=6333
+railway variables --service repo \
+    --set "REDIS_HOST=\${{redis.RAILWAY_PRIVATE_DOMAIN}}" \
+    --set "REDIS_PORT=6379" \
+    --set "QDRANT_HOST=\${{qdrant.RAILWAY_PRIVATE_DOMAIN}}" \
+    --set "QDRANT_PORT=6333"
 
 # Performance settings
-railway variables set --service repo \
-    CACHE_ENABLED=true \
-    BM25_ENABLED=true \
-    DEFAULT_RETRIEVAL_METHOD=auto \
-    ENABLE_PERFORMANCE_LOGGING=true
+railway variables --service repo \
+    --set "CACHE_ENABLED=true" \
+    --set "BM25_ENABLED=true" \
+    --set "DEFAULT_RETRIEVAL_METHOD=auto" \
+    --set "ENABLE_PERFORMANCE_LOGGING=true"
 
 # Security and resource settings
-railway variables set --service repo \
-    ALLOWED_ORIGINS='https://*.railway.app,https://*.up.railway.app' \
-    RATE_LIMIT_REQUESTS=10 \
-    RATE_LIMIT_WINDOW=60 \
-    MAX_MEMORY_MB=1024 \
-    CLEANUP_THRESHOLD=0.8
+railway variables --service repo \
+    --set "ALLOWED_ORIGINS=https://*.railway.app,https://*.up.railway.app" \
+    --set "RATE_LIMIT_REQUESTS=10" \
+    --set "RATE_LIMIT_WINDOW=60" \
+    --set "MAX_MEMORY_MB=1024" \
+    --set "CLEANUP_THRESHOLD=0.8"
 
 # Set API keys from .env file
 echo "4️⃣ Setting API keys from .env..."
-railway variables set --service repo \
-    OPENAI_API_KEY="$OPENAI_KEY" \
-    TAVILY_SEARCH_API_KEY="$TAVILY_KEY"
+railway variables --service repo \
+    --set "OPENAI_API_KEY=$OPENAI_KEY" \
+    --set "TAVILY_SEARCH_API_KEY=$TAVILY_KEY"
 
 # Set LangSmith if available
 if [ ! -z "$LANGSMITH_KEY" ]; then
     PROJECT_NAME=${LANGSMITH_PROJECT:-"InvestigatorAI-Railway"}
-    railway variables set --service repo \
-        LANGSMITH_API_KEY="$LANGSMITH_KEY" \
-        LANGSMITH_PROJECT="$PROJECT_NAME" \
-        LANGSMITH_TRACING=true
+    railway variables --service repo \
+        --set "LANGSMITH_API_KEY=$LANGSMITH_KEY" \
+        --set "LANGSMITH_PROJECT=$PROJECT_NAME" \
+        --set "LANGSMITH_TRACING=true"
     echo "✅ LangSmith monitoring configured"
 fi
 
@@ -148,19 +147,19 @@ LLM_TEMPERATURE=$(get_env_value "LLM_TEMPERATURE")
 LLM_MAX_TOKENS=$(get_env_value "LLM_MAX_TOKENS")
 
 if [ ! -z "$EMBEDDING_MODEL" ]; then
-    railway variables set --service repo EMBEDDING_MODEL="$EMBEDDING_MODEL"
+    railway variables --service repo --set "EMBEDDING_MODEL=$EMBEDDING_MODEL"
 fi
 
 if [ ! -z "$LLM_MODEL" ]; then
-    railway variables set --service repo LLM_MODEL="$LLM_MODEL"
+    railway variables --service repo --set "LLM_MODEL=$LLM_MODEL"
 fi
 
 if [ ! -z "$LLM_TEMPERATURE" ]; then
-    railway variables set --service repo LLM_TEMPERATURE="$LLM_TEMPERATURE"
+    railway variables --service repo --set "LLM_TEMPERATURE=$LLM_TEMPERATURE"
 fi
 
 if [ ! -z "$LLM_MAX_TOKENS" ]; then
-    railway variables set --service repo LLM_MAX_TOKENS="$LLM_MAX_TOKENS"
+    railway variables --service repo --set "LLM_MAX_TOKENS=$LLM_MAX_TOKENS"
 fi
 
 echo ""
