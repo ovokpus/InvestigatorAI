@@ -32,8 +32,6 @@ from api.endpoints.investigation import investigation_router
 from api.endpoints.tools import tools_router
 from api.endpoints.cache import cache_router
 from api.middleware.logging_middleware import LoggingMiddleware, StreamingLoggingMiddleware
-from api.services.health_monitor import health_monitor
-
 # Configure comprehensive logging
 from api.utils.logging_config import setup_logging, get_logger
 
@@ -51,61 +49,6 @@ setup_logging(
 
 logger = get_logger(__name__)
 
-async def setup_health_monitoring():
-    """Setup health monitoring for external services"""
-    from api.services.cache_service import CacheService
-    from api.services.vector_store import VectorStoreService
-    
-    def check_redis():
-        """Check if Redis is available"""
-        try:
-            cache_service = CacheService()
-            return cache_service.is_available()
-        except Exception:
-            return False
-    
-    def check_qdrant():
-        """Check if Qdrant is available"""
-        try:
-            vector_service = VectorStoreService()
-            return vector_service.is_available()
-        except Exception:
-            return False
-    
-    def on_redis_available():
-        """Called when Redis comes online"""
-        logger.info("🟢 Redis cache is now available - caching enabled")
-    
-    def on_redis_unavailable():
-        """Called when Redis goes offline"""
-        logger.warning("🔴 Redis cache is unavailable - running without caching")
-    
-    def on_qdrant_available():
-        """Called when Qdrant comes online"""
-        logger.info("🟢 Qdrant vector store is now available - document search enabled")
-    
-    def on_qdrant_unavailable():
-        """Called when Qdrant goes offline"""
-        logger.warning("🔴 Qdrant vector store is unavailable - document search limited")
-    
-    # Register services for monitoring
-    health_monitor.register_service(
-        "Redis", 
-        check_redis, 
-        on_available=on_redis_available,
-        on_unavailable=on_redis_unavailable
-    )
-    
-    health_monitor.register_service(
-        "Qdrant", 
-        check_qdrant,
-        on_available=on_qdrant_available,
-        on_unavailable=on_qdrant_unavailable
-    )
-    
-    # Start monitoring
-    await health_monitor.start_monitoring()
-    logger.info("🏥 Health monitoring started for external services")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
@@ -168,9 +111,6 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         else:
             logger.warning("⚠️ Enhanced investigator not available for unified service")
         
-        # Setup health monitoring for external services
-        await setup_health_monitoring()
-        
         logger.info("🎉 InvestigatorAI API ready!")
         
     except Exception as e:
@@ -181,7 +121,6 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     
     # Cleanup
     logger.info("🛑 Shutting down InvestigatorAI API...")
-    await health_monitor.stop_monitoring()
 
 # Create FastAPI app
 app = FastAPI(
@@ -231,9 +170,6 @@ async def health_check(
         "project": settings.langsmith_project if settings.langsmith_available else None
     }
     
-    # Get service health statuses
-    service_statuses = health_monitor.get_all_statuses()
-    
     response = HealthResponse(
         status="healthy",
         timestamp=datetime.now().isoformat(),
@@ -245,7 +181,6 @@ async def health_check(
     # Add LangSmith status to response
     response_dict = response.model_dump(mode='json')
     response_dict["langsmith"] = langsmith_status
-    response_dict["external_services"] = service_statuses
     
     return JSONResponse(content=response_dict)
 
