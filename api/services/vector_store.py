@@ -158,6 +158,8 @@ class VectorStoreService:
                 # Railway internal networking - use HTTP with internal hostname
                 url = f"http://{self.settings.qdrant_host}:{self.settings.qdrant_port}"
                 logger.info("🚂 Detected Railway internal networking - using HTTP REST API")
+                logger.warning("   ⚠️  Note: Railway internal hostnames are auto-generated, not 'servicename.railway.internal'")
+                logger.info("   💡 Check your Railway service variables for the actual internal hostname")
             elif is_railway_public:
                 # Railway public URL - use HTTPS
                 protocol = "https" if self.settings.qdrant_port == 443 else "http"
@@ -176,6 +178,27 @@ class VectorStoreService:
             
             # Test connection
             logger.info("🔍 Testing Qdrant connection...")
+            logger.info(f"   🌐 Attempting connection to: {url}")
+            
+            # Try a simple ping first
+            import socket
+            try:
+                host = url.split('://')[1].split(':')[0]
+                port = int(url.split(':')[-1].split('/')[0])
+                logger.info(f"   🔌 Testing socket connection to {host}:{port}")
+                
+                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                sock.settimeout(5)
+                result = sock.connect_ex((host, port))
+                sock.close()
+                
+                if result == 0:
+                    logger.info("   ✅ Socket connection successful")
+                else:
+                    logger.error(f"   ❌ Socket connection failed with code: {result}")
+            except Exception as e:
+                logger.error(f"   ❌ Socket test failed: {e}")
+            
             collections_response = self.qdrant_client.get_collections()
             collections = collections_response.get('result', {}).get('collections', [])
             

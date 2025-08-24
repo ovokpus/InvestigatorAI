@@ -16,12 +16,33 @@ import uuid
 from pathlib import Path
 from typing import List, Dict, Any
 
-# Configure logging
+# Configure logging first
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+# Load environment variables from root .env file
+def load_env_file():
+    """Load environment variables from .env file in project root"""
+    env_path = Path(__file__).parent.parent / ".env"
+    if env_path.exists():
+        logger.info(f"📋 Loading environment variables from {env_path}")
+        with open(env_path, 'r') as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#') and '=' in line:
+                    key, value = line.split('=', 1)
+                    # Only set if not already in environment (command line takes precedence)
+                    if key not in os.environ:
+                        os.environ[key] = value.strip('"').strip("'")
+        logger.info("✅ Environment variables loaded from .env file")
+    else:
+        logger.warning(f"⚠️  No .env file found at {env_path}")
+
+# Load .env file before anything else
+load_env_file()
 
 class Config:
     """Standalone configuration class"""

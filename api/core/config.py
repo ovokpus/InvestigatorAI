@@ -43,21 +43,60 @@ class Settings:
                 logger.info(f"   {key}: {display_value}")
         
         # Qdrant Vector Database Configuration - Railway compatible
-        # Railway may provide various environment variables for services
-        self.qdrant_host: str = os.getenv("QDRANT_HOST", os.getenv("QDRANT_PRIVATE_URL", "localhost"))
+        # For custom Docker container services in Railway
+        self.qdrant_host: str = os.getenv("QDRANT_HOST", "localhost")
         self.qdrant_port: int = int(os.getenv("QDRANT_PORT", "6333"))
         self.qdrant_grpc_port: int = int(os.getenv("QDRANT_GRPC_PORT", "6334"))
         self.qdrant_api_key: str = os.getenv("QDRANT_API_KEY", "")
-        self.qdrant_url: str = os.getenv("QDRANT_URL", os.getenv("QDRANT_PRIVATE_URL", ""))  # Full URL if provided
+        self.qdrant_url: str = os.getenv("QDRANT_URL", "")  # Full URL if provided
+        
+        # Debug: Log the exact QDRANT_URL value
+        if self.qdrant_url:
+            logger.info(f"🔍 Raw QDRANT_URL value: '{self.qdrant_url}'")
         self.vector_collection_name: str = os.getenv("VECTOR_COLLECTION_NAME", "regulatory_documents")
+        
+        # Railway service discovery - check for Railway-generated service variables
+        # Railway creates variables like: SERVICENAME_HOST, SERVICENAME_PORT, etc.
+        railway_qdrant_host = None
+        railway_qdrant_port = None
+        
+        for key, value in os.environ.items():
+            # Look for Railway service variables that might point to Qdrant
+            if key.endswith('_HOST') and value and not self.qdrant_url:
+                # Check if this might be our Qdrant service
+                service_name = key.replace('_HOST', '').lower()
+                if 'qdrant' in service_name or 'vector' in service_name:
+                    railway_qdrant_host = value
+                    # Look for corresponding port
+                    port_key = key.replace('_HOST', '_PORT')
+                    railway_qdrant_port = os.getenv(port_key, "6333")
+                    break
+        
+        # Use Railway service discovery if found and no explicit config
+        if railway_qdrant_host and not self.qdrant_url and self.qdrant_host == "localhost":
+            self.qdrant_host = railway_qdrant_host
+            self.qdrant_port = int(railway_qdrant_port)
+            logger.info(f"🚂 Using Railway service discovery: {self.qdrant_host}:{self.qdrant_port}")
         
         # Debug: Log all Qdrant-related environment variables
         import logging
         logger = logging.getLogger(__name__)
         logger.info("🔍 Qdrant Environment Variables:")
+        qdrant_vars_found = False
         for key, value in os.environ.items():
             if "QDRANT" in key.upper():
                 logger.info(f"   {key}: {value}")
+                qdrant_vars_found = True
+        
+        if not qdrant_vars_found:
+            logger.warning("   ⚠️  No QDRANT environment variables found!")
+            logger.info("   🔍 Checking for Railway service variables...")
+            # Log any variables that might be Railway service URLs
+            for key, value in os.environ.items():
+                if any(pattern in key.upper() for pattern in ['URL', 'HOST', 'PORT']) and any(service in value.lower() for service in ['qdrant', 'vector', 'database'] if value):
+                    logger.info(f"   🎯 Potential service variable: {key}: {value}")
+                elif 'railway' in value.lower() and 'internal' in value.lower():
+                    logger.info(f"   🚂 Railway internal service: {key}: {value}")
         
         # Document processing
         self.chunk_size: int = int(os.getenv("CHUNK_SIZE", "1000"))
