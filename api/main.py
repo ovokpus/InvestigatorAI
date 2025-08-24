@@ -159,7 +159,7 @@ app.include_router(cache_router)
 app.include_router(research_router)
 
 # Health check endpoint
-@app.get("/health")
+@app.api_route("/health", methods=["GET", "HEAD"])
 @traceable(name="health_check_api", tags=["api", "health"])
 async def health_check(
     settings: Any = Depends(get_app_settings)
