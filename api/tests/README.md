@@ -1,6 +1,6 @@
 # InvestigatorAI Test Suite
 
-> **📂 Navigation**: [🏠 Home](../README.md) | [🔧 API Docs](../api/README.md) | [🤖 Agent Architecture](../docs/AGENT_PROMPTS.md) | [📈 Advanced Retrievers](../docs/ADVANCED_RETRIEVERS.md) | [💼 Business Case](../docs/BUSINESS_CASE.md) | [🎓 Certification](../docs/CERTIFICATION_CHALLENGE.md) | [🎬 Demo Guide](../docs/DEMO_GUIDE.md) | [💻 Frontend](../frontend/README.md) | [📊 Data](../data/README.md) | [🚀 Deploy](../deploy/README.md) | [🧪 Tests](README.md) | [🔄 Merge](../MERGE.md)
+> **📂 Navigation**: [🏠 Home](../../README.md) | [🔧 API Docs](../README.md) | [💻 Frontend](../../frontend/README.md) | [📊 Data](../../data/README.md) | [🚀 Deploy](../../deploy/README.md) | [🧪 Notebooks](../../notebooks/README.md) | [⚙️ GitHub Actions](../../.github/VECTOR_DATABASE_SETUP.md)
 
 Comprehensive test suite for the **modular** InvestigatorAI fraud investigation system, covering API functionality, LangSmith monitoring integration, modular component testing, and enhanced detailed reasoning validation.
 
@@ -132,20 +132,25 @@ Tests core API functionality and requires a running API server.
 
 ### Prerequisites
 ```bash
-# 1. Start the API server (from project root)
+# 1. Configure environment for Qdrant Cloud
+export QDRANT_URL="your_qdrant_cloud_url"
+export QDRANT_PROVIDER="cloud"
+export OPENAI_API_KEY="your_openai_key"
+
+# 2. Start the API server (from project root)
 cd /path/to/InvestigatorAI
-docker-compose up -d  # Start all services (API, Redis, Qdrant)
+docker-compose up -d redis  # Start Redis (Qdrant Cloud is remote)
 
 # OR manually start API
 cd api
 python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
-# 2. Ensure all services are running
+# 3. Ensure services are configured
 # - Redis (for caching)
-# - Qdrant (for vector storage)
+# - Qdrant Cloud (3,312 regulatory documents)
 # - External API keys configured
 
-# 3. Run the tests (from project root)
+# 4. Run the tests (from project root)
 cd /path/to/InvestigatorAI
 PYTHONPATH=$PWD python api/tests/test_api.py
 ```
