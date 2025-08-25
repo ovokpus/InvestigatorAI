@@ -29,12 +29,8 @@ jobs:
         
     - name: Install dependencies
       run: |
-        # Try to install from pyproject.toml first, fallback to manual installation
-        if [ -f "pyproject.toml" ]; then
-          uv pip install --system .
-        else
-          uv pip install --system langchain langchain-openai langchain-community qdrant-client python-dotenv PyPDF2 langchain-text-splitters
-        fi
+        # Install only the dependencies, not the project itself
+        uv pip install --system langchain langchain-openai langchain-community qdrant-client python-dotenv PyPDF2 langchain-text-splitters
         
     - name: Validate required secrets
       run: |
