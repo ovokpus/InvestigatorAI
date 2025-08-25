@@ -268,28 +268,28 @@ export default function Home() {
         </div>
 
         {/* Navigation Bar */}
-        <div className="mb-8">
-          <nav className="flex space-x-4">
-            <span className="px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium">
+        <div className="mb-6 sm:mb-8">
+          <nav className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
+            <span className="px-3 sm:px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium text-center text-sm sm:text-base">
               Investigation
             </span>
 
             <a 
               href="/tools" 
-              className="px-4 py-2 bg-secondary text-secondary-foreground hover:bg-accent rounded-lg font-medium transition-colors"
+              className="px-3 sm:px-4 py-2 bg-secondary text-secondary-foreground hover:bg-accent rounded-lg font-medium transition-colors text-center text-sm sm:text-base"
             >
               Tools & Search
             </a>
 
             <a 
               href="/help" 
-              className="px-4 py-2 bg-secondary text-secondary-foreground hover:bg-accent rounded-lg font-medium transition-colors"
+              className="px-3 sm:px-4 py-2 bg-secondary text-secondary-foreground hover:bg-accent rounded-lg font-medium transition-colors text-center text-sm sm:text-base"
             >
               Help & Docs
             </a>
             <a 
               href="/help#quick-start" 
-              className="px-4 py-2 bg-green-600 text-white hover:bg-green-700 rounded-lg font-medium transition-colors"
+              className="px-3 sm:px-4 py-2 bg-green-600 text-white hover:bg-green-700 rounded-lg font-medium transition-colors text-center text-sm sm:text-base"
             >
               🚀 Quick Start
             </a>
@@ -299,13 +299,13 @@ export default function Home() {
 
 
         {!investigation ? (
-          <div className="grid lg:grid-cols-2 gap-8">
-            <div>
-              <div className="bg-card p-6 rounded-lg shadow-lg">
-                <h2 className="text-2xl font-bold mb-4 text-contrast">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+            <div className="order-2 lg:order-1">
+              <div className="bg-card p-4 sm:p-6 rounded-lg shadow-lg">
+                <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-contrast">
                   Start New Investigation
                 </h2>
-                <p className="text-muted-foreground mb-6">
+                <p className="text-muted-foreground mb-4 sm:mb-6 text-sm sm:text-base">
                   Enter transaction details below to begin a comprehensive fraud investigation 
                   using our multi-agent AI system.
                 </p>
@@ -316,32 +316,32 @@ export default function Home() {
               </div>
             </div>
             
-            <div>
-              <div className="bg-card p-6 rounded-lg shadow-lg">
-                <h2 className="text-2xl font-bold mb-4 text-contrast">
+            <div className="order-1 lg:order-2">
+              <div className="bg-card p-4 sm:p-6 rounded-lg shadow-lg">
+                <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-contrast">
                   {isLoading ? 'Investigation Progress' : 'How It Works'}
                 </h2>
                 
                 {/* Progress Bar */}
                 {isLoading && (
-                  <div className="mb-6">
+                  <div className="mb-4 sm:mb-6">
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm font-medium text-contrast">Overall Progress</span>
-                      <span className="text-sm font-medium text-contrast">{currentProgress}%</span>
+                      <span className="text-xs sm:text-sm font-medium text-contrast">Overall Progress</span>
+                      <span className="text-xs sm:text-sm font-medium text-contrast">{currentProgress}%</span>
                     </div>
-                    <div className="w-full bg-secondary rounded-full h-2">
+                    <div className="w-full bg-secondary rounded-full h-2 sm:h-3">
                       <div 
-                        className="bg-primary h-2 rounded-full transition-all duration-500 ease-out"
+                        className="bg-primary h-2 sm:h-3 rounded-full transition-all duration-500 ease-out"
                         style={{ width: `${currentProgress}%` }}
                       ></div>
                     </div>
                   </div>
                 )}
                 
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {/* Step 1: Regulatory Research */}
-                  <div className="flex items-start space-x-3">
-                    <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${
+                  <div className="flex items-start space-x-2 sm:space-x-3">
+                    <div className={`flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold transition-all duration-300 ${
                       getStepStatus('regulatory_research') === 'completed' 
                         ? 'bg-green-500 text-white' 
                         : getStepStatus('regulatory_research') === 'active'
@@ -350,15 +350,15 @@ export default function Home() {
                     }`}>
                       {getStepStatus('regulatory_research') === 'completed' ? '✓' : '1'}
                     </div>
-                    <div className="flex-1">
-                      <h3 className={`font-semibold ${getStepStatus('regulatory_research') === 'active' ? 'text-primary' : 'text-contrast'}`}>
+                    <div className="flex-1 min-w-0">
+                      <h3 className={`font-semibold text-sm sm:text-base ${getStepStatus('regulatory_research') === 'active' ? 'text-primary' : 'text-contrast'}`}>
                         Regulatory Research
                       </h3>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-xs sm:text-sm text-muted-foreground">
                         Analyzing regulatory compliance and sanctions
                       </p>
                       {getStepMessage('regulatory_research') && (
-                        <p className="text-xs text-blue-600 dark:text-blue-400 mt-1 font-medium">
+                        <p className="text-xs text-blue-600 dark:text-blue-400 mt-1 font-medium break-words">
                           {getStepMessage('regulatory_research')}
                         </p>
                       )}
@@ -366,8 +366,8 @@ export default function Home() {
                   </div>
                   
                   {/* Step 2: Evidence Collection */}
-                  <div className="flex items-start space-x-3">
-                    <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${
+                  <div className="flex items-start space-x-2 sm:space-x-3">
+                    <div className={`flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold transition-all duration-300 ${
                       getStepStatus('evidence_collection') === 'completed' 
                         ? 'bg-green-500 text-white' 
                         : getStepStatus('evidence_collection') === 'active'
@@ -376,15 +376,15 @@ export default function Home() {
                     }`}>
                       {getStepStatus('evidence_collection') === 'completed' ? '✓' : '2'}
                     </div>
-                    <div className="flex-1">
-                      <h3 className={`font-semibold ${getStepStatus('evidence_collection') === 'active' ? 'text-primary' : 'text-contrast'}`}>
+                    <div className="flex-1 min-w-0">
+                      <h3 className={`font-semibold text-sm sm:text-base ${getStepStatus('evidence_collection') === 'active' ? 'text-primary' : 'text-contrast'}`}>
                         Evidence Collection
                       </h3>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-xs sm:text-sm text-muted-foreground">
                         Gathering transaction evidence and patterns
                       </p>
                       {getStepMessage('evidence_collection') && (
-                        <p className="text-xs text-blue-600 dark:text-blue-400 mt-1 font-medium">
+                        <p className="text-xs text-blue-600 dark:text-blue-400 mt-1 font-medium break-words">
                           {getStepMessage('evidence_collection')}
                         </p>
                       )}
@@ -392,8 +392,8 @@ export default function Home() {
                   </div>
                   
                   {/* Step 3: Compliance Check */}
-                  <div className="flex items-start space-x-3">
-                    <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${
+                  <div className="flex items-start space-x-2 sm:space-x-3">
+                    <div className={`flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold transition-all duration-300 ${
                       getStepStatus('compliance_check') === 'completed' 
                         ? 'bg-green-500 text-white' 
                         : getStepStatus('compliance_check') === 'active'
@@ -402,15 +402,15 @@ export default function Home() {
                     }`}>
                       {getStepStatus('compliance_check') === 'completed' ? '✓' : '3'}
                     </div>
-                    <div className="flex-1">
-                      <h3 className={`font-semibold ${getStepStatus('compliance_check') === 'active' ? 'text-primary' : 'text-contrast'}`}>
+                    <div className="flex-1 min-w-0">
+                      <h3 className={`font-semibold text-sm sm:text-base ${getStepStatus('compliance_check') === 'active' ? 'text-primary' : 'text-contrast'}`}>
                         Compliance Check
                       </h3>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-xs sm:text-sm text-muted-foreground">
                         Verifying regulatory requirements
                       </p>
                       {getStepMessage('compliance_check') && (
-                        <p className="text-xs text-blue-600 dark:text-blue-400 mt-1 font-medium">
+                        <p className="text-xs text-blue-600 dark:text-blue-400 mt-1 font-medium break-words">
                           {getStepMessage('compliance_check')}
                         </p>
                       )}
@@ -418,8 +418,8 @@ export default function Home() {
                   </div>
                   
                   {/* Step 4: Report Generation */}
-                  <div className="flex items-start space-x-3">
-                    <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${
+                  <div className="flex items-start space-x-2 sm:space-x-3">
+                    <div className={`flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold transition-all duration-300 ${
                       getStepStatus('report_generation') === 'completed' 
                         ? 'bg-green-500 text-white' 
                         : getStepStatus('report_generation') === 'active'
@@ -428,15 +428,15 @@ export default function Home() {
                     }`}>
                       {getStepStatus('report_generation') === 'completed' ? '✓' : '4'}
                     </div>
-                    <div className="flex-1">
-                      <h3 className={`font-semibold ${getStepStatus('report_generation') === 'active' ? 'text-primary' : 'text-contrast'}`}>
+                    <div className="flex-1 min-w-0">
+                      <h3 className={`font-semibold text-sm sm:text-base ${getStepStatus('report_generation') === 'active' ? 'text-primary' : 'text-contrast'}`}>
                         Final Report
                       </h3>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-xs sm:text-sm text-muted-foreground">
                         Generating detailed investigation report
                       </p>
                       {getStepMessage('report_generation') && (
-                        <p className="text-xs text-blue-600 dark:text-blue-400 mt-1 font-medium">
+                        <p className="text-xs text-blue-600 dark:text-blue-400 mt-1 font-medium break-words">
                           {getStepMessage('report_generation')}
                         </p>
                       )}
@@ -446,12 +446,12 @@ export default function Home() {
                 
                 {/* Current Activity Display */}
                 {isLoading && progressUpdates.length > 0 && (
-                  <div className="mt-6 p-4 bg-secondary/20 rounded-lg border border-primary/20">
+                  <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-secondary/20 rounded-lg border border-primary/20">
                     <div className="flex items-center space-x-2">
                       <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
-                      <span className="text-sm font-medium text-primary">Current Activity:</span>
+                      <span className="text-xs sm:text-sm font-medium text-primary">Current Activity:</span>
                     </div>
-                    <p className="text-sm text-muted-foreground mt-1">
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-1 break-words">
                       {progressUpdates[progressUpdates.length - 1]?.message || 'Processing...'}
                     </p>
                   </div>
@@ -467,12 +467,12 @@ export default function Home() {
         )}
 
         {/* Coming Soon Notice */}
-        <div className="mt-12 mb-8 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/20 dark:to-indigo-950/20 rounded-lg p-6 border border-purple-200 dark:border-purple-800">
-          <h2 className="text-xl font-bold text-purple-800 dark:text-purple-200 mb-3 flex items-center space-x-2">
+        <div className="mt-8 sm:mt-12 mb-6 sm:mb-8 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/20 dark:to-indigo-950/20 rounded-lg p-4 sm:p-6 border border-purple-200 dark:border-purple-800">
+          <h2 className="text-lg sm:text-xl font-bold text-purple-800 dark:text-purple-200 mb-2 sm:mb-3 flex flex-col sm:flex-row items-start sm:items-center space-y-1 sm:space-y-0 sm:space-x-2">
             <span>🚧</span>
-            <span>COMING SOON: Advanced Investigation Features</span>
+            <span><strong>COMING SOON: Advanced Investigation Features</strong></span>
           </h2>
-          <p className="text-purple-700 dark:text-purple-300 leading-relaxed">
+          <p className="text-sm sm:text-base text-purple-700 dark:text-purple-300 leading-relaxed">
             <strong>InvestigatorAI 2.0</strong> is in development! We&apos;re building a unified investigation system supporting 4 investigation types: 
             fraud transactions, entity research, academic research, and general research. Enhanced with 30% faster processing, 
             memory optimization, and production-ready reliability features.
@@ -480,9 +480,9 @@ export default function Home() {
         </div>
 
         {/* App Description */}
-        <div className="mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 rounded-lg p-6 border border-blue-200 dark:border-blue-800">
-          <h2 className="text-2xl font-bold text-blue-800 dark:text-blue-200 mb-3">🔍 What InvestigatorAI Does</h2>
-          <p className="text-blue-700 dark:text-blue-300 leading-relaxed">
+        <div className="mb-6 sm:mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 rounded-lg p-4 sm:p-6 border border-blue-200 dark:border-blue-800">
+          <h2 className="text-xl sm:text-2xl font-bold text-blue-800 dark:text-blue-200 mb-2 sm:mb-3">🔍 What InvestigatorAI Does</h2>
+          <p className="text-sm sm:text-base text-blue-700 dark:text-blue-300 leading-relaxed">
             InvestigatorAI is a multi-agent fraud investigation system that transforms suspicious transaction analysis from a 6-hour manual process into a 90-minute AI-assisted workflow. 
             Our platform combines 4 specialized AI agents with real regulatory data from INTERPOL, FinCEN, and FFIEC to provide comprehensive fraud investigation, 
             compliance checking, and audit-ready documentation—reducing investigation time by 75% while ensuring regulatory compliance and improving fraud detection quality.

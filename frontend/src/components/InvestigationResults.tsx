@@ -12,6 +12,7 @@ interface MarkdownRendererProps {
   content: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function MarkdownRenderer({ content }: MarkdownRendererProps) {
   // Parse the content into structured sections
   const parseContent = (text: string) => {
@@ -309,6 +310,7 @@ export default function InvestigationResults({ investigation, onNewInvestigation
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const generateReportContent = (investigation: Investigation): string => {
     const timestamp = new Date().toISOString();
     let content = `FRAUD INVESTIGATION REPORT\n`;
@@ -410,17 +412,17 @@ export default function InvestigationResults({ investigation, onNewInvestigation
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold text-contrast">Investigation Results</h2>
-          <p className="text-muted-foreground mt-1">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-3 sm:space-y-0">
+        <div className="flex-1 min-w-0">
+          <h2 className="text-2xl sm:text-3xl font-bold text-contrast">Investigation Results</h2>
+          <p className="text-sm sm:text-base text-muted-foreground mt-1 break-all">
             Investigation ID: {investigation.investigation_id}
           </p>
         </div>
-        <div className="flex space-x-3">
+        <div className="flex space-x-2 sm:space-x-3 w-full sm:w-auto">
           <button
             onClick={onNewInvestigation}
-            className="btn-secondary px-4 py-2 rounded-lg font-medium"
+            className="btn-secondary px-3 sm:px-4 py-2 rounded-lg font-medium text-sm sm:text-base flex-1 sm:flex-none min-h-[44px]"
           >
             New Investigation
           </button>
@@ -428,37 +430,37 @@ export default function InvestigationResults({ investigation, onNewInvestigation
       </div>
 
       {/* Status Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-card p-4 rounded-lg shadow">
-          <div className="text-2xl font-bold text-primary">{investigation.agents_completed}/4</div>
-          <div className="text-sm text-muted-foreground">Agents Completed</div>
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="bg-card p-3 sm:p-4 rounded-lg shadow">
+          <div className="text-xl sm:text-2xl font-bold text-primary">{investigation.agents_completed}/4</div>
+          <div className="text-xs sm:text-sm text-muted-foreground">Agents Completed</div>
         </div>
         
-        <div className="bg-card p-4 rounded-lg shadow">
-          <div className={`text-2xl font-bold ${getStatusColor(investigation.status)}`}>
+        <div className="bg-card p-3 sm:p-4 rounded-lg shadow">
+          <div className={`text-lg sm:text-2xl font-bold ${getStatusColor(investigation.status)}`}>
             {investigation.status}
           </div>
-          <div className="text-sm text-muted-foreground">Status</div>
+          <div className="text-xs sm:text-sm text-muted-foreground">Status</div>
         </div>
         
-        <div className="bg-card p-4 rounded-lg shadow">
-          <div className="text-2xl font-bold text-primary">{investigation.total_messages}</div>
-          <div className="text-sm text-muted-foreground">Messages Processed</div>
+        <div className="bg-card p-3 sm:p-4 rounded-lg shadow">
+          <div className="text-xl sm:text-2xl font-bold text-primary">{investigation.total_messages}</div>
+          <div className="text-xs sm:text-sm text-muted-foreground">Messages Processed</div>
         </div>
         
-        <div className="bg-card p-4 rounded-lg shadow">
+        <div className="bg-card p-3 sm:p-4 rounded-lg shadow">
           <div className={`text-sm font-medium ${investigation.all_agents_finished ? 'text-green-600' : 'text-yellow-600'}`}>
             {investigation.all_agents_finished ? '✓ Complete' : '⏳ In Progress'}
           </div>
-          <div className="text-sm text-muted-foreground">Investigation</div>
+          <div className="text-xs sm:text-sm text-muted-foreground">Investigation</div>
         </div>
       </div>
 
       {/* Final Decision */}
-      <div className="bg-card p-6 rounded-lg shadow-lg">
-        <h3 className="text-xl font-bold mb-4 text-contrast">Investigation Report & Final Decision</h3>
-        <div className={`p-6 rounded-lg border-2 ${getDecisionColor(investigation.final_decision)}`}>
-          <div className="font-bold text-xl mb-3">
+      <div className="bg-card p-4 sm:p-6 rounded-lg shadow-lg">
+        <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-contrast">Investigation Report & Final Decision</h3>
+        <div className={`p-4 sm:p-6 rounded-lg border-2 ${getDecisionColor(investigation.final_decision)}`}>
+          <div className="font-bold text-lg sm:text-xl mb-2 sm:mb-3 break-words">
             {investigation.final_decision.includes('**FRAUD INVESTIGATION COMPLETE**') 
               ? '🔍 FRAUD INVESTIGATION COMPLETE' 
               : investigation.final_decision.replace(/_/g, ' ').toUpperCase()}
@@ -474,14 +476,14 @@ export default function InvestigationResults({ investigation, onNewInvestigation
           )}
           
           {/* Investigation Completion Status */}
-          <div className="mt-4 flex items-center justify-between">
+          <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0">
             <div className="flex items-center space-x-2">
               <div className={`w-3 h-3 rounded-full ${investigation.all_agents_finished ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
-              <span className="text-sm font-medium">
+              <span className="text-xs sm:text-sm font-medium">
                 {investigation.all_agents_finished ? 'Investigation Complete' : 'Investigation In Progress'}
               </span>
             </div>
-            <div className="text-sm text-muted-foreground">
+            <div className="text-xs sm:text-sm text-muted-foreground break-all">
               ID: {investigation.investigation_id}
             </div>
           </div>
@@ -622,36 +624,36 @@ export default function InvestigationResults({ investigation, onNewInvestigation
       )}
 
       {/* Transaction Details */}
-      <div className="bg-card p-6 rounded-lg shadow-lg">
-        <h3 className="text-xl font-bold mb-4 text-contrast">Transaction Details</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="bg-card p-4 sm:p-6 rounded-lg shadow-lg">
+        <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-contrast">Transaction Details</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div>
-            <span className="text-muted-foreground">Amount:</span>
-            <div className="font-semibold">
+            <span className="text-xs sm:text-sm text-muted-foreground">Amount:</span>
+            <div className="font-semibold text-sm sm:text-base break-words">
               {investigation.transaction_details?.currency || 'USD'} {(investigation.transaction_details?.amount || 0).toLocaleString()}
             </div>
           </div>
           
           <div>
-            <span className="text-muted-foreground">Customer:</span>
-            <div className="font-semibold">{investigation.transaction_details?.customer_name || 'N/A'}</div>
+            <span className="text-xs sm:text-sm text-muted-foreground">Customer:</span>
+            <div className="font-semibold text-sm sm:text-base break-words">{investigation.transaction_details?.customer_name || 'N/A'}</div>
           </div>
           
           <div>
-            <span className="text-muted-foreground">Destination:</span>
-            <div className="font-semibold">{investigation.transaction_details?.country_to || 'N/A'}</div>
+            <span className="text-xs sm:text-sm text-muted-foreground">Destination:</span>
+            <div className="font-semibold text-sm sm:text-base break-words">{investigation.transaction_details?.country_to || 'N/A'}</div>
           </div>
           
           <div>
-            <span className="text-muted-foreground">Account Type:</span>
-            <div className="font-semibold">{investigation.transaction_details?.account_type || 'N/A'}</div>
+            <span className="text-xs sm:text-sm text-muted-foreground">Account Type:</span>
+            <div className="font-semibold text-sm sm:text-base break-words">{investigation.transaction_details?.account_type || 'N/A'}</div>
           </div>
         </div>
         
         {investigation.transaction_details?.description && (
-          <div className="mt-4">
-            <span className="text-muted-foreground">Description:</span>
-            <div className="mt-1 p-3 bg-muted rounded">
+          <div className="mt-3 sm:mt-4">
+            <span className="text-xs sm:text-sm text-muted-foreground">Description:</span>
+            <div className="mt-1 p-2 sm:p-3 bg-muted rounded text-sm sm:text-base break-words">
               {investigation.transaction_details.description}
             </div>
           </div>
@@ -659,21 +661,21 @@ export default function InvestigationResults({ investigation, onNewInvestigation
       </div>
 
       {/* Agent Progress */}
-      <div className="bg-card p-6 rounded-lg shadow-lg">
-        <h3 className="text-xl font-bold mb-4 text-contrast">Investigation Progress</h3>
-        <div className="space-y-3">
+      <div className="bg-card p-4 sm:p-6 rounded-lg shadow-lg">
+        <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-contrast">Investigation Progress</h3>
+        <div className="space-y-2 sm:space-y-3">
           {[
             { name: 'Data Analyst Agent', completed: investigation.agents_completed >= 1 },
             { name: 'Regulatory Agent', completed: investigation.agents_completed >= 2 },
             { name: 'Risk Assessment Agent', completed: investigation.agents_completed >= 3 },
             { name: 'Investigation Coordinator', completed: investigation.agents_completed >= 4 }
           ].map((agent, index) => (
-            <div key={index} className="flex items-center space-x-3">
-              <div className={`w-4 h-4 rounded-full ${agent.completed ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-              <span className={`${agent.completed ? 'text-contrast' : 'text-muted-foreground'}`}>
+            <div key={index} className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-0">
+              <div className={`w-3 h-3 sm:w-4 sm:h-4 rounded-full flex-shrink-0 ${agent.completed ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+              <span className={`text-sm sm:text-base flex-1 ${agent.completed ? 'text-contrast' : 'text-muted-foreground'}`}>
                 {agent.name}
               </span>
-              {agent.completed && <span className="text-green-600 text-sm">✓</span>}
+              {agent.completed && <span className="text-green-600 text-xs sm:text-sm">✓</span>}
             </div>
           ))}
         </div>

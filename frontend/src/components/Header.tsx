@@ -3,22 +3,22 @@
 export default function Header() {
   return (
     <header className="bg-primary text-primary-foreground shadow-lg">
-      <div className="container mx-auto px-4 py-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">InvestigatorAI</h1>
-            <p className="text-sm opacity-90">Multi-Agent Fraud Investigation System</p>
+      <div className="container mx-auto px-4 py-4 sm:py-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-3 sm:space-y-0">
+          <div className="flex-1">
+            <h1 className="text-2xl sm:text-3xl font-bold">InvestigatorAI</h1>
+            <p className="text-xs sm:text-sm opacity-90 mt-1">Multi-Agent Fraud Investigation System</p>
           </div>
           
-          <div className="flex items-center space-x-4">
-            <div className="text-right">
-              <div className="text-sm opacity-90">AI Tooling Powered by</div>
-              <div className="font-semibold">OpenAI, LangChain, LangGraph, Qdrant & RAGAS</div>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
+            <div className="text-left sm:text-right">
+              <div className="text-xs sm:text-sm opacity-90">AI Tooling Powered by</div>
+              <div className="font-semibold text-sm sm:text-base">OpenAI, LangChain, LangGraph, Qdrant & RAGAS</div>
             </div>
             
-            <div className="w-12 h-12 bg-primary-foreground/20 rounded-full flex items-center justify-center">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary-foreground/20 rounded-full flex items-center justify-center flex-shrink-0">
               <svg 
-                className="w-6 h-6" 
+                className="w-5 h-5 sm:w-6 sm:h-6" 
                 fill="currentColor" 
                 viewBox="0 0 20 20"
               >
