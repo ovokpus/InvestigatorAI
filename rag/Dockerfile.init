@@ -1,0 +1,32 @@
+# Standalone Vector Database Initialization Service
+FROM python:3.13-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+    # Install only the required Python packages - COMPATIBLE VERSIONS
+    RUN pip install --no-cache-dir \
+        qdrant-client==1.15.0 \
+        langchain-core==0.3.72 \
+        langchain-community==0.3.27 \
+        langchain-openai==0.3.28 \
+        openai>=1.86.0 \
+        requests==2.32.4 \
+        pypdf==6.0.0 \
+        pydantic==2.11.7
+
+# Copy the Railway-compatible script
+COPY scripts/init_vector_database_railway.py ./init_vector_database.py
+
+# Copy data directory (regulatory PDFs)
+COPY data/ ./data/
+
+# Make the script executable
+RUN chmod +x init_vector_database.py
+
+# Run the initialization script
+CMD ["python", "init_vector_database.py"]

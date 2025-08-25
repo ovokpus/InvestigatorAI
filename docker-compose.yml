@@ -87,8 +87,8 @@ services:
       # Database connections
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - QDRANT_HOST=qdrant
-      - QDRANT_PORT=6333
+      - QDRANT_URL=${QDRANT_URL}
+      - QDRANT_API_KEY=${QDRANT_API_KEY}
       
       # API Keys (set these in your .env file)
       - OPENAI_API_KEY=${OPENAI_API_KEY}
@@ -128,10 +128,6 @@ services:
     depends_on:
       redis:
         condition: service_healthy
-      qdrant:
-        condition: service_healthy
-      init-docs:
-        condition: service_completed_successfully
     networks:
       - investigator_network
     healthcheck:

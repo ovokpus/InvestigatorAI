@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { createApiUrl } from '@/utils/api';
 
 interface SearchResult {
   content: string;
@@ -25,7 +26,7 @@ export default function DocumentSearch() {
 
     try {
       const response = await fetch(
-        `http://localhost:8000/search?query=${encodeURIComponent(query)}&max_results=5`
+        `${createApiUrl('/search')}?query=${encodeURIComponent(query)}&max_results=5`
       );
 
       if (!response.ok) {

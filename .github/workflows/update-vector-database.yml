@@ -1,0 +1,100 @@
+name: Update Vector Database
+
+on:
+  push:
+    branches: [ deploy ]
+    paths:
+      - 'data/pdf_downloads/**'
+      - 'rag/init_vector_database.py'
+      - 'data/configs/**'
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  update-vector-db:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install uv
+      run: |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+        
+    - name: Install dependencies
+      run: |
+        # Try to install from pyproject.toml first, fallback to manual installation
+        if [ -f "pyproject.toml" ]; then
+          uv pip install --system .
+        else
+          uv pip install --system langchain langchain-openai langchain-community qdrant-client python-dotenv PyPDF2 langchain-text-splitters
+        fi
+        
+    - name: Validate required secrets
+      run: |
+        if [ -z "${{ secrets.OPENAI_API_KEY }}" ]; then
+          echo "❌ OPENAI_API_KEY secret is required"
+          exit 1
+        fi
+        if [ -z "${{ secrets.QDRANT_URL }}" ]; then
+          echo "❌ QDRANT_URL secret is required"
+          exit 1
+        fi
+        echo "✅ Required secrets are available"
+        
+    - name: Create .env file
+      run: |
+        echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> .env
+        echo "QDRANT_URL=${{ secrets.QDRANT_URL }}" >> .env
+        echo "QDRANT_API_KEY=${{ secrets.QDRANT_API_KEY }}" >> .env
+        echo "QDRANT_PROVIDER=cloud" >> .env
+        echo "VECTOR_COLLECTION_NAME=regulatory_documents" >> .env
+        echo "EMBEDDING_MODEL=text-embedding-3-large" >> .env
+        echo "PDF_DATA_PATH=data/pdf_downloads" >> .env
+        echo "CHUNK_SIZE=1000" >> .env
+        echo "CHUNK_OVERLAP=200" >> .env
+        
+    - name: Check PDF files
+      run: |
+        if [ -d "data/pdf_downloads" ] && [ "$(ls -A data/pdf_downloads)" ]; then
+          echo "📄 Found PDF files to process:"
+          ls -la data/pdf_downloads/ | grep -E '\.pdf$' | wc -l | xargs echo "   PDF count:"
+        else
+          echo "⚠️  No PDF files found in data/pdf_downloads/"
+          echo "   Vector database initialization will still run to ensure collection exists"
+        fi
+        
+    - name: Run vector database initialization
+      id: vector_init
+      run: |
+        echo "🚀 Starting vector database initialization..."
+        cd rag
+        python init_vector_database.py 2>&1 | tee ../vector_init.log
+        
+    - name: Upload logs on failure
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: vector-init-logs
+        path: vector_init.log
+        retention-days: 7
+        
+    - name: Summary
+      if: always()
+      run: |
+        if [ "${{ steps.vector_init.outcome }}" = "success" ]; then
+          echo "✅ Vector database update completed successfully!"
+          echo "📊 Processing summary:"
+          if [ -f "vector_init.log" ]; then
+            grep -E "documents processed|batches uploaded|collection.*exists" vector_init.log || echo "   Check logs for detailed statistics"
+          fi
+        else
+          echo "❌ Vector database update failed"
+          echo "📋 Check the uploaded logs artifact for details"
+        fi

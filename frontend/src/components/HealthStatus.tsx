@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { createApiUrl } from '@/utils/api';
 
 interface HealthData {
   status: string;
@@ -18,7 +19,7 @@ export default function HealthStatus() {
   useEffect(() => {
     const checkHealth = async () => {
       try {
-        const response = await fetch('http://localhost:8000/health');
+        const response = await fetch(createApiUrl('/health'));
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }

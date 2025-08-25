@@ -1,13 +1,12 @@
 """Vector database service using Qdrant with BM25 optimization"""
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 import time
 import logging
+
 from langchain_qdrant import QdrantVectorStore
 from langchain_openai import OpenAIEmbeddings
 from langchain_core.documents import Document
 from langchain_community.retrievers import BM25Retriever
-from qdrant_client import QdrantClient
-from qdrant_client.http import models
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +25,8 @@ from ..services.document_processor import DocumentProcessor
 from ..services.cache_service import get_cache_service
 from ..models.schemas import VectorSearchResult, DocumentMetadata
 
+
+
 class VectorStoreService:
     """Service for managing vector database operations"""
     
@@ -40,47 +41,100 @@ class VectorStoreService:
         self.embeddings = embeddings
         self.settings = settings
         self.vector_store: Optional[QdrantVectorStore] = None
-        self.qdrant_client: Optional[QdrantClient] = None
+        self.qdrant_client: Optional[Any] = None  # QdrantClient from official SDK
         self.bm25_retriever: Optional[BM25Retriever] = None
         self.documents: List[Document] = []  # Store for BM25 initialization
         self.cache_service = get_cache_service()
         self.is_initialized = False
         
-        logger.info("🔗 Setting up Qdrant client connection...")
+        logger.info("🔗 Setting up Qdrant REST client connection...")
         self._setup_qdrant_client()
         logger.info("✅ VectorStoreService initialization complete")
     
     def _setup_qdrant_client(self):
-        """Setup Qdrant client for containerized deployment"""
+        """Setup Qdrant REST client for Railway compatibility"""
         logger.info(f"🔗 Connecting to Qdrant database...")
         logger.info(f"   🎯 Host: {self.settings.qdrant_host}:{self.settings.qdrant_port}")
         logger.info(f"   🔐 API Key: {'✅ Set' if self.settings.qdrant_api_key else '❌ Not set'}")
-        logger.info(f"   ⏰ Timeout: 30s")
+        logger.info(f"   🌐 QDRANT_URL: {self.settings.qdrant_url if self.settings.qdrant_url else '❌ Not set'}")
+        logger.info(f"   ⏰ Timeout: 60s")
         
         try:
             start_time = time.time()
             
+            # Determine protocol and URL based on explicit provider setting
+            if self.settings.qdrant_url:
+                url = self.settings.qdrant_url
+                logger.info(f"🔗 Using provided QDRANT_URL: {url}")
+            elif self.settings.qdrant_provider == "railway":
+                # Railway deployment - use HTTP with provided host/port
+                url = f"http://{self.settings.qdrant_host}:{self.settings.qdrant_port}"
+                logger.info("🚂 Using Railway Qdrant configuration")
+            elif self.settings.qdrant_provider == "cloud":
+                # Cloud deployment - use HTTPS
+                protocol = "https" if self.settings.qdrant_port == 443 else "http"
+                url = f"{protocol}://{self.settings.qdrant_host}:{self.settings.qdrant_port}" if self.settings.qdrant_port != 443 else f"{protocol}://{self.settings.qdrant_host}"
+                logger.info("☁️ Using Qdrant Cloud configuration")
+            else:
+                # Local/Docker deployment
+                url = f"http://{self.settings.qdrant_host}:{self.settings.qdrant_port}"
+                logger.info("🐳 Using local/Docker Qdrant configuration")
+            
+            # Use official Qdrant SDK for connection testing
+            from qdrant_client import QdrantClient
             self.qdrant_client = QdrantClient(
-                host=self.settings.qdrant_host,
-                port=self.settings.qdrant_port,
+                url=url,
                 api_key=self.settings.qdrant_api_key if self.settings.qdrant_api_key else None,
-                timeout=30
+                timeout=120,
+                prefer_grpc=False  # Force REST API for Railway compatibility
             )
             
             # Test connection
             logger.info("🔍 Testing Qdrant connection...")
-            collections = self.qdrant_client.get_collections()
+            logger.info(f"   🌐 Attempting connection to: {url}")
+            
+            # Try a simple ping first
+            import socket
+            try:
+                # Parse URL more carefully
+                from urllib.parse import urlparse
+                parsed = urlparse(url)
+                host = parsed.hostname
+                port = parsed.port
+                
+                # Default ports for HTTP/HTTPS if not specified
+                if port is None:
+                    port = 443 if parsed.scheme == 'https' else 80
+                
+                logger.info(f"   🔌 Testing socket connection to {host}:{port}")
+                
+                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                sock.settimeout(5)
+                result = sock.connect_ex((host, port))
+                sock.close()
+                
+                if result == 0:
+                    logger.info("   ✅ Socket connection successful")
+                else:
+                    logger.error(f"   ❌ Socket connection failed with code: {result}")
+            except Exception as e:
+                logger.error(f"   ❌ Socket test failed: {e}")
+            
+            # Test connection using official SDK
+            collections_info = self.qdrant_client.get_collections()
+            collections = collections_info.collections
             
             connection_time = (time.time() - start_time) * 1000
             logger.info(f"✅ Connected to Qdrant successfully in {connection_time:.1f}ms")
-            logger.info(f"   📋 Available collections: {len(collections.collections)}")
+            logger.info(f"   📋 Available collections: {len(collections)}")
             
-            for collection in collections.collections:
+            for collection in collections:
                 logger.debug(f"   📦 Collection: {collection.name}")
                 
         except Exception as e:
             logger.error(f"❌ Qdrant connection failed: {e}")
             logger.exception(f"   🔍 Connection error details:")
+            logger.warning("   ⚠️  Vector store will be disabled - app will run without vector search")
             self.qdrant_client = None
     
     def initialize_from_documents(self, documents: List[Document]) -> bool:
@@ -105,12 +159,25 @@ class VectorStoreService:
                 points_count = collection_info.points_count
                 logger.info(f"📋 Collection '{self.settings.vector_collection_name}' exists with {points_count} points")
                 
-                # Create vector store using existing collection
+                # Create vector store using existing collection - use LangChain's QdrantVectorStore with URL
                 logger.info("🔗 Connecting to existing collection...")
+                
+                # Use the same URL and client configuration as the main connection
+                qdrant_url = self.settings.qdrant_url if self.settings.qdrant_url else f"http://{self.settings.qdrant_host}:{self.settings.qdrant_port}"
+                
+                # Create Qdrant client for LangChain integration
+                from qdrant_client import QdrantClient
+                qdrant_client = QdrantClient(
+                    url=qdrant_url,
+                    api_key=self.settings.qdrant_api_key if self.settings.qdrant_api_key else None,
+                    timeout=60,
+                    prefer_grpc=False
+                )
+                
                 self.vector_store = QdrantVectorStore(
-                    client=self.qdrant_client,
+                    client=qdrant_client,
                     collection_name=self.settings.vector_collection_name,
-                    embeddings=self.embeddings
+                    embedding=self.embeddings
                 )
                 logger.info("   ✅ Connected to existing vector store")
                 
@@ -119,13 +186,26 @@ class VectorStoreService:
                 logger.info(f"📋 Collection not found, creating new collection: {self.settings.vector_collection_name}")
                 logger.debug(f"   Collection check error: {e}")
                 
+                # Use the same URL and client configuration as the main connection
+                qdrant_url = self.settings.qdrant_url if self.settings.qdrant_url else f"http://{self.settings.qdrant_host}:{self.settings.qdrant_port}"
+                
+                logger.info(f"   🔗 Using Qdrant URL: {qdrant_url}")
+                
                 # Create vector store using containerized Qdrant
+                # Create Qdrant client for LangChain integration
+                from qdrant_client import QdrantClient
+                qdrant_client = QdrantClient(
+                    url=qdrant_url,
+                    api_key=self.settings.qdrant_api_key if self.settings.qdrant_api_key else None,
+                    timeout=60,
+                    prefer_grpc=False
+                )
+                
                 self.vector_store = QdrantVectorStore.from_documents(
                     documents=documents,
                     embedding=self.embeddings,
-                    url=f"http://{self.settings.qdrant_host}:{self.settings.qdrant_port}",
-                    collection_name=self.settings.vector_collection_name,
-                    force_recreate=False  # Don't recreate if exists
+                    client=qdrant_client,
+                    collection_name=self.settings.vector_collection_name
                 )
                 
                 logger.info(f"Vector database created with {len(documents)} document chunks")
@@ -332,34 +412,51 @@ class VectorStoreService:
     @traceable(name="dense_search", tags=["search", "dense", "vector"])
     def _dense_search(self, query: str, k: int) -> List[VectorSearchResult]:
         """
-        Dense vector search - fallback method
+        Dense vector search using direct Qdrant client
         Performance: 551ms average, 0.800 RAGAS score
         """
-        if not self.vector_store:
+        if not self.qdrant_client:
             return []
         
         try:
-            results = self.vector_store.similarity_search(query, k=k)
+            # Get embedding for the query
+            query_embedding = self.embeddings.embed_query(query)
             
-            search_results = []
-            for result in results:
+            # Search directly using Qdrant client
+            search_results = self.qdrant_client.search(
+                collection_name=self.settings.vector_collection_name,
+                query_vector=query_embedding,
+                limit=k,
+                with_payload=True,
+                with_vectors=False
+            )
+            
+            results = []
+            for result in search_results:
+                # Extract content and metadata from the payload structure used in init_vector_database.py
+                content = result.payload.get('content', '')
+                source = result.payload.get('source', 'Unknown')
+                doc_metadata = result.payload.get('metadata', {})
+                
+                # Create proper metadata
                 metadata = DocumentMetadata(
-                    filename=result.metadata.get('filename', 'Unknown'),
-                    content_category=result.metadata.get('content_category', 'unknown'),
-                    source_type=result.metadata.get('source_type', 'unknown'),
-                    document_type=result.metadata.get('document_type', 'unknown'),
-                    last_updated=result.metadata.get('last_updated')
+                    filename=source,
+                    content_category='regulatory',
+                    source_type='pdf',
+                    document_type='regulatory_document',
+                    last_updated=doc_metadata.get('last_updated')
                 )
                 
-                search_results.append(VectorSearchResult(
-                    content=result.page_content,
-                    metadata=metadata
+                results.append(VectorSearchResult(
+                    content=content,
+                    metadata=metadata,
+                    similarity_score=result.score
                 ))
             
-            return search_results
+            return results
             
         except Exception as e:
-            print(f"❌ Dense search failed: {e}")
+            logger.error(f"❌ Dense search failed: {e}")
             return []
     
     def search_with_scores(self, query: str, k: int = 5, method: str = "auto") -> List[VectorSearchResult]:
@@ -455,9 +552,20 @@ class VectorStoreManager:
                     if points_count > 0:
                         logger.info(f"✅ Found existing collection with {points_count} documents")
                         
+                        # Use the same URL and client configuration as the main connection
+                        qdrant_url = settings.qdrant_url if settings.qdrant_url else f"http://{settings.qdrant_host}:{settings.qdrant_port}"
+                        
                         # Connect to existing vector store
+                        from qdrant_client import QdrantClient
+                        qdrant_client = QdrantClient(
+                            url=qdrant_url,
+                            api_key=settings.qdrant_api_key if settings.qdrant_api_key else None,
+                            timeout=120,
+                            prefer_grpc=False
+                        )
+                        
                         cls._instance.vector_store = QdrantVectorStore(
-                            client=cls._instance.qdrant_client,
+                            client=qdrant_client,
                             collection_name=settings.vector_collection_name,
                             embedding=embeddings
                         )

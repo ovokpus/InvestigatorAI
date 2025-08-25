@@ -22,19 +22,82 @@ class Settings:
         self.llm_temperature: float = float(os.getenv("LLM_TEMPERATURE", "0"))
         self.llm_max_tokens: int = int(os.getenv("LLM_MAX_TOKENS", "15000"))  # Configurable via env var
         
-        # Redis Cache Configuration
-        self.redis_host: str = os.getenv("REDIS_HOST", "localhost")
-        self.redis_port: int = int(os.getenv("REDIS_PORT", "6379"))
+        # Redis Cache Configuration - Railway compatible
+        # Railway provides REDIS_URL automatically, fallback to individual components
+        self.redis_url: str = os.getenv("REDIS_URL", "")
+        self.redis_host: str = os.getenv("REDISHOST", os.getenv("REDIS_HOST", "localhost"))
+        self.redis_port: int = int(os.getenv("REDISPORT", os.getenv("REDIS_PORT", "6379")))
         self.redis_db: int = int(os.getenv("REDIS_DB", "0"))
-        self.redis_password: str = os.getenv("REDIS_PASSWORD", "")
+        self.redis_password: str = os.getenv("REDISPASSWORD", os.getenv("REDIS_PASSWORD", ""))
+        self.redis_user: str = os.getenv("REDISUSER", os.getenv("REDIS_USER", ""))
         self.cache_enabled: bool = os.getenv("CACHE_ENABLED", "true").lower() == "true"
         
-        # Qdrant Vector Database Configuration
+        # Debug: Log all Redis-related environment variables
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info("🔍 Redis Environment Variables:")
+        for key, value in os.environ.items():
+            if "REDIS" in key.upper():
+                # Mask password for security
+                display_value = "***MASKED***" if "PASSWORD" in key.upper() else value
+                logger.info(f"   {key}: {display_value}")
+        
+        # Qdrant Vector Database Configuration - Railway compatible
+        # For custom Docker container services in Railway
         self.qdrant_host: str = os.getenv("QDRANT_HOST", "localhost")
         self.qdrant_port: int = int(os.getenv("QDRANT_PORT", "6333"))
         self.qdrant_grpc_port: int = int(os.getenv("QDRANT_GRPC_PORT", "6334"))
         self.qdrant_api_key: str = os.getenv("QDRANT_API_KEY", "")
+        self.qdrant_url: str = os.getenv("QDRANT_URL", "")  # Full URL if provided
+        self.qdrant_provider: str = os.getenv("QDRANT_PROVIDER", "cloud")  # "cloud", "railway", or "local"
+        
+        # Debug: Log the exact QDRANT_URL value
+        if self.qdrant_url:
+            logger.info(f"🔍 Raw QDRANT_URL value: '{self.qdrant_url}'")
         self.vector_collection_name: str = os.getenv("VECTOR_COLLECTION_NAME", "regulatory_documents")
+        
+        # Railway service discovery - check for Railway-generated service variables
+        # Railway creates variables like: SERVICENAME_HOST, SERVICENAME_PORT, etc.
+        railway_qdrant_host = None
+        railway_qdrant_port = None
+        
+        for key, value in os.environ.items():
+            # Look for Railway service variables that might point to Qdrant
+            if key.endswith('_HOST') and value and not self.qdrant_url:
+                # Check if this might be our Qdrant service
+                service_name = key.replace('_HOST', '').lower()
+                if 'qdrant' in service_name or 'vector' in service_name:
+                    railway_qdrant_host = value
+                    # Look for corresponding port
+                    port_key = key.replace('_HOST', '_PORT')
+                    railway_qdrant_port = os.getenv(port_key, "6333")
+                    break
+        
+        # Use Railway service discovery if found and no explicit config
+        if railway_qdrant_host and not self.qdrant_url and self.qdrant_host == "localhost":
+            self.qdrant_host = railway_qdrant_host
+            self.qdrant_port = int(railway_qdrant_port)
+            logger.info(f"🚂 Using Railway service discovery: {self.qdrant_host}:{self.qdrant_port}")
+        
+        # Debug: Log all Qdrant-related environment variables
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info("🔍 Qdrant Environment Variables:")
+        qdrant_vars_found = False
+        for key, value in os.environ.items():
+            if "QDRANT" in key.upper():
+                logger.info(f"   {key}: {value}")
+                qdrant_vars_found = True
+        
+        if not qdrant_vars_found:
+            logger.warning("   ⚠️  No QDRANT environment variables found!")
+            logger.info("   🔍 Checking for Railway service variables...")
+            # Log any variables that might be Railway service URLs
+            for key, value in os.environ.items():
+                if any(pattern in key.upper() for pattern in ['URL', 'HOST', 'PORT']) and any(service in value.lower() for service in ['qdrant', 'vector', 'database'] if value):
+                    logger.info(f"   🎯 Potential service variable: {key}: {value}")
+                elif 'railway' in value.lower() and 'internal' in value.lower():
+                    logger.info(f"   🚂 Railway internal service: {key}: {value}")
         
         # Document processing
         self.chunk_size: int = int(os.getenv("CHUNK_SIZE", "1000"))
@@ -55,8 +118,14 @@ class Settings:
         self.langsmith_tracing: bool = os.getenv("LANGSMITH_TRACING", "false").lower() == "true"
         self.langsmith_endpoint: str = os.getenv("LANGSMITH_ENDPOINT", "https://api.smith.langchain.com")
         
-        # Validate required API keys
-        self._validate_api_keys()
+        # Validate required API keys (optional for cache service initialization)
+        try:
+            self._validate_api_keys()
+        except ValueError as e:
+            # Don't fail initialization if API keys are missing - just log warning
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning(f"⚠️  API key validation failed: {e}")
         
         # Initialize LangSmith if configured
         self._setup_langsmith()
@@ -93,9 +162,15 @@ class Settings:
             # Also set legacy LangChain project for compatibility
             os.environ["LANGCHAIN_PROJECT"] = self.langsmith_project
 
+# Global settings instance
+_settings_instance = None
+
 def get_settings() -> Settings:
-    """Get application settings"""
-    return Settings()
+    """Get application settings (singleton pattern)"""
+    global _settings_instance
+    if _settings_instance is None:
+        _settings_instance = Settings()
+    return _settings_instance
 
 def initialize_llm_components(settings: Settings) -> tuple[ChatOpenAI, OpenAIEmbeddings]:
     """Initialize LLM and embedding models"""

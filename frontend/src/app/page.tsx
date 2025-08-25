@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { logger } from '@/utils/logger';
+import { createApiUrl } from '@/utils/api';
 import InvestigationForm from '@/components/InvestigationForm';
 import InvestigationResults from '@/components/InvestigationResults';
 import Header from '@/components/Header';
@@ -72,7 +73,7 @@ export default function Home() {
         endpoint: '/investigate/stream'
       });
 
-      const response = await fetch(`http://localhost:8000/investigate/stream?t=${cacheBuster}`, {
+      const response = await fetch(`${createApiUrl('/investigate/stream')}?t=${cacheBuster}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -215,7 +216,7 @@ export default function Home() {
         error: error instanceof Error ? error.message : String(error)
       }, error instanceof Error ? error : undefined);
       
-      let errorMessage = '🌐 Connection Error\n\nCannot connect to the API server. Please ensure the backend is running on localhost:8000.';
+      let errorMessage = '🌐 Connection Error\n\nCannot connect to the API server. Please ensure the backend is running and accessible.';
       
       if (error instanceof Error && error.message && !error.message.includes('fetch')) {
         errorMessage = `❌ ${error.message}`;

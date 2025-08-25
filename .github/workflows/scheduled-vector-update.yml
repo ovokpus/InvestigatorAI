@@ -1,0 +1,57 @@
+name: Scheduled Vector Database Refresh
+
+on:
+  schedule:
+    # Run every Sunday at 2 AM UTC to refresh the vector database
+    - cron: '0 2 * * 0'
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  scheduled-refresh:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install uv
+      run: |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+        
+    - name: Install dependencies
+      run: |
+        if [ -f "pyproject.toml" ]; then
+          uv pip install --system .
+        else
+          uv pip install --system langchain langchain-openai langchain-community qdrant-client python-dotenv PyPDF2 langchain-text-splitters
+        fi
+        
+    - name: Create .env file
+      run: |
+        echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> .env
+        echo "QDRANT_URL=${{ secrets.QDRANT_URL }}" >> .env
+        echo "QDRANT_API_KEY=${{ secrets.QDRANT_API_KEY }}" >> .env
+        echo "QDRANT_PROVIDER=cloud" >> .env
+        echo "VECTOR_COLLECTION_NAME=regulatory_documents" >> .env
+        echo "EMBEDDING_MODEL=text-embedding-3-large" >> .env
+        echo "PDF_DATA_PATH=data/pdf_downloads" >> .env
+        echo "CHUNK_SIZE=1000" >> .env
+        echo "CHUNK_OVERLAP=200" >> .env
+        
+    - name: Weekly vector database refresh
+      run: |
+        echo "🗓️  Running scheduled vector database refresh..."
+        echo "📅 This ensures optimal search performance and consistency"
+        cd rag
+        python init_vector_database.py
+        
+    - name: Completion notification
+      run: |
+        echo "✅ Scheduled vector database refresh completed!"
+        echo "🎯 Vector database is now optimized for the week ahead"

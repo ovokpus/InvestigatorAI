@@ -1,0 +1,12 @@
+# Railway configuration for InvestigatorAI API service
+# Simplified config for existing Railway project
+
+[build]
+builder = "dockerfile"
+dockerfilePath = "api/Dockerfile"
+
+[deploy]
+healthcheckPath = "/health"
+healthcheckTimeout = 300
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3

@@ -32,7 +32,6 @@ from api.endpoints.investigation import investigation_router
 from api.endpoints.tools import tools_router
 from api.endpoints.cache import cache_router
 from api.middleware.logging_middleware import LoggingMiddleware, StreamingLoggingMiddleware
-
 # Configure comprehensive logging
 from api.utils.logging_config import setup_logging, get_logger
 
@@ -49,6 +48,7 @@ setup_logging(
 )
 
 logger = get_logger(__name__)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
@@ -137,11 +137,15 @@ app.add_middleware(
         "http://localhost:3000",
         "http://localhost:3001",
         "https://investigator-ai.app",
-        "https://*.investigator-ai.app"
+        "https://*.investigator-ai.app",
+        "https://investigator-ai-ochre.vercel.app",
+        "https://investigator-ai-ovo-okpubulukus-projects.vercel.app",
+        "https://investigator-ai-ovokpus-ovo-okpubulukus-projects.vercel.app",
+        "https://*.vercel.app"
     ],
     allow_credentials=True,
-    allow_methods=["GET", "POST", "DELETE", "PUT", "OPTIONS"],
-    allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Add logging middleware
@@ -155,7 +159,7 @@ app.include_router(cache_router)
 app.include_router(research_router)
 
 # Health check endpoint
-@app.get("/health")
+@app.api_route("/health", methods=["GET", "HEAD"])
 @traceable(name="health_check_api", tags=["api", "health"])
 async def health_check(
     settings: Any = Depends(get_app_settings)
