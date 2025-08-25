@@ -1,6 +1,9 @@
 # InvestigatorAI Frontend
 
-> **📂 Navigation**: [🏠 Home](../README.md) | [🔧 API Docs](../api/README.md) | [🤖 Agent Architecture](../docs/AGENT_PROMPTS.md) | [📈 Advanced Retrievers](../docs/ADVANCED_RETRIEVERS.md) | [💼 Business Case](../docs/BUSINESS_CASE.md) | [🎓 Certification](../docs/CERTIFICATION_CHALLENGE.md) | [🎬 Demo Guide](../docs/DEMO_GUIDE.md) | [💻 Frontend](README.md) | [📊 Data](../data/README.md) | [🚀 Deploy](../deploy/README.md) | [🧪 Tests](../tests/README.md) | [🔄 Merge](../MERGE.md)
+> **📂 Navigation**: [🏠 Home](../README.md) | [🔧 API Docs](../api/README.md) | [📊 Data](../data/README.md) | [🚀 Deploy](../deploy/README.md) | [🧪 Notebooks](../notebooks/README.md) | [⚙️ GitHub Actions](../.github/VECTOR_DATABASE_SETUP.md) | [🎬 Vercel Deploy](VERCEL_DEPLOYMENT.md)
+
+## 🌐 **Live Application**
+**🚀 Access InvestigatorAI**: https://investigator-ai-ochre.vercel.app
 
 A modern Next.js frontend for the **modular** InvestigatorAI Multi-Agent Fraud Investigation System with **code-style UI** and **rich text rendering**.
 

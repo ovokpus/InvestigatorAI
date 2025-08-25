@@ -1,5 +1,7 @@
 # 🔧 InvestigatorAI API Documentation
 
+> **📂 Navigation**: [🏠 Home](../README.md) | [💻 Frontend](../frontend/README.md) | [📊 Data](../data/README.md) | [🚀 Deploy](../deploy/README.md) | [🧪 Notebooks](../notebooks/README.md) | [⚙️ GitHub Actions](../.github/VECTOR_DATABASE_SETUP.md) | [🧪 Tests](tests/README.md)
+
 [![API Status](https://img.shields.io/badge/API-Production%20Ready-green.svg)](http://localhost:8000/docs)
 [![Python](https://img.shields.io/badge/Python-3.13+-blue.svg)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-Latest-009688.svg)](https://fastapi.tiangolo.com)
@@ -37,28 +39,103 @@ InvestigatorAI uses a sophisticated **modular multi-agent architecture** powered
 | **ReportGenerator** | `agents/report_generator.py` | 308 | Report synthesis with detailed reasoning |
 | **WorkflowBuilder** | `agents/workflow_builder.py` | 90 | LangGraph workflow construction |
 
-### Legacy Core Components
+### **Current Modular Architecture**
 
 ```mermaid
 graph TB
-    A[FastAPI Gateway] --> B[Multi-Agent System]
-    B --> C[Regulatory Research Agent]
-    B --> D[Evidence Collection Agent]
-    B --> E[Compliance Check Agent]
-    B --> F[Report Generation Agent]
+    subgraph "FASTAPI GATEWAY LAYER"
+        API["🚀 FastAPI Application<br/>• Investigation Endpoints<br/>• Streaming Support<br/>• Health Monitoring"]
+    end
     
-    G[Vector Store Service] --> H[Qdrant Database]
-    I[Cache Service] --> J[Redis Cache]
-    K[External APIs] --> L[Tavily Search]
-    K --> M[ArXiv Research]
+    subgraph "LANGGRAPH ORCHESTRATION"
+        FIS["🏗️ FraudInvestigationSystem<br/>Main Coordinator (629 lines)"]
+        WB["🔄 WorkflowBuilder<br/>LangGraph Construction (90 lines)"]
+        SH["🌊 StreamingHandler<br/>Real-time Logic (583 lines)"]
+    end
     
-    B --> G
-    B --> I
-    B --> K
+    subgraph "AGENT MANAGEMENT"
+        AF["🏭 AgentFactory<br/>Agent Creation (394 lines)"]
+        MP["📨 MessageProcessor<br/>Message Handling (386 lines)"]
+        RG["📊 ReportGenerator<br/>Report Synthesis (308 lines)"]
+    end
     
-    N[Document Processor] --> O[PDF Analysis]
-    N --> P[Content Filtering]
-    N --> H
+    subgraph "SPECIALIZED AGENTS"
+        RRA["📚 Regulatory Research<br/>AML/BSA Compliance"]
+        ECA["🔍 Evidence Collection<br/>Risk Assessment"]
+        CCA["⚖️ Compliance Check<br/>Filing Requirements"]
+        RGA["📝 Report Generation<br/>Executive Summary"]
+    end
+    
+    subgraph "DATA & INTELLIGENCE LAYER"
+        VS["🗄️ Vector Store Service<br/>Qdrant Cloud Integration"]
+        CS["⚡ Cache Service<br/>Redis Performance Layer"]
+        EXT["🌐 External APIs<br/>Tavily, ArXiv, Exchange Rates"]
+    end
+    
+    subgraph "QDRANT CLOUD INFRASTRUCTURE"
+        QC["☁️ Qdrant Cloud<br/>• 3,312 Regulatory Documents<br/>• Direct SDK Integration<br/>• BM25 + Dense Vector Search<br/>• Automated GitHub Actions Updates"]
+    end
+    
+    subgraph "SUPPORTING SERVICES"
+        DP["📄 Document Processor<br/>PDF Analysis & Filtering"]
+        GA["⚙️ GitHub Actions<br/>Automated Vector DB Updates"]
+        REDIS["🔴 Redis Cache<br/>Performance Optimization"]
+    end
+    
+    %% Main flow connections
+    API --> FIS
+    FIS --> WB
+    FIS --> SH
+    FIS --> AF
+    FIS --> MP
+    FIS --> RG
+    
+    %% Agent creation and management
+    AF --> RRA
+    AF --> ECA
+    AF --> CCA
+    AF --> RGA
+    
+    %% Workflow orchestration
+    WB --> RRA
+    WB --> ECA
+    WB --> CCA
+    WB --> RGA
+    
+    %% Data layer connections
+    RRA --> VS
+    ECA --> VS
+    CCA --> VS
+    RGA --> VS
+    
+    VS --> QC
+    CS --> REDIS
+    
+    %% External integrations
+    RRA --> EXT
+    ECA --> EXT
+    CCA --> EXT
+    
+    %% Supporting services
+    DP --> QC
+    GA --> QC
+    
+    %% Styling
+    classDef gateway fill:#1e40af,stroke:#1e3a8a,stroke-width:3px,color:#ffffff,font-weight:bold
+    classDef orchestration fill:#059669,stroke:#047857,stroke-width:3px,color:#ffffff,font-weight:bold
+    classDef management fill:#7c3aed,stroke:#6d28d9,stroke-width:3px,color:#ffffff,font-weight:bold
+    classDef agents fill:#ea580c,stroke:#c2410c,stroke-width:2px,color:#ffffff,font-weight:bold
+    classDef dataLayer fill:#10b981,stroke:#047857,stroke-width:2px,color:#ffffff,font-weight:bold
+    classDef cloud fill:#f59e0b,stroke:#d97706,stroke-width:4px,color:#ffffff,font-weight:bold
+    classDef supporting fill:#6366f1,stroke:#4f46e5,stroke-width:2px,color:#ffffff,font-weight:bold
+    
+    class API gateway
+    class FIS,WB,SH orchestration
+    class AF,MP,RG management
+    class RRA,ECA,CCA,RGA agents
+    class VS,CS,EXT dataLayer
+    class QC cloud
+    class DP,GA,REDIS supporting
 ```
 
 ### Technology Stack
@@ -68,10 +145,11 @@ graph TB
 | **API Framework** | FastAPI + Uvicorn | High-performance async API |
 | **Agent Orchestration** | LangGraph + LangChain | Multi-agent workflow management |
 | **LLM Provider** | OpenAI GPT-4o | Advanced reasoning and analysis |
-| **Vector Database** | Qdrant | Regulatory document search |
+| **Vector Database** | Qdrant Cloud | 3,312 regulatory documents with direct SDK integration |
 | **Cache Layer** | Redis | Performance optimization |
 | **Document Processing** | PyMuPDF + Custom Filters | PDF analysis and content extraction |
 | **External Intelligence** | Tavily + ArXiv APIs | Real-time research capabilities |
+| **Automation** | GitHub Actions | Automated vector database updates |
 
 ---
 
@@ -219,11 +297,13 @@ EMBEDDING_MODEL=text-embedding-3-large
 # 1. Install dependencies
 uv sync
 
-# 2. Start services
-docker-compose up -d qdrant redis
+# 2. Start services (Redis only - Qdrant Cloud is remote)
+docker-compose up -d redis
 
-# 3. Initialize vector database (one-time)
-docker-compose up init-docs
+# 3. Configure environment for Qdrant Cloud
+export QDRANT_URL="your_qdrant_cloud_url"
+export QDRANT_PROVIDER="cloud"
+export OPENAI_API_KEY="your_openai_key"
 
 # 4. Start API server
 cd api && uvicorn main:app --reload --host 0.0.0.0 --port 8000
@@ -404,10 +484,11 @@ class VectorStoreManager:
 ```
 
 **Features:**
-- **3072-dimensional embeddings** (text-embedding-3-large)
-- **Hybrid search** (BM25 sparse + dense vector)
-- **2985 filtered document chunks** with procedural text removal
-- **Sub-second search** performance
+- **3,312 regulatory documents** indexed in Qdrant Cloud
+- **Direct SDK integration** with proper payload mapping
+- **Hybrid search** (BM25 primary + dense vector fallback)
+- **Real-time content extraction** from regulatory PDFs
+- **Provider-agnostic configuration** (cloud/railway/local support)
 
 ### Cache Service (`cache_service.py`)
 
