@@ -214,3 +214,4 @@ docs/deliverables.md
 api_config_template.env
 
 **/DS_Store
+.vercel

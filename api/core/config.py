@@ -49,6 +49,7 @@ class Settings:
         self.qdrant_grpc_port: int = int(os.getenv("QDRANT_GRPC_PORT", "6334"))
         self.qdrant_api_key: str = os.getenv("QDRANT_API_KEY", "")
         self.qdrant_url: str = os.getenv("QDRANT_URL", "")  # Full URL if provided
+        self.qdrant_provider: str = os.getenv("QDRANT_PROVIDER", "cloud")  # "cloud", "railway", or "local"
         
         # Debug: Log the exact QDRANT_URL value
         if self.qdrant_url:

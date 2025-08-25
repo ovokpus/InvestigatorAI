@@ -26,8 +26,9 @@ RUN uv pip install --system --no-cache .
 
 # Copy API source code
 COPY api/ ./api/
-# COPY data/ ./data/
-# COPY scripts/init_vector_database.py ./scripts/
+
+# Copy data configs (exchange rates, etc.)
+COPY data/configs/ ./data/configs/
 
 # Create non-root user
 RUN adduser --disabled-password --gecos '' appuser && \
