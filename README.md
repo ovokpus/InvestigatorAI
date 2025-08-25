@@ -2,6 +2,9 @@
 
 > **📂 Navigation**: [🏠 Home](README.md) | [🔧 API Docs](api/README.md) | [🤖 Agent Architecture](docs/application/AGENT_PROMPTS.md) | [📈 Advanced Retrievers](docs/application/ADVANCED_RETRIEVERS.md) | [💼 Business Case](docs/BUSINESS_CASE.md) | [🎓 Certification](docs/CERTIFICATION_CHALLENGE.md) | [🎬 Demo Guide](docs/DEMO_GUIDE.md) | [💻 Frontend](frontend/README.md) | [📊 Data](data/README.md) | [🚀 Deploy](deploy/README.md) | [🧪 Notebooks](notebooks/README.md) | [⚙️ GitHub Actions](.github/VECTOR_DATABASE_SETUP.md) | [🔄 Merge](MERGE.md)
 
+## 🌐 **Live Application**
+**🚀 Try InvestigatorAI**: https://investigator-ai-ochre.vercel.app
+
 A **modular multi-agent fraud investigation assistant** that combines real-time fraud detection (GuardianAI) with investigation workflow orchestration (FraudSight patterns) to reduce investigation time from 6 hours to 90 minutes. **Recently enhanced** with complete system modularization, unlimited-length detailed reasoning, and production-ready code-style UI.
 
 ## AIE7 Fraud Investigation Assistant

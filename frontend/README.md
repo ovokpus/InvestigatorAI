@@ -2,6 +2,9 @@
 
 > **📂 Navigation**: [🏠 Home](../README.md) | [🔧 API Docs](../api/README.md) | [📊 Data](../data/README.md) | [🚀 Deploy](../deploy/README.md) | [🧪 Notebooks](../notebooks/README.md) | [⚙️ GitHub Actions](../.github/VECTOR_DATABASE_SETUP.md) | [🎬 Vercel Deploy](VERCEL_DEPLOYMENT.md)
 
+## 🌐 **Live Application**
+**🚀 Access InvestigatorAI**: https://investigator-ai-ochre.vercel.app
+
 A modern Next.js frontend for the **modular** InvestigatorAI Multi-Agent Fraud Investigation System with **code-style UI** and **rich text rendering**.
 
 ## 📋 Table of Contents
