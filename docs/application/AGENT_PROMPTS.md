@@ -1,6 +1,6 @@
 # 🤖 **InvestigatorAI: Advanced Agent Prompts & Prompting Methodology**
 
-> **📂 Navigation**: [🏠 Home](../README.md) | [🔧 API Docs](../api/README.md) | [🤖 Agent Architecture](AGENT_PROMPTS.md) | [📈 Advanced Retrievers](ADVANCED_RETRIEVERS.md) | [💼 Business Case](BUSINESS_CASE.md) | [🎓 Certification](CERTIFICATION_CHALLENGE.md) | [🎬 Demo Guide](DEMO_GUIDE.md) | [💻 Frontend](../frontend/README.md) | [📊 Data](../data/README.md) | [🚀 Deploy](../deploy/README.md) | [🧪 Tests](../tests/README.md) | [🔄 Merge](../MERGE.md)
+> **📂 Navigation**: [🏠 Home](../../README.md) | [🔧 API Docs](../../api/README.md) | [📈 Advanced Retrievers](ADVANCED_RETRIEVERS.md) | [💼 Business Case](../BUSINESS_CASE.md) | [🎓 Certification](../CERTIFICATION_CHALLENGE.md) | [🎬 Demo Guide](../DEMO_GUIDE.md) | [💻 Frontend](../../frontend/README.md) | [📊 Data](../../data/README.md) | [🚀 Deploy](../../deploy/README.md) | [🧪 Notebooks](../../notebooks/README.md)
 
 A comprehensive guide to the sophisticated multi-agent system designed for professional fraud investigation, including detailed rationale for prompting techniques and implementation strategies.
 
@@ -61,6 +61,82 @@ The InvestigatorAI system employs **role-based prompting** as its core methodolo
 ---
 
 ## 🎯 **Agent Architecture Overview**
+
+### **LangGraph State-Based Agent Coordination**
+
+```mermaid
+stateDiagram-v2
+    [*] --> InitialState: Investigation Request
+    
+    state InitialState {
+        [*] --> TransactionData
+        TransactionData --> AgentQueue
+        AgentQueue --> CompletedAgents
+        CompletedAgents --> [*]
+    }
+    
+    InitialState --> RegulatoryResearch: Supervisor Routes
+    
+    state RegulatoryResearch {
+        [*] --> SearchRegDocs: search_regulatory_documents
+        SearchRegDocs --> SearchFraudResearch: search_fraud_research  
+        SearchFraudResearch --> WebIntelligence: search_web_intelligence
+        WebIntelligence --> RegulatoryAnalysis: Compile Analysis
+        RegulatoryAnalysis --> [*]: Update State
+    }
+    
+    RegulatoryResearch --> StateUpdate1: Agent Complete
+    StateUpdate1 --> EvidenceCollection: Supervisor Routes
+    
+    state EvidenceCollection {
+        [*] --> CalcRisk: calculate_transaction_risk
+        CalcRisk --> GetExchange: get_exchange_rate_data
+        GetExchange --> WebIntel2: search_web_intelligence
+        WebIntel2 --> EvidenceAnalysis: Compile Evidence
+        EvidenceAnalysis --> [*]: Update State
+    }
+    
+    EvidenceCollection --> StateUpdate2: Agent Complete
+    StateUpdate2 --> ComplianceCheck: Supervisor Routes
+    
+    state ComplianceCheck {
+        [*] --> CheckCompliance: check_compliance_requirements
+        CheckCompliance --> SearchRegDocs2: search_regulatory_documents
+        SearchRegDocs2 --> ComplianceAnalysis: Compile Assessment
+        ComplianceAnalysis --> [*]: Update State
+    }
+    
+    ComplianceCheck --> StateUpdate3: Agent Complete
+    StateUpdate3 --> ReportGeneration: Supervisor Routes
+    
+    state ReportGeneration {
+        [*] --> RetrieveAllResults: Access Complete State
+        RetrieveAllResults --> SearchStandards: search_regulatory_documents
+        SearchStandards --> FinalCompliance: check_compliance_requirements
+        FinalCompliance --> SynthesizeReport: Generate Executive Summary
+        SynthesizeReport --> [*]: Final State Update
+    }
+    
+    ReportGeneration --> FinalState: Investigation Complete
+    FinalState --> [*]: Return Results
+    
+    note right of InitialState
+        FraudInvestigationState contains:
+        • Transaction details
+        • Agent completion status
+        • Individual agent results
+        • Message history
+        • Investigation metadata
+    end note
+    
+    note right of StateUpdate1
+        State accumulates results:
+        • Regulatory findings
+        • Risk indicators
+        • Compliance requirements
+        • Evidence chain
+    end note
+```
 
 ### **Multi-Agent System Design Rationale**
 

@@ -1,6 +1,6 @@
 # InvestigatorAI
 
-> **📂 Navigation**: [🏠 Home](README.md) | [🔧 API Docs](api/README.md) | [🤖 Agent Architecture](docs/AGENT_PROMPTS.md) | [📈 Advanced Retrievers](docs/ADVANCED_RETRIEVERS.md) | [💼 Business Case](docs/BUSINESS_CASE.md) | [🎓 Certification](docs/CERTIFICATION_CHALLENGE.md) | [🎬 Demo Guide](docs/DEMO_GUIDE.md) | [💻 Frontend](frontend/README.md) | [📊 Data](data/README.md) | [🚀 Deploy](deploy/README.md) | [🧪 Tests](tests/README.md) | [🔄 Merge](MERGE.md)
+> **📂 Navigation**: [🏠 Home](README.md) | [🔧 API Docs](api/README.md) | [🤖 Agent Architecture](docs/application/AGENT_PROMPTS.md) | [📈 Advanced Retrievers](docs/application/ADVANCED_RETRIEVERS.md) | [💼 Business Case](docs/BUSINESS_CASE.md) | [🎓 Certification](docs/CERTIFICATION_CHALLENGE.md) | [🎬 Demo Guide](docs/DEMO_GUIDE.md) | [💻 Frontend](frontend/README.md) | [📊 Data](data/README.md) | [🚀 Deploy](deploy/README.md) | [🧪 Notebooks](notebooks/README.md) | [⚙️ GitHub Actions](.github/VECTOR_DATABASE_SETUP.md) | [🔄 Merge](MERGE.md)
 
 A **modular multi-agent fraud investigation assistant** that combines real-time fraud detection (GuardianAI) with investigation workflow orchestration (FraudSight patterns) to reduce investigation time from 6 hours to 90 minutes. **Recently enhanced** with complete system modularization, unlimited-length detailed reasoning, and production-ready code-style UI.
 
@@ -242,129 +242,128 @@ class FraudInvestigationSystem:
 - **Investigation API**: Multi-agent coordination
 - **Compliance Service**: Regulatory rule engine
 
-### **AI/ML Layer**: LangGraph + OpenAI
+### **AI/ML Layer**: LangGraph + OpenAI + Qdrant Cloud
 
-- **Multi-agent Orchestration**: Investigation workflow coordination
-- **RAG System**: QDrant vector database for case history
-- **Advanced Retrieval**: Hybrid search (semantic + metadata)
-- **PEFT Fine-tuning**: Domain-specific investigation reasoning
+- **Multi-agent Orchestration**: Investigation workflow coordination via LangGraph
+- **RAG System**: Qdrant Cloud vector database with 3,312 regulatory documents
+- **Advanced Retrieval**: Direct SDK integration with hybrid search (BM25 + dense vector)
+- **Document Processing**: Real-time content extraction from regulatory PDFs
+- **Provider Detection**: Explicit QDRANT_PROVIDER configuration (cloud/railway/local)
 
 ### **Data Pipeline**
 
-- **Streaming**: Kafka + Flink (FraudSight concept)
-- **Storage**: PostgreSQL (transactions) + QDrant (embeddings)
-- **APIs**: Open Banking APIs for transaction data
-- **Monitoring**: LangSmith for agent performance
+- **Vector Database**: Qdrant Cloud with automated GitHub Actions updates
+- **Document Processing**: PDF extraction with 1000-token chunks, 200-token overlap
+- **Storage**: PostgreSQL (transactions) + Qdrant Cloud (3,312 regulatory documents)
+- **APIs**: Exchange rates, web intelligence, ArXiv research integration
+- **Monitoring**: LangSmith for agent performance tracking
+- **Automation**: GitHub Actions for vector database synchronization
 
 ---
 
 ## **🤖 Multi-Agent System Design**
 
-### **Agent Hierarchy & Tool Architecture**
+### **LangGraph Multi-Agent Workflow Architecture**
 
 ```mermaid
 graph TB
-    subgraph "MODULAR FRAUD INVESTIGATION SYSTEM"
-        FIS["🏗️ FraudInvestigationSystem<br/>Main Coordinator (629 lines)<br/>100% Backward Compatible"]
+    subgraph "LANGGRAPH STATE MANAGEMENT"
+        STATE["🗂️ FraudInvestigationState<br/>• Transaction Details<br/>• Agent Results<br/>• Investigation Progress<br/>• Message History"]
     end
     
-    subgraph "SPECIALIZED MODULAR COMPONENTS"
-        AF["🏭 AgentFactory<br/>Agent Creation & Configuration<br/>(394 lines)"]
-        WB["🔄 WorkflowBuilder<br/>LangGraph Construction<br/>(90 lines)"]
-        MP["📨 MessageProcessor<br/>Message Handling & Validation<br/>(386 lines)"]
-        RG["📊 ReportGenerator<br/>Report Synthesis & Decisions<br/>(308 lines)"]
-        SH["🌊 StreamingHandler<br/>Real-time Investigation Logic<br/>(583 lines)"]
+    subgraph "SUPERVISOR COORDINATION"
+        SUPERVISOR["🎯 Supervisor Agent<br/>• Route to Next Agent<br/>• Check Completion Status<br/>• Manage Workflow State<br/>• Handle Errors & Retries"]
     end
     
     subgraph "SPECIALIZED INVESTIGATION AGENTS"
-        RRA["📚 Regulatory Research Agent<br/>Senior Regulatory Research Specialist<br/>AML/BSA Compliance & Sanctions<br/>UNLIMITED LENGTH ANALYSIS"]
-        ECA["🔍 Evidence Collection Agent<br/>Senior Financial Crimes Analyst<br/>Quantitative Risk Assessment<br/>UNLIMITED LENGTH ANALYSIS"]
-        CCA["⚖️ Compliance Check Agent<br/>Senior Compliance Officer<br/>BSA Filing Requirements<br/>UNLIMITED LENGTH ANALYSIS"]
+        RRA["📚 Regulatory Research Agent<br/>🔧 Tools: search_regulatory_documents,<br/>search_fraud_research, search_web_intelligence<br/>📊 Output: Regulatory compliance analysis"]
+        
+        ECA["🔍 Evidence Collection Agent<br/>🔧 Tools: calculate_transaction_risk,<br/>get_exchange_rate_data, search_web_intelligence<br/>📊 Output: Risk assessment & evidence"]
+        
+        CCA["⚖️ Compliance Check Agent<br/>🔧 Tools: check_compliance_requirements,<br/>search_regulatory_documents<br/>📊 Output: Filing obligations & deadlines"]
+        
+        RGA["📊 Report Generation Agent<br/>🔧 Tools: search_regulatory_documents,<br/>check_compliance_requirements<br/>📊 Output: Executive summary & decisions"]
     end
     
-    subgraph "ENHANCED SYNTHESIS & REPORTING"
-        RGA["📊 Report Generation Agent<br/>Senior Investigation Report Specialist<br/>DETAILED REASONING MANDATE<br/>Step-by-Step Decision Justification<br/>Alternative Scenarios & Confidence Levels"]
+    subgraph "QDRANT CLOUD INTEGRATION"
+        QDRANT["☁️ Qdrant Cloud Vector Database<br/>• 3,312 Regulatory Documents<br/>• Direct SDK Integration<br/>• BM25 + Dense Vector Search<br/>• Real-time Content Extraction"]
     end
     
-    subgraph "REGULATORY TOOLS" 
-        SRD["🔍 search_regulatory_documents<br/>Vector Search - Regulatory Database"]
-        SFR["📋 search_fraud_research<br/>ArXiv Academic Research Search"]
-        SWI1["🌐 search_web_intelligence<br/>Tavily Current Intelligence"]
+    subgraph "EXTERNAL APIS"
+        TAVILY["🌐 Tavily Web Intelligence"]
+        ARXIV["📚 ArXiv Research Papers"]
+        EXCHANGE["💱 Exchange Rate APIs"]
     end
     
-    subgraph "EVIDENCE ANALYSIS TOOLS"
-        CTR["📊 calculate_transaction_risk<br/>Multi-Factor Risk Scoring"]
-        GER["💱 get_exchange_rate_data<br/>Currency Rate Verification"]
-        SWI2["🌐 search_web_intelligence<br/>Entity Intelligence Gathering"]
+    subgraph "LANGGRAPH WORKFLOW EXECUTION"
+        START([🚀 START])
+        END([✅ END])
+        
+        ENTRY["📥 Entry Point<br/>Initialize Investigation"]
+        ROUTE{"🔀 Route Decision<br/>Next Agent?"}
+        COMPLETE{"✅ All Agents<br/>Complete?"}
     end
     
-    subgraph "COMPLIANCE TOOLS"
-        CCR["⚖️ check_compliance_requirements<br/>SAR/CTR/FBAR Determination"]
-        SRD2["🔍 search_regulatory_documents<br/>Compliance Verification"]
-    end
+    %% Main workflow connections
+    START --> ENTRY
+    ENTRY --> STATE
+    STATE --> SUPERVISOR
     
-    subgraph "REPORTING TOOLS"
-        SRD3["🔍 search_regulatory_documents<br/>Standards Verification"]
-        CCR2["⚖️ check_compliance_requirements<br/>Mandatory Disclosure Check"]
-    end
+    %% Agent routing from supervisor
+    SUPERVISOR --> ROUTE
+    ROUTE -->|"First"| RRA
+    ROUTE -->|"Second"| ECA  
+    ROUTE -->|"Third"| CCA
+    ROUTE -->|"Final"| RGA
     
-    %% Modular system connections
-    FIS --> AF
-    FIS --> WB
-    FIS --> MP
-    FIS --> RG
-    FIS --> SH
+    %% Agent execution and return to supervisor
+    RRA --> SUPERVISOR
+    ECA --> SUPERVISOR
+    CCA --> SUPERVISOR
+    RGA --> SUPERVISOR
     
-    AF --> RRA
-    AF --> ECA
-    AF --> CCA
-    AF --> RGA
+    %% Completion check
+    SUPERVISOR --> COMPLETE
+    COMPLETE -->|"More agents"| ROUTE
+    COMPLETE -->|"Investigation done"| END
     
-    WB --> RRA
-    WB --> ECA
-    WB --> CCA
-    WB --> RGA
+    %% Tool integrations
+    RRA -.->|"Search regulatory docs"| QDRANT
+    RRA -.->|"Web intelligence"| TAVILY
+    RRA -.->|"Research papers"| ARXIV
     
-    %% Enhanced workflow - Report Generation AFTER specialists
-    RRA --> RGA
-    ECA --> RGA
-    CCA --> RGA
+    ECA -.->|"Risk calculation"| EXCHANGE
+    ECA -.->|"Entity intelligence"| TAVILY
+    ECA -.->|"Document search"| QDRANT
     
-    %% Tool assignments
-    RRA -.-> SRD
-    RRA -.-> SFR
-    RRA -.-> SWI1
+    CCA -.->|"Compliance requirements"| QDRANT
+    CCA -.->|"Regulatory verification"| QDRANT
     
-    ECA -.-> CTR
-    ECA -.-> GER
-    ECA -.-> SWI2
+    RGA -.->|"Report standards"| QDRANT
+    RGA -.->|"Final compliance check"| QDRANT
     
-    CCA -.-> CCR
-    CCA -.-> SRD2
-    
-    RGA -.-> SRD3
-    RGA -.-> CCR2
+    %% State updates
+    RRA -.->|"Update state"| STATE
+    ECA -.->|"Update state"| STATE
+    CCA -.->|"Update state"| STATE
+    RGA -.->|"Update state"| STATE
     
     %% Styling
-    classDef mainSystem fill:#1e40af,stroke:#1e3a8a,stroke-width:4px,color:#ffffff,font-weight:bold
-    classDef modularComponents fill:#059669,stroke:#047857,stroke-width:3px,color:#ffffff,font-weight:bold
+    classDef stateManagement fill:#1e40af,stroke:#1e3a8a,stroke-width:4px,color:#ffffff,font-weight:bold
+    classDef supervisor fill:#059669,stroke:#047857,stroke-width:3px,color:#ffffff,font-weight:bold
     classDef agents fill:#7c3aed,stroke:#6d28d9,stroke-width:3px,color:#ffffff,font-weight:bold
-    classDef enhancedReporting fill:#ea580c,stroke:#c2410c,stroke-width:4px,color:#ffffff,font-weight:bold
+    classDef vectorDB fill:#ea580c,stroke:#c2410c,stroke-width:3px,color:#ffffff,font-weight:bold
+    classDef externalAPIs fill:#10b981,stroke:#047857,stroke-width:2px,color:#ffffff,font-weight:bold
+    classDef workflow fill:#f59e0b,stroke:#d97706,stroke-width:2px,color:#ffffff,font-weight:bold
+    classDef decision fill:#ef4444,stroke:#dc2626,stroke-width:3px,color:#ffffff,font-weight:bold
     
-    classDef regTools fill:#10b981,stroke:#047857,stroke-width:2px,color:#ffffff
-    classDef evidenceTools fill:#8b5cf6,stroke:#7c3aed,stroke-width:2px,color:#ffffff
-    classDef complianceTools fill:#f59e0b,stroke:#d97706,stroke-width:2px,color:#ffffff
-    classDef reportTools fill:#ef4444,stroke:#dc2626,stroke-width:2px,color:#ffffff
-    
-    class FIS mainSystem
-    class AF,WB,MP,RG,SH modularComponents
-    class RRA,ECA,CCA agents
-    class RGA enhancedReporting
-    
-    class SRD,SFR,SWI1 regTools
-    class CTR,GER,SWI2 evidenceTools
-    class CCR,SRD2 complianceTools
-    class SRD3,CCR2 reportTools
+    class STATE stateManagement
+    class SUPERVISOR supervisor
+    class RRA,ECA,CCA,RGA agents
+    class QDRANT vectorDB
+    class TAVILY,ARXIV,EXCHANGE externalAPIs
+    class START,END,ENTRY workflow
+    class ROUTE,COMPLETE decision
 ```
 
 ### **Tool-Agent Mapping Summary:**
@@ -462,7 +461,70 @@ report_generation_agent = self._create_agent(
 )
 ```
 
-### **LangGraph Workflow Coordination**
+### **LangGraph Execution Flow Diagram**
+
+```mermaid
+sequenceDiagram
+    participant Client as 🖥️ Client Request
+    participant API as 🚀 FastAPI Endpoint
+    participant Graph as 🔄 LangGraph Workflow
+    participant State as 🗂️ Investigation State
+    participant Supervisor as 🎯 Supervisor Agent
+    participant RRA as 📚 Regulatory Research
+    participant ECA as 🔍 Evidence Collection
+    participant CCA as ⚖️ Compliance Check
+    participant RGA as 📊 Report Generation
+    participant Tools as 🔧 Agent Tools
+    participant Qdrant as ☁️ Qdrant Cloud
+    
+    Client->>API: POST /investigate/stream
+    API->>Graph: Initialize workflow
+    Graph->>State: Create FraudInvestigationState
+    State->>Supervisor: Route to first agent
+    
+    Note over Supervisor: Determine next agent based on<br/>completion status and workflow rules
+    
+    Supervisor->>RRA: Execute regulatory research
+    RRA->>Tools: search_regulatory_documents
+    Tools->>Qdrant: Query 3,312 documents
+    Qdrant-->>Tools: Return relevant regulations
+    Tools-->>RRA: Regulatory analysis results
+    RRA->>State: Update with regulatory findings
+    RRA->>Supervisor: Agent complete
+    
+    Supervisor->>ECA: Execute evidence collection
+    ECA->>Tools: calculate_transaction_risk
+    ECA->>Tools: get_exchange_rate_data
+    ECA->>Tools: search_web_intelligence
+    Tools-->>ECA: Risk scores & evidence
+    ECA->>State: Update with evidence analysis
+    ECA->>Supervisor: Agent complete
+    
+    Supervisor->>CCA: Execute compliance check
+    CCA->>Tools: check_compliance_requirements
+    CCA->>Tools: search_regulatory_documents
+    Tools->>Qdrant: Query compliance rules
+    Qdrant-->>Tools: Filing requirements
+    Tools-->>CCA: Compliance obligations
+    CCA->>State: Update with compliance status
+    CCA->>Supervisor: Agent complete
+    
+    Supervisor->>RGA: Execute report generation
+    RGA->>State: Retrieve all agent results
+    RGA->>Tools: search_regulatory_documents
+    RGA->>Tools: check_compliance_requirements
+    Tools-->>RGA: Report standards & final checks
+    RGA->>State: Update with final report
+    RGA->>Supervisor: Investigation complete
+    
+    Supervisor->>Graph: All agents finished
+    Graph->>API: Return investigation results
+    API->>Client: Stream final report
+    
+    Note over Client,Qdrant: Total execution time: ~90 minutes<br/>vs 6 hours manual investigation
+```
+
+### **LangGraph Workflow Implementation**
 
 ```python
 def _build_workflow(self) -> StateGraph:
