@@ -50,7 +50,7 @@ flowchart TD
     end
     
     subgraph "MULTI-AGENT INVESTIGATION WORKFLOW"
-        COORD["🎯 Investigation Coordinator<br/>LangGraph Orchestration"]
+        COORD["🎯 FraudInvestigationSystem<br/>LangGraph Orchestration & Supervisor Node"]
         
         subgraph "PARALLEL ANALYSIS AGENTS"
             REG["📚 Regulatory Research<br/>• AML/BSA Analysis<br/>• Sanctions Screening<br/>• Jurisdiction Risk"]

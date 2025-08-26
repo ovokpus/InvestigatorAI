@@ -647,10 +647,10 @@ graph TB
     end
     
     %% Workflow connections
-    IC --> RRA
-    IC --> ECA
-    IC --> CCA
-    IC --> RGA
+    FIS --> RRA
+    FIS --> ECA
+    FIS --> CCA
+    FIS --> RGA
     
     RRA --> RGA
     ECA --> RGA
@@ -683,7 +683,7 @@ graph TB
     classDef complianceTools fill:#f59e0b,stroke:#d97706,stroke-width:2px,color:#ffffff
     classDef reportTools fill:#ef4444,stroke:#dc2626,stroke-width:2px,color:#ffffff
     
-    class IC coordinator
+    class FIS coordinator
     class RRA agents
     class ECA evidence
     class CCA compliance

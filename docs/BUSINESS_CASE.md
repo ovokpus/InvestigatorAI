@@ -158,11 +158,11 @@ Generic AI Approach:
 User Query → Single LLM Response → Manual Follow-up Required
 
 InvestigatorAI Approach:
-User Query → Investigation Coordinator → 4 Specialized Agents
-├── Regulatory Research Agent (Compliance expertise)
-├── Evidence Collection Agent (Risk assessment)
-├── Compliance Check Agent (Filing requirements)
-└── Report Generation Agent (Documentation)
+User Query → FraudInvestigationSystem → 4 Specialized Agents
+├── regulatory_research (Compliance expertise)
+├── evidence_collection (Risk assessment)
+├── compliance_check (Filing requirements)
+└── report_generation (Documentation)
 → Comprehensive Investigation Report
 ```
 

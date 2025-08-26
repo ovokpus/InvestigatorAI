@@ -74,18 +74,20 @@ Here is the **[Loom Walkthrough Video](https://www.loom.com/share/390bd824a8a84e
 
 ```mermaid
 graph TB
-    subgraph "INVESTIGATION SYSTEM ARCHITECTURE"
-        IC["🎯 Investigation Coordinator<br/>LangGraph Orchestrator<br/>State Management & Workflow Control"]
+    subgraph "MODULAR INVESTIGATION SYSTEM ARCHITECTURE"
+        FIS["🏗️ FraudInvestigationSystem<br/>Main Coordinator (629 lines)<br/>Supervisor Node & State Management"]
+        AF["🏭 AgentFactory<br/>Agent Creation (394 lines)<br/>Enhanced Prompts & Configuration"]
+        WB["🔄 WorkflowBuilder<br/>LangGraph Construction (90 lines)<br/>Workflow Orchestration"]
     end
     
     subgraph "SPECIALIZED INVESTIGATION AGENTS"
-        RRA["📚 Regulatory Research Agent<br/>Senior Regulatory Research Specialist<br/>AML/BSA Compliance & Sanctions"]
-        ECA["🔍 Evidence Collection Agent<br/>Senior Financial Crimes Analyst<br/>Quantitative Risk Assessment"]
-        CCA["⚖️ Compliance Check Agent<br/>Senior Compliance Officer<br/>BSA Filing Requirements"]
+        RRA["📚 regulatory_research<br/>Senior Regulatory Research Specialist<br/>AML/BSA Compliance & Sanctions<br/>UNLIMITED LENGTH ANALYSIS"]
+        ECA["🔍 evidence_collection<br/>Senior Financial Crimes Analyst<br/>Quantitative Risk Assessment<br/>UNLIMITED LENGTH ANALYSIS"]
+        CCA["⚖️ compliance_check<br/>Senior Compliance Officer<br/>BSA Filing Requirements<br/>UNLIMITED LENGTH ANALYSIS"]
     end
     
-    subgraph "SYNTHESIS & REPORTING"
-        RGA["📊 Report Generation Agent<br/>Senior Investigation Report Specialist<br/>Professional Documentation & Forensics"]
+    subgraph "ENHANCED SYNTHESIS & REPORTING"
+        RGA["📊 report_generation<br/>Senior Investigation Report Specialist<br/>DETAILED REASONING MANDATE<br/>Step-by-Step Decision Justification"]
     end
     
     subgraph "REGULATORY TOOLS" 
@@ -110,17 +112,25 @@ graph TB
         CCR2["⚖️ check_compliance_requirements<br/>Mandatory Disclosure Check"]
     end
     
+    %% Modular system connections
+    FIS --> AF
+    FIS --> WB
+    AF --> RRA
+    AF --> ECA
+    AF --> CCA
+    AF --> RGA
+    
     %% Workflow connections
-    IC --> RRA
-    IC --> ECA
-    IC --> CCA
-    IC --> RGA
+    WB --> RRA
+    WB --> ECA
+    WB --> CCA
+    WB --> RGA
     
     RRA --> RGA
     ECA --> RGA
     CCA --> RGA
     
-    %% Tool assignments
+    %% Tool assignments (actual implementation)
     RRA -.-> SRD
     RRA -.-> SFR
     RRA -.-> SWI1
@@ -147,7 +157,7 @@ graph TB
     classDef complianceTools fill:#f59e0b,stroke:#d97706,stroke-width:2px,color:#ffffff
     classDef reportTools fill:#ef4444,stroke:#dc2626,stroke-width:2px,color:#ffffff
     
-    class IC coordinator
+    class FIS,AF,WB coordinator
     class RRA agents
     class ECA evidence
     class CCA compliance
@@ -389,12 +399,12 @@ All chunks include structured metadata for advanced filtering:
 ### Implementation Complete ✅
 
 **Deliverable 1: Complete End-to-End System**
-- ✅ Multi-agent investigation system with 5 specialized agents:
-  - **HistoricalCaseAgent**: RAG-powered similar case matching
-  - **EvidenceCollectionAgent**: Transaction analysis and behavioral pattern detection
-  - **RegulatoryComplianceAgent**: Automated AML/BSA/SAR compliance checking using real regulatory data
-  - **InvestigationReportAgent**: Comprehensive report generation
-  - **InvestigatorAIOrchestrator**: LangGraph-based workflow coordination
+- ✅ Multi-agent investigation system with 4 specialized agents:
+  - **regulatory_research**: Senior Regulatory Research Specialist for AML/BSA compliance analysis
+  - **evidence_collection**: Senior Financial Crimes Analyst for quantitative risk assessment
+  - **compliance_check**: Senior Compliance Officer for BSA filing requirements
+  - **report_generation**: Senior Investigation Report Specialist for comprehensive documentation
+  - **FraudInvestigationSystem**: LangGraph-based modular coordinator with supervisor node
 
 **Technical Implementation**:
 - LangGraph state management for complex investigation workflows
