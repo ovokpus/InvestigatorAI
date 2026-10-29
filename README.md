@@ -1,3 +1,5 @@
+<p align="center"><img src="assets/banner.jpg" alt="Brass loupe on manila case folders beside index cards joined by red thread" width="100%"></p>
+
 # InvestigatorAI
 
 > **📂 Navigation**: [🏠 Home](README.md) | [🔧 API Docs](api/README.md) | [🤖 Agent Architecture](docs/application/AGENT_PROMPTS.md) | [📈 Advanced Retrievers](docs/application/ADVANCED_RETRIEVERS.md) | [💼 Business Case](docs/BUSINESS_CASE.md) | [🎓 Certification](docs/CERTIFICATION_CHALLENGE.md) | [🎬 Demo Guide](docs/DEMO_GUIDE.md) | [💻 Frontend](frontend/README.md) | [📊 Data](data/README.md) | [🚀 Deploy](deploy/README.md) | [🧪 Notebooks](notebooks/README.md) | [⚙️ GitHub Actions](.github/VECTOR_DATABASE_SETUP.md) | [🔄 Merge](MERGE.md)
