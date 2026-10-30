@@ -5,6 +5,9 @@ const nextConfig: NextConfig = {
   
   // Optimize for Vercel deployment
   trailingSlash: false,
+
+  // Self-contained server bundle used by the Docker image
+  output: 'standalone',
   
   // Environment variables
   env: {

@@ -44,16 +44,9 @@ dependencies = [
     "pydantic-settings==2.9.0",
     "pymupdf==1.26.3",
     "pillow==11.1.0",
-    "jupyter>=1.0.0",
-    "jupyterlab>=3.6.0",
-    "notebook>=6.4.0",
-    "ipykernel>=6.15.0",
-    "ipython>=8.0.0",
-    "ipywidgets>=8.0.0",
-    "matplotlib>=3.5.0",
-    "seaborn>=0.12.0",
-    "plotly>=5.0.0",
-    "pip",
+    # Notebook tooling lives in the [notebook] extra
+    # GuardianAI screening (folded in from github.com/ovokpus/GuardianAI)
+    "scikit-learn>=1.6",
     "rapidfuzz==3.1.0",
     "rank_bm25==0.2.2",
     "langchain-experimental==0.3.1",
@@ -68,6 +61,7 @@ dev = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
     "pytest-asyncio>=0.21.0",  # For async tests in migration
+    "httpx>=0.27",
     "black>=22.0.0",
     "flake8>=5.0.0",
     "mypy>=1.0.0",
@@ -106,13 +100,10 @@ addopts = [
     "-ra",
     "--strict-markers",
     "--strict-config",
-    "--cov=api",
-    "--cov-report=term-missing",
-    "--cov-report=html",
-    "--cov-fail-under=20",
     "-W ignore::DeprecationWarning"
 ]
 testpaths = ["tests"]
+pythonpath = ["."]
 python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]

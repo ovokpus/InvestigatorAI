@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface FormData {
   amount: number;
@@ -27,6 +27,14 @@ export default function InvestigationForm({ onSubmit, isLoading }: Investigation
     risk_rating: 'Medium',
     country_to: ''
   });
+
+  // Prefill from query params, e.g. when escalated from the GuardianAI screening page
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    const keys = ['amount', 'currency', 'description', 'customer_name', 'account_type', 'risk_rating', 'country_to'] as const;
+    const patch = Object.fromEntries(keys.filter((k) => q.get(k)).map((k) => [k, q.get(k) as string]));
+    if (Object.keys(patch).length) setFormData((prev) => ({ ...prev, ...patch }));
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
