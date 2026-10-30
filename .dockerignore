@@ -1,0 +1,11 @@
+.git
+.venv
+**/node_modules
+frontend/.next
+notebooks
+legacy
+docs
+assets
+logs
+**/__pycache__
+.env

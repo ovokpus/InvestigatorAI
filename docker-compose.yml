@@ -1,186 +1,72 @@
+# Local stack. `docker compose up --build` works with no API keys (screening-only mode).
+# Add OPENAI_API_KEY (+ TAVILY_SEARCH_API_KEY) to .env for multi-agent investigations, then
+# `docker compose --profile rag up init-docs` once to load the regulatory PDFs into Qdrant.
 services:
   redis:
     image: redis:7-alpine
-    container_name: investigator_redis
-    restart: unless-stopped
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
     command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes: [redis_data:/data]
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 3s
-      retries: 3
-    networks:
-      - investigator_network
-
-  qdrant:
-    image: qdrant/qdrant:latest
-    container_name: investigator_qdrant
-    restart: unless-stopped
-    ports:
-      - "6333:6333"
-      - "6334:6334"
-    volumes:
-      - qdrant_storage:/qdrant/storage
-    environment:
-      QDRANT__SERVICE__HTTP_PORT: 6333
-      QDRANT__SERVICE__GRPC_PORT: 6334
-      QDRANT__LOG_LEVEL: INFO
-    healthcheck:
-      test: ["CMD-SHELL", "pidof qdrant > /dev/null || exit 1"]
       interval: 5s
       timeout: 3s
-      retries: 2
-      start_period: 10s
-    networks:
-      - investigator_network
+      retries: 5
 
-  # Document Vector Database Initialization Service
+  qdrant:
+    image: qdrant/qdrant:v1.15.1
+    ports: ["${QDRANT_PORT:-6333}:6333"]
+    volumes: [qdrant_storage:/qdrant/storage]
+
   init-docs:
+    profiles: [rag]
     build:
       context: .
-      dockerfile: scripts/Dockerfile.init
-    container_name: investigator_init_docs
+      dockerfile: rag/Dockerfile.init
     environment:
-      # Database connections
-      - QDRANT_HOST=qdrant
-      - QDRANT_PORT=6333
-      
-      # API Keys
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - TAVILY_SEARCH_API_KEY=${TAVILY_SEARCH_API_KEY}
-      - LANGSMITH_API_KEY=${LANGSMITH_API_KEY}
-      
-      # Model Configuration
-      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-text-embedding-3-large}
-      - LLM_MODEL=${LLM_MODEL:-gpt-4o}
-      - LLM_TEMPERATURE=${LLM_TEMPERATURE:-0}
-      - LLM_MAX_TOKENS=${LLM_MAX_TOKENS:-15000}
-      
-      # Document processing settings
-      - PDF_DATA_PATH=data/pdf_downloads
-      - VECTOR_COLLECTION_NAME=regulatory_documents
-      - CHUNK_SIZE=1000
-      - CHUNK_OVERLAP=200
-    volumes:
-      - ./data:/app/data:ro
-    depends_on:
-      qdrant:
-        condition: service_healthy
-    networks:
-      - investigator_network
-    restart: "no"  # Run once and exit
+      QDRANT_URL: http://qdrant:6333
+      QDRANT_PROVIDER: local
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-text-embedding-3-large}
+      VECTOR_COLLECTION_NAME: regulatory_documents
+      PDF_DATA_PATH: data/pdf_downloads
+    depends_on: [qdrant]
+    restart: "no"
 
-  # InvestigatorAI API Backend
   api:
     build:
       context: .
       dockerfile: api/Dockerfile
-    container_name: investigator_api
-    restart: unless-stopped
-    ports:
-      - "8000:8000"
+    ports: ["${API_PORT:-8000}:8000"]
     environment:
-      # Database connections
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - QDRANT_URL=${QDRANT_URL}
-      - QDRANT_API_KEY=${QDRANT_API_KEY}
-      
-      # API Keys (set these in your .env file)
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - TAVILY_SEARCH_API_KEY=${TAVILY_SEARCH_API_KEY}
-      - LANGSMITH_API_KEY=${LANGSMITH_API_KEY}
-      # Note: Exchange rates now use local JSON data file instead of API
-      
-      # Model Configuration
-      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-text-embedding-3-large}
-      - LLM_MODEL=${LLM_MODEL:-gpt-4o}
-      - LLM_TEMPERATURE=${LLM_TEMPERATURE:-0}
-      - LLM_MAX_TOKENS=${LLM_MAX_TOKENS:-15000}
-      
-      # LangSmith Configuration
-      - LANGSMITH_TRACING=${LANGSMITH_TRACING:-true}
-      - LANGSMITH_PROJECT=${LANGSMITH_PROJECT:-InvestigatorAI-Docker}
-      - LANGSMITH_ENDPOINT=https://api.smith.langchain.com
-      
-      # Performance Settings
-      - DEFAULT_RETRIEVAL_METHOD=auto
-      - ENABLE_PERFORMANCE_LOGGING=true
-      - BM25_ENABLED=true
-      
-      # Cache and other settings
-      - CACHE_ENABLED=true
-      - DEBUG=false
-      - LOG_LEVEL=INFO
-      
-      # Migration 2.0 Settings - Security & Performance
-      - ALLOWED_ORIGINS=http://localhost:3000,http://frontend:3000
-      - RATE_LIMIT_REQUESTS=5
-      - RATE_LIMIT_WINDOW=60
-      - MAX_MEMORY_MB=1024
-      - CLEANUP_THRESHOLD=0.8
-    volumes:
-      - ./data:/app/data:ro
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      QDRANT_URL: http://qdrant:6333
+      QDRANT_PROVIDER: local
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      TAVILY_SEARCH_API_KEY: ${TAVILY_SEARCH_API_KEY:-}
+      LANGSMITH_API_KEY: ${LANGSMITH_API_KEY:-}
+      LANGSMITH_TRACING: ${LANGSMITH_TRACING:-false}
+      LANGSMITH_PROJECT: ${LANGSMITH_PROJECT:-InvestigatorAI-Local}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-text-embedding-3-large}
+      LLM_MODEL: ${LLM_MODEL:-gpt-4o}
+      LLM_TEMPERATURE: ${LLM_TEMPERATURE:-0}
+      LLM_MAX_TOKENS: ${LLM_MAX_TOKENS:-4000}
+      GUARDIAN_FRAUD_THRESHOLD: ${GUARDIAN_FRAUD_THRESHOLD:-0.3}
+      CACHE_ENABLED: "true"
+      LOG_LEVEL: INFO
     depends_on:
-      redis:
-        condition: service_healthy
-    networks:
-      - investigator_network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      redis: { condition: service_healthy }
+      qdrant: { condition: service_started }
 
-  # InvestigatorAI Frontend
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile
-    container_name: investigator_frontend
-    restart: unless-stopped
-    ports:
-      - "3000:3000"
-    environment:
-      - NODE_ENV=production
-      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:${API_PORT:-8000}
+    ports: ["${WEB_PORT:-3000}:3000"]
     depends_on:
-      api:
-        condition: service_healthy
-    networks:
-      - investigator_network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  # Optional: Redis Commander for Redis management UI
-  redis-commander:
-    image: rediscommander/redis-commander:latest
-    container_name: investigator_redis_ui
-    restart: unless-stopped
-    ports:
-      - "8081:8081"
-    environment:
-      REDIS_HOSTS: local:redis:6379
-    depends_on:
-      - redis
-    networks:
-      - investigator_network
-    profiles:
-      - ui
+      api: { condition: service_healthy }
 
 volumes:
   redis_data:
-    driver: local
   qdrant_storage:
-    driver: local
-
-networks:
-  investigator_network:
-    driver: bridge

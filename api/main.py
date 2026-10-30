@@ -31,6 +31,8 @@ from api.core.dependencies import app_state, RateLimiter, get_app_settings
 from api.endpoints.investigation import investigation_router
 from api.endpoints.tools import tools_router
 from api.endpoints.cache import cache_router
+from api.guardian.router import guardian_router
+from api.guardian.engine import get_screener
 from api.middleware.logging_middleware import LoggingMiddleware, StreamingLoggingMiddleware
 # Configure comprehensive logging
 from api.utils.logging_config import setup_logging, get_logger
@@ -64,14 +66,26 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         # Initialize rate limiter
         app_state["rate_limiter"] = RateLimiter(max_requests=5, window_seconds=60)
         
+        # Initialize external API service (local exchange-rate data works without keys)
+        app_state["external_api_service"] = ExternalAPIService(settings)
+
+        # GuardianAI screening needs no API keys: warm it up first
+        get_screener()
+        logger.info("✅ GuardianAI screener ready")
+
+        if not settings.openai_api_key:
+            logger.warning("⚠️  OPENAI_API_KEY not set: starting in screening-only mode "
+                           "(investigations, research and document search return 503)")
+            app_state["llm_mode"] = "disabled"
+            yield
+            return
+        app_state["llm_mode"] = "enabled"
+
         # Initialize LLM components
         llm, embeddings = initialize_llm_components(settings)
         logger.info("✅ LLM and embeddings initialized")
         
-        # Initialize external API service
-        external_api_service = ExternalAPIService(settings)
-        app_state["external_api_service"] = external_api_service
-        logger.info("✅ External API service initialized")
+        external_api_service = app_state["external_api_service"]
         
         # Connect to existing vector store (documents pre-loaded by init service)
         logger.info("🔗 Connecting to pre-initialized vector store...")
@@ -136,6 +150,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "http://localhost:3001",
+        "http://127.0.0.1:3000",
         "https://investigator-ai.app",
         "https://*.investigator-ai.app",
         "https://investigator-ai-ochre.vercel.app",
@@ -157,6 +172,7 @@ app.include_router(investigation_router)
 app.include_router(tools_router)
 app.include_router(cache_router)
 app.include_router(research_router)
+app.include_router(guardian_router)
 
 # Health check endpoint
 @app.api_route("/health", methods=["GET", "HEAD"])
@@ -185,6 +201,8 @@ async def health_check(
     # Add LangSmith status to response
     response_dict = response.model_dump(mode='json')
     response_dict["langsmith"] = langsmith_status
+    response_dict["llm_mode"] = app_state.get("llm_mode", "disabled")
+    response_dict["guardian_screening"] = True
     
     return JSONResponse(content=response_dict)
 

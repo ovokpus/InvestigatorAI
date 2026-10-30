@@ -174,8 +174,8 @@ def get_settings() -> Settings:
 
 def initialize_llm_components(settings: Settings) -> tuple[ChatOpenAI, OpenAIEmbeddings]:
     """Initialize LLM and embedding models"""
-    if not settings.api_keys_available:
-        raise ValueError("Cannot initialize LLM components - API keys missing")
+    if not settings.openai_api_key:
+        raise ValueError("Cannot initialize LLM components - OPENAI_API_KEY missing")
     
     llm = ChatOpenAI(
         model=settings.llm_model,

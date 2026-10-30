@@ -281,6 +281,12 @@ export default function Home() {
               Tools & Search
             </a>
 
+            <a href="/screening" className="px-3 sm:px-4 py-2 bg-secondary text-secondary-foreground hover:bg-accent rounded-lg font-medium transition-colors text-center text-sm sm:text-base">
+
+              🛡️ Screening
+
+            </a>
+
             <a 
               href="/help" 
               className="px-3 sm:px-4 py-2 bg-secondary text-secondary-foreground hover:bg-accent rounded-lg font-medium transition-colors text-center text-sm sm:text-base"
