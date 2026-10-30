@@ -129,6 +129,7 @@ def setup_logging(
     # Performance logger if enabled
     if enable_performance_logging:
         perf_logger = logging.getLogger('performance')
+        os.makedirs('logs', exist_ok=True)
         perf_handler = logging.FileHandler('logs/performance.log', encoding='utf-8')
         perf_handler.setFormatter(JSONFormatter())
         perf_logger.addHandler(perf_handler)
