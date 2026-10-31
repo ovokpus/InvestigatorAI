@@ -1,6 +1,6 @@
-<p align="center"><img src="assets/banner.jpg" alt="InvestigatorAI" width="100%"/></p>
-
 # InvestigatorAI + GuardianAI: Screen in milliseconds, investigate in minutes
+
+<p align="center"><img src="assets/banner.jpg" alt="InvestigatorAI" width="100%"/></p>
 
 <p align="center"><img src="docs/assets/hero.svg" alt="InvestigatorAI + GuardianAI" width="100%"/></p>
 
