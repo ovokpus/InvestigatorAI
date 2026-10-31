@@ -2,6 +2,8 @@
 
 # InvestigatorAI + GuardianAI: Screen in milliseconds, investigate in minutes
 
+<p align="center"><img src="docs/assets/hero.svg" alt="InvestigatorAI + GuardianAI" width="100%"/></p>
+
 > One local stack for the whole fraud workflow. **GuardianAI** screening (folded in from [ovokpus/GuardianAI](https://github.com/ovokpus/GuardianAI)) scores every transaction in about 10 ms with four lightweight agents and no LLM call. Anything risky is escalated, with the form already filled in, to **InvestigatorAI**'s LangGraph multi-agent investigation: regulatory RAG, web and academic research, compliance checks and a SAR-ready report.
 
 ![Screening a risky transaction](docs/screenshots/screening-escalate.png)
@@ -20,6 +22,8 @@ Fraud teams have two jobs that pull in opposite directions:
 Running an LLM on every payment is too slow and too expensive. Rules alone can't write a report. This repo puts both stages in one app, with a hand-off between them.
 
 ## 2. The flow
+
+<p align="center"><img src="docs/assets/flow.svg" alt="InvestigatorAI + GuardianAI data flow" width="100%"/></p>
 
 ```mermaid
 flowchart LR
