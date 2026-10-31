@@ -10,6 +10,10 @@
 
 ---
 
+## Business case
+
+Fraud and anti-money-laundering teams spend much of their time assembling evidence before an analyst can decide whether to file a suspicious activity report. InvestigatorAI screens each transaction with a fast machine-learning check, then hands the cases worth a closer look to LangGraph agents that gather regulatory guidance, risk signals and a draft report for human review. The analyst keeps the decision, and the system does the assembly. [docs/BUSINESS_CASE.md](docs/BUSINESS_CASE.md) covers the buyer, use cases, a sourced cost baseline and an illustrative ROI model.
+
 ## 1. The problem
 
 Fraud teams have two jobs that pull in opposite directions:

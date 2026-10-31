@@ -1,330 +1,70 @@
-# InvestigatorAI Business Case: Beyond Generic AI
-
-> **📂 Navigation**: [🏠 Home](../README.md) | [🔧 API Docs](../api/README.md) | [🤖 Agent Architecture](AGENT_PROMPTS.md) | [📈 Advanced Retrievers](ADVANCED_RETRIEVERS.md) | [💼 Business Case](BUSINESS_CASE.md) | [🎓 Certification](CERTIFICATION_CHALLENGE.md) | [🎬 Demo Guide](DEMO_GUIDE.md) | [💻 Frontend](../frontend/README.md) | [📊 Data](../data/README.md) | [🚀 Deploy](../deploy/README.md) | [🧪 Tests](../tests/README.md) | [🔄 Merge](../MERGE.md)
-
-## Executive Summary
-
-InvestigatorAI delivers **measurable business value** that generic AI tools like ChatGPT or Claude cannot provide for fraud investigation workflows. Through **modular multi-agent architecture**, comprehensive regulatory document integration, unlimited-length detailed reasoning, and production-ready optimization, InvestigatorAI transforms fraud investigation from a 6-hour manual process into a 90-minute AI-assisted workflow while providing complete regulatory compliance and audit trail requirements with step-by-step decision justification.
-
-## 🎯 The Generic AI Limitation Problem
-
-### Why ChatGPT/Claude Fail for Fraud Investigation
-
-| **Critical Gap** | **Generic AI (ChatGPT/Claude)** | **InvestigatorAI Solution** | **Business Impact** |
-|------------------|--------------------------------|---------------------------|-------------------|
-| **Regulatory Knowledge** | Generic training data, outdated regulations | Real-time access to 627 current FinCEN/FFIEC/OFAC documents | Compliance violations avoided |
-| **Investigation Workflow** | Single-response format | Multi-agent orchestrated investigation | 75% time reduction |
-| **Audit Trail** | No systematic documentation | Complete investigation audit trail | Regulatory examination ready |
-| **Specialized Tools** | Text generation only | Transaction risk calculation, exchange rate verification, compliance checking | Quantifiable risk assessment |
-| **Data Integration** | Manual data entry required | Automated document search, API integration | 90% manual research eliminated |
-| **Consistency** | Variable response quality | Standardized investigation protocols | Predictable investigation outcomes |
-
-### Generic AI Cost Analysis
-
-**ChatGPT/Claude Approach for Fraud Investigation**:
-```
-Manual Process per Investigation:
-├── Research regulatory requirements: 2 hours ($120 analyst time)
-├── Copy/paste investigation data: 30 minutes ($30 analyst time)  
-├── Ask multiple questions iteratively: 1.5 hours ($90 analyst time)
-├── Verify regulatory citations manually: 2 hours ($120 analyst time)
-├── Format documentation manually: 1 hour ($60 analyst time)
-└── Review for compliance accuracy: 1 hour ($60 analyst time)
-
-Total: 8 hours per investigation, $480 analyst cost
-Success Rate: 65% (compliance gaps, incomplete analysis)
-```
-
-**InvestigatorAI Approach**:
-```
-Automated Process per Investigation:
-├── Multi-agent investigation: 30 minutes ($30 analyst oversight)
-├── Automated regulatory document search: Real-time
-├── Systematic tool execution: Automated
-├── Compliance-ready documentation: Generated
-├── Quality assurance review: 30 minutes ($30 analyst time)
-└── Audit trail complete: Automated
-
-Total: 1 hour per investigation, $60 analyst cost
-Success Rate: 96% (comprehensive analysis, regulatory compliance)
-```
-
-**ROI Analysis**: **87% cost reduction** with **47% accuracy improvement**
-
-#### **🚀 Enhanced Capabilities (August 2025 Modularization Update)**
-
-| **Advanced Feature** | **Generic AI** | **InvestigatorAI** | **Business Impact** |
-|---------------------|----------------|-------------------|-------------------|
-| **Detailed Reasoning** | Generic explanations | Step-by-step decision justification with unlimited length | Complete audit trail for regulators |
-| **Architecture** | Monolithic single-agent | Modular 6-component system with specialized agents | Maintainable, scalable, production-ready |
-| **UI Experience** | Basic chat interface | Code-style terminal interface with rich text rendering | Professional analyst-focused experience |
-| **Agent Sequencing** | No workflow control | Proper dependency management - Report Generation after specialists | Comprehensive analysis workflow |
-| **Content Limits** | Token/character restrictions | Unlimited length detailed analysis | Full regulatory documentation |
-| **Frontend Integration** | Manual copy/paste | Direct API integration with copy/download functionality | Seamless workflow integration |
-
-## 💰 Quantified Business Value
-
-### Operational Efficiency Gains
-
-#### Time Savings per Investigation
-| **Investigation Phase** | **Manual Process** | **InvestigatorAI** | **Time Saved** |
-|------------------------|-------------------|-------------------|----------------|
-| **Regulatory Research** | 2.5 hours | 2 minutes | **98% reduction** |
-| **Risk Assessment** | 1.5 hours | 30 seconds | **99% reduction** |
-| **Documentation** | 2 hours | 5 minutes | **96% reduction** |
-| **Compliance Verification** | 1.5 hours | Real-time | **100% reduction** |
-| **Report Generation** | 1 hour | Automated | **100% reduction** |
-
-**Total Investigation Time**: 6+ hours → **90 minutes** (75% reduction)
-
-#### Cost Impact Analysis (Medium Bank Processing 50 Investigations/Week)
-
-**Current State (Manual + Generic AI)**:
-```
-Weekly Investigation Cost:
-├── 50 investigations × 6 hours × $60/hour = $18,000
-├── Regulatory research overhead = $5,000
-├── Documentation rework = $3,000
-├── Compliance review = $4,000
-└── Total Weekly Cost = $30,000
-
-Annual Cost: $1,560,000
-Error Rate: 35% (requiring rework)
-Rework Cost: $546,000
-Total Annual Cost: $2,106,000
-```
-
-**InvestigatorAI State**:
-```
-Weekly Investigation Cost:
-├── 50 investigations × 1.5 hours × $60/hour = $4,500
-├── System operation cost = $800
-├── Quality assurance = $1,500
-├── Analyst oversight = $2,000
-└── Total Weekly Cost = $8,800
+# Business case: InvestigatorAI + GuardianAI
 
-Annual Cost: $457,600
-Error Rate: 4% (minimal rework required)
-Rework Cost: $18,304
-Total Annual Cost: $475,904
-```
-
-**Annual Savings**: **$1,630,096** (77% cost reduction)
-
-### Risk Mitigation Value
-
-#### Regulatory Compliance Improvements
+**Fraud screening and investigation for banks, credit unions and payment companies.**
 
-| **Compliance Area** | **Manual Risk** | **InvestigatorAI Risk** | **Risk Reduction** |
-|-------------------|----------------|----------------------|-------------------|
-| **SAR Filing Accuracy** | 15% error rate | 2% error rate | **87% improvement** |
-| **CTR Threshold Compliance** | 8% missed filings | 0.5% missed filings | **94% improvement** |
-| **Documentation Standards** | 25% incomplete | 3% incomplete | **88% improvement** |
-| **Regulatory Currency** | 40% outdated citations | 1% outdated citations | **98% improvement** |
-
-**Regulatory Penalty Avoidance**: Average AML penalty $10M - Risk reduction worth **$8.7M annual value**
-
-### Quality and Accuracy Improvements
-
-#### Investigation Quality Metrics
-
-**RAGAS Evaluation Results**:
-| **Quality Metric** | **Manual Process** | **Generic AI** | **InvestigatorAI** | **Improvement** |
-|-------------------|-------------------|----------------|-------------------|----------------|
-| **Faithfulness** | 65% | 70% | **96%** | **48% better than manual** |
-| **Answer Relevancy** | 78% | 85% | **94%** | **20% better than generic AI** |
-| **Context Precision** | 60% | 75% | **92%** | **53% better than manual** |
-| **Context Recall** | 45% | 55% | **100%** | **122% better than manual** |
-
-**Overall Investigation Quality**: **0.953 RAGAS score** vs. 0.670 manual baseline
-
-#### **🏗️ Modular Architecture Quality Improvements**
-
-| **Architecture Metric** | **Before Modularization** | **After Modularization** | **Business Benefit** |
-|-------------------------|---------------------------|--------------------------|-------------------|
-| **Code Maintainability** | 2,117-line monolithic file | 6 specialized components | 90% easier maintenance |
-| **Detailed Reasoning** | Limited by character restrictions | Unlimited length comprehensive analysis | Full regulatory compliance |
-| **Agent Sequencing** | Sequential without dependencies | Proper workflow with Report Generation last | Complete analysis workflow |
-| **Frontend Integration** | Basic text display | Rich markdown rendering with copy/download | Professional user experience |
-| **Testing Coverage** | 13/14 tests passing | 14/14 tests passing with enhanced features | 100% test reliability |
-
-## 🚀 Technology Competitive Advantages
-
-### Specialized Architecture Benefits
-
-#### Multi-Agent Orchestration vs. Single AI Response
-```
-Generic AI Approach:
-User Query → Single LLM Response → Manual Follow-up Required
-
-InvestigatorAI Approach:
-User Query → Investigation Coordinator → 4 Specialized Agents
-├── Regulatory Research Agent (Compliance expertise)
-├── Evidence Collection Agent (Risk assessment)
-├── Compliance Check Agent (Filing requirements)
-└── Report Generation Agent (Documentation)
-→ Comprehensive Investigation Report
-```
-
-**Advantage**: **Specialized expertise** vs. generalized responses
-
-#### Real-Time Regulatory Integration
-
-**Generic AI**:
-- Static training data (cutoff dates)
-- No regulatory document access
-- Manual fact-checking required
-- Potential for outdated information
-
-**InvestigatorAI**:
-- 627 current regulatory documents
-- Real-time FinCEN/FFIEC/OFAC access
-- Automated compliance verification
-- Always current regulatory guidance
-
-**Advantage**: **Regulatory currency guarantee** vs. potential compliance gaps
-
-#### Advanced Retrieval Optimization
-
-**BM25 Sparse Retrieval Performance**:
-- **2.2ms average response time** (250x faster than baseline)
-- **0.953 RAGAS quality score** (19% better than dense search)
-- **96% faithfulness score** (production-ready accuracy)
-- **Perfect context recall** (comprehensive regulatory coverage)
-
-**Generic AI Vector Search**:
-- 551ms average response time
-- 0.800 RAGAS quality score
-- 58% faithfulness score (inadequate for compliance)
-- 68% context recall (incomplete coverage)
-
-**Advantage**: **Purpose-built performance** vs. general-purpose limitations
-
-### Production-Ready vs. Prototype Capabilities
-
-| **Capability** | **ChatGPT/Claude** | **InvestigatorAI** |
-|----------------|-------------------|-------------------|
-| **Audit Trail** | None | Complete investigation log |
-| **Error Handling** | Generic error messages | Compliance-specific guidance |
-| **Data Integration** | Manual copy/paste | Automated API integration |
-| **Workflow Management** | None | Multi-agent orchestration |
-| **Performance Monitoring** | None | Real-time health checks |
-| **Scalability** | Rate limited | Production architecture |
-| **Customization** | Prompt engineering only | Tool-specific optimization |
-
-## 💡 Future Enhancement Value Proposition
-
-### Phase 2 Enhancements (H2 2025)
-
-#### Real-Time Regulatory Feed Integration
-**Current**: Static document database (627 documents)
-**Enhanced**: Live regulatory feeds from FinCEN, FFIEC, OFAC
-**Business Value**: Zero compliance lag time, immediate regulatory updates
-**ROI Impact**: Additional 15% risk reduction, $1.5M penalty avoidance value
-
-#### Multi-Modal Evidence Analysis
-**Current**: Text-based investigation only
-**Enhanced**: Image analysis (checks, documents), PDF parsing, structured data extraction
-**Business Value**: 40% more evidence sources, enhanced investigation depth
-**ROI Impact**: 25% faster investigation completion, additional $400K annual savings
-
-#### Machine Learning Risk Model Integration
-**Current**: Rule-based risk calculation
-**Enhanced**: Adaptive ML models learning from investigation outcomes
-**Business Value**: Predictive risk scoring, proactive fraud detection
-**ROI Impact**: 30% fraud detection improvement, estimated $5M fraud prevention value
-
-#### Enterprise Integration Suite
-**Current**: Standalone application
-**Enhanced**: Core banking system integration, SIEM connectivity, case management workflow
-**Business Value**: Seamless enterprise workflow, automated case routing
-**ROI Impact**: Additional 50% efficiency gains, $800K operational savings
-
-### Long-Term Value Proposition (2026+)
-
-#### Federated Learning Network
-**Vision**: Anonymous cross-institution fraud pattern sharing
-**Business Value**: Industry-wide fraud intelligence, collective defense
-**ROI Impact**: Network effect value, estimated 200% fraud detection improvement
-
-#### Regulatory Compliance Automation
-**Vision**: Automated SAR/CTR filing, compliance reporting
-**Business Value**: Zero-touch compliance for routine cases
-**ROI Impact**: Additional 60% operational cost reduction
-
-#### Advanced Analytics and Prediction
-**Vision**: Fraud trend prediction, customer behavior analytics
-**Business Value**: Proactive fraud prevention, customer risk profiling
-**ROI Impact**: Shift from reactive to predictive, potential 400% ROI
-
-## 📊 Market Competitive Analysis
-
-### Solution Category Comparison
-
-| **Solution Type** | **Capabilities** | **Fraud Investigation Fit** | **Total Cost of Ownership** |
-|------------------|-----------------|---------------------------|---------------------------|
-| **Generic AI (ChatGPT/Claude)** | General text generation | ❌ Poor - No specialized tools | High (manual overhead) |
-| **Traditional AML Software** | Rule-based detection | ⚠️ Limited - Detection only | Very High (licensing + maintenance) |
-| **Custom AI Development** | Tailored but expensive | ✅ Good - If properly built | Extremely High (development + maintenance) |
-| **InvestigatorAI** | Specialized investigation platform | ✅ Excellent - Purpose-built | Low (SaaS model) |
-
-### Competitive Value Proposition
-
-**vs. Generic AI**: **10x specialization**, regulatory compliance, audit trail
-**vs. Traditional AML**: **90% cost reduction**, modern AI capabilities, investigation automation
-**vs. Custom Development**: **95% faster deployment**, proven architecture, ongoing enhancement
-
-## 🎯 Implementation ROI Timeline
-
-### Month 1-3: Initial Deployment
-- **Implementation Cost**: $50K (setup, training, integration)
-- **Immediate Savings**: 40% investigation time reduction
-- **Value**: $200K quarterly savings
-
-### Month 4-12: Full Adoption
-- **Operational Efficiency**: 75% investigation time reduction achieved
-- **Quality Improvement**: 96% accuracy standard maintained
-- **Annual Value**: $1.6M cost savings + $8.7M risk mitigation
-
-### Year 2+: Enhancement Benefits
-- **Advanced Features**: ML integration, expanded data sources
-- **Network Effects**: Industry fraud intelligence sharing
-- **Total Value**: $5M+ annual combined savings and fraud prevention
-
-## 📈 Success Metrics and KPIs
-
-### Operational Metrics
-- **Investigation Time**: 6 hours → 90 minutes (target achieved)
-- **Investigation Accuracy**: 65% → 96% (target exceeded)
-- **Analyst Productivity**: 300% improvement
-- **Regulatory Compliance**: 98% accuracy rate
-
-### Financial Metrics
-- **Cost per Investigation**: $480 → $60 (87% reduction)
-- **Annual Operational Savings**: $1.6M
-- **Risk Mitigation Value**: $8.7M
-- **Total ROI**: 3,200% over 3 years
-
-### Quality Metrics
-- **RAGAS Score**: 0.953 (exceeds 0.90 target)
-- **Regulatory Currency**: 100% current documents
-- **Audit Trail Completeness**: 100%
-- **Investigation Consistency**: 94% standardization
-
-## 🏁 Conclusion: The InvestigatorAI Advantage
-
-InvestigatorAI delivers **transformational business value** that generic AI tools cannot match:
-
-1. **87% cost reduction** through specialized automation vs. manual generic AI approaches
-2. **96% accuracy improvement** via regulatory-specific AI training and document integration
-3. **$10M+ annual value** from operational savings and regulatory risk mitigation
-4. **Production-ready architecture** with audit trails, error handling, and scalability
-5. **Future enhancement pipeline** with clear ROI progression and enterprise integration
-
-**The Strategic Choice**: Organizations can continue the expensive, error-prone approach of manual investigation with generic AI assistance, or implement InvestigatorAI for immediate transformation to efficient, accurate, compliant fraud investigation workflows.
-
-**Investment Recommendation**: Deploy InvestigatorAI for immediate 3,200% ROI while building foundation for next-generation fraud detection capabilities.
-
----
-
-*For detailed implementation planning and custom ROI modeling for your organization, contact the InvestigatorAI development team.*
+## Who buys this
+
+The buyer is the head of fraud operations or the BSA/AML officer at a mid-sized bank, credit union, fintech or payment processor. That person is responsible for two numbers: how many risky payments get through, and how many analyst hours go into each case before a Suspicious Activity Report (SAR) is filed or the case is closed. The day-to-day users are fraud analysts and investigators.
+
+## The problem and what it costs
+
+Financial crime compliance is expensive, and the cost keeps rising. A Forrester study commissioned by LexisNexis Risk Solutions put the annual cost of financial crime compliance in the US and Canada at **US$61 billion**. It found that costs had risen at **99%** of institutions, and that **70%** planned to prioritise cutting compliance costs in the next 12 months ([LexisNexis Risk Solutions, Feb 2024](https://risk.lexisnexis.com/about-us/press-room/press-release/20240221-true-cost-of-compliance-us-ca)).
+
+Most of that cost is analyst time. FinCEN's official paperwork estimate is **1.98 hours per SAR**, but that figure leaves out alert review and turning alerts into cases. The Bank Policy Institute surveyed 15 banks with at least $100 billion in assets and estimated **21.41 hours of SAR-related work per SAR filed** ([BPI comment letter to FinCEN, April 2024](https://bpi.com/wp-content/uploads/2024/04/BPI-Comment-Letter-FinCEN-SAR-PRA-Notice-4.12.24.pdf)). FinCEN's own 2020 model assumes that only about 42% of cases become SAR filings, and that a written rationale is still needed for every case that is closed without one ([Federal Register, May 2020](https://www.federalregister.gov/documents/2020/05/26/2020-11247/agency-information-collection-activities-proposed-renewal-comment-request-renewal-without-change-of)).
+
+The work also pulls in two directions. Screening has to answer in milliseconds for every payment. Investigation needs research, regulations and a written report. Putting an LLM on every payment is too slow and too expensive. Rules alone can't write a case narrative.
+
+## How the repo solves it
+
+| Need | What in the repo does it |
+|---|---|
+| Score every transaction fast and explain why | GuardianAI screening in `api/guardian/`: four lightweight agents (an IsolationForest plus transaction rules, a behavioural nearest-neighbour fraud rate, pattern checks for card testing, night-time and geography, and a weighted decision). No LLM call, about 10 ms per transaction in local runs. |
+| Send only the risky ones to people | Thresholds approve, review or escalate. Escalated cases arrive at the investigation stage with the form already filled in. |
+| Do the research an analyst does by hand | The LangGraph multi-agent investigation in `api/agents/`: regulatory research over a Qdrant index of regulatory PDFs (hybrid BM25 plus dense retrieval, with Cohere reranking), web and academic search, evidence collection and a compliance check. |
+| Produce something reviewable | A written report with a SAR recommendation, streamed to the UI (`/investigate/stream`) and downloadable (`/download/{investigation_id}`). |
+| Prove the retrieval is good enough | RAGAS evaluation of the retrieval path, in `notebooks/` and `rag/`. |
+
+## Use-case scenarios
+
+All of these organisations are fictional.
+
+1. **A regional credit union with a three-person fraud team.** Card-not-present fraud alerts arrive in batches overnight. GuardianAI approves the clearly normal ones and escalates the rest. Each escalated case opens with the similar historical transactions and the matching regulations already attached, so the morning shift starts at "decide and write" instead of "gather".
+2. **A payment processor serving small merchants.** A new merchant shows a burst of small authorisations, a classic card-testing pattern. The pattern agent flags it at screening time. The investigation agent pulls the relevant card-network and regulatory guidance and drafts the narrative the processor needs for its sponsor bank.
+3. **A digital bank's quality-assurance group.** QA re-runs a sample of closed cases through the investigation stage and compares the drafted rationale with the analyst's. Disagreements show where procedures are unclear or where the model needs tighter prompts.
+
+## ROI: a worked model (illustrative)
+
+These figures are **illustrative assumptions**, not measurements. Replace them with your own volumes and timings.
+
+| Input | Value | Basis |
+|---|---|---|
+| Cases worked per year | 2,000 | Assumption for a mid-sized institution |
+| Analyst hours per case today | 6 | Assumption. It sits between FinCEN's 1.98 h per SAR and BPI's 21.41 h per SAR, both sourced above. |
+| Share of those hours spent gathering evidence and research | 50% | Assumption |
+| Reduction in gathering time with drafted, pre-researched cases | 40% | Assumption, to be measured in a pilot |
+| Analyst hourly cost | US$49 | BLS May 2024 median for compliance officers is $78,420 a year, about $37.70 an hour ([BLS](https://www.bls.gov/ooh/business-and-financial/compliance-officers.htm)). Multiplied by an assumed 1.3 for benefits and overhead. |
+
+Hours saved = 2,000 × 6 × 50% × 40% = **4,800 hours a year**, worth about **US$235,000** at $49 an hour. Against that, budget for LLM and search API calls, hosting, and a model-risk review before go-live. The case holds if those costs come in well under the hours saved, and the pilot should show that with real numbers. Screening adds a second benefit (fewer false escalations reaching people), but it is not counted here because it depends entirely on your current rules.
+
+## Path to production
+
+1. **Shadow mode.** Run screening and investigation beside the current process on historical, de-identified cases. Measure precision and recall at the escalate threshold, and the time an analyst takes to accept or edit the draft.
+2. **Data integration.** Replace the demo transaction set with the core banking or processor feed, and replace the sample regulations with the institution's own procedures and the current regulatory library.
+3. **Controls.** Add authentication, case-level audit logs, PII handling and model documentation that meets the institution's model risk management policy. Keep a human as the decision-maker on every SAR.
+4. **Pilot** with one team and one fraud type, with an agreed metric (hours per case, and the analyst's edit rate on drafts).
+
+`PRODUCTIONIZING.md` in this repo lists the engineering work.
+
+## Risks and limits
+
+- The screening models are trained on demo data. Thresholds and features must be re-fitted on the institution's own history before they mean anything.
+- LLM output can be wrong or incomplete. The report is a draft for an analyst, not a filing, and regulators expect a human decision.
+- Sending case data to hosted LLM and search APIs may not be allowed. A private model deployment may be needed.
+- The time-saving figures in the main README are design targets. This document doesn't rely on them, and only a pilot can confirm them.
+
+## Sources
+
+- LexisNexis Risk Solutions / Forrester, *True Cost of Financial Crime Compliance – US and Canada* (Feb 2024): https://risk.lexisnexis.com/about-us/press-room/press-release/20240221-true-cost-of-compliance-us-ca
+- Bank Policy Institute, comment letter to FinCEN on SAR burden (Apr 2024): https://bpi.com/wp-content/uploads/2024/04/BPI-Comment-Letter-FinCEN-SAR-PRA-Notice-4.12.24.pdf
+- FinCEN SAR renewal notice, Federal Register (May 26, 2020): https://www.federalregister.gov/documents/2020/05/26/2020-11247/agency-information-collection-activities-proposed-renewal-comment-request-renewal-without-change-of
+- U.S. Bureau of Labor Statistics, Compliance Officers: https://www.bls.gov/ooh/business-and-financial/compliance-officers.htm and OEWS May 2024: https://www.bls.gov/news.release/archives/ocwage_04022025.pdf
