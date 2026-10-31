@@ -42,7 +42,7 @@ These figures are **illustrative assumptions**, not measurements. Replace them w
 | Analyst hours per case today | 6 | Assumption. It sits between FinCEN's 1.98 h per SAR and BPI's 21.41 h per SAR, both sourced above. |
 | Share of those hours spent gathering evidence and research | 50% | Assumption |
 | Reduction in gathering time with drafted, pre-researched cases | 40% | Assumption, to be measured in a pilot |
-| Analyst hourly cost | US$49 | BLS May 2024 median for compliance officers is $78,420 a year, about $37.70 an hour ([BLS](https://www.bls.gov/ooh/business-and-financial/compliance-officers.htm)). Multiplied by an assumed 1.3 for benefits and overhead. |
+| Analyst hourly cost | US$49 | BLS May 2024 median for compliance officers is $78,420 a year, about $37.70 an hour ([BLS](https://www.bls.gov/news.release/archives/ocwage_04022025.pdf)). Multiplied by an assumed 1.3 for benefits and overhead. |
 
 Hours saved = 2,000 × 6 × 50% × 40% = **4,800 hours a year**, worth about **US$235,000** at $49 an hour. Against that, budget for LLM and search API calls, hosting, and a model-risk review before go-live. The case holds if those costs come in well under the hours saved, and the pilot should show that with real numbers. Screening adds a second benefit (fewer false escalations reaching people), but it is not counted here because it depends entirely on your current rules.
 
@@ -67,4 +67,4 @@ Hours saved = 2,000 × 6 × 50% × 40% = **4,800 hours a year**, worth about **U
 - LexisNexis Risk Solutions / Forrester, *True Cost of Financial Crime Compliance – US and Canada* (Feb 2024): https://risk.lexisnexis.com/about-us/press-room/press-release/20240221-true-cost-of-compliance-us-ca
 - Bank Policy Institute, comment letter to FinCEN on SAR burden (Apr 2024): https://bpi.com/wp-content/uploads/2024/04/BPI-Comment-Letter-FinCEN-SAR-PRA-Notice-4.12.24.pdf
 - FinCEN SAR renewal notice, Federal Register (May 26, 2020): https://www.federalregister.gov/documents/2020/05/26/2020-11247/agency-information-collection-activities-proposed-renewal-comment-request-renewal-without-change-of
-- U.S. Bureau of Labor Statistics, Compliance Officers: https://www.bls.gov/ooh/business-and-financial/compliance-officers.htm and OEWS May 2024: https://www.bls.gov/news.release/archives/ocwage_04022025.pdf
+- U.S. Bureau of Labor Statistics, OEWS May 2024 (Compliance Officers): https://www.bls.gov/news.release/archives/ocwage_04022025.pdf and OEWS May 2024: https://www.bls.gov/news.release/archives/ocwage_04022025.pdf
